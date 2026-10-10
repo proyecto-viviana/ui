@@ -223,3 +223,514 @@ line and a registry check on the one tag that exists.
 
 Child of #544. Sibling of #443, which still owns `latest` and keeps #537's
 zero-failure bar. Leaving prerelease mode is #443's work.
+
+## Owner pause checkpoint — 2026-10-09
+
+Owner asked to checkpoint, organize the next-agent handoff and stop. The goal
+is paused and unfinished; resume only after the owner resumes. Main HEAD is
+`3298de6ac337c3fddb7e2db584b4819f58789eca`. Current changes are uncommitted;
+no new release was versioned or published. Historical RC0 delivery above does
+not qualify this candidate.
+
+Detailed handoff: `/tmp/ui-full-layers-release-checkpoint-20261009.md`.
+Exact dirty-file snapshot, patch and copies:
+`/tmp/ui-full-layers-release-checkpoint-20261009/`.
+The hub coordinator can link this section from `CURRENT.md`; this UI writer
+does not edit the parent map. Work state remains here in tickets.
+
+All three medium Sol workers stopped after private drafting/review. Root was
+the sole tracked writer. UI holds no active runtime grant or process custody;
+the last Calendar OLD process was actually reaped and its owned cleanup closed.
+Parent VisualMode owned the last known heavy slot. Queued requests are not
+grants; obtain a fresh coordinator grant bound to the actual closed predecessor,
+current HEAD and exact inputs before tests, compilation, installation or browser
+proof. Never treat grant expiry as process return.
+
+### Subsequent owner scope and scheduling decisions — 2026-10-09
+
+The owner subsequently authorized a repo-local execution exception: “make an
+exception don't go through the os just work on this repo”. Direct GPT-6.1 Sol
+medium workers may implement and qualify this local RC goal without OS/herdr.
+This replaces its launch prerequisite; one source writer, independent review,
+the UI runtime slot and local-only publication boundary remain effective.
+
+The owner resumed this work and selected local qualification, with Release
+automation unchanged and no candidate push, version stage, publication or
+deployment. The resumed goal stays active; remote green main and publication
+remain outstanding after the local handoff.
+
+The owner authorized this conductor to coordinate admission after verified
+closure, then approved two concurrent heavy-runtime slots: one for UI and one
+for VisualMode main. The current authority is the hub's
+[runtime-slot rule](../../../../AGENTS.md#heavy-runtime-slots). This supersedes
+the global single-slot admission above and the checkpoint's publication queue.
+Verify the actual closed UI predecessor, current HEAD and exact inputs before
+issuing a fresh UI grant. VisualMode's run does not block that admission.
+Retain one heavy invocation per slot through its actual terminal return and
+owned cleanup. Existing frozen requests and the `oneRuntimeSlot` grant field
+apply within the admitted slot; fresh grants must identify UI explicitly and
+record the two-slot owner decision. Historical grants remain historical.
+
+The original Calendar packet below stays frozen as evidence. Resume admission
+uses its reviewed two-slot successor, recorded in the
+[Calendar conductor receipt](../../../.agents/UI-CALENDAR-WORKER-LAUNCH-2026-10-09.md#reviewed-two-slot-successor).
+Its full 79-case command, source/tests and deadline/cleanup rules are unchanged;
+only fresh same-UI admission applies. Preparation and review do not establish
+a candidate result.
+
+| Slice                        | Applied                                         | Actual evidence / still pending                                                                                                  |
+| ---------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Calendar #533                | Source candidate and 79-case owning test        | OLD 76 PASS/3 assertion FAIL, all 75 inherited cases PASS; candidate UNRUN.                                                      |
+| ActionButton/Badge #537      | Six twin source paths and four owning files     | OLD 18 PASS/8 FAIL/26; candidate 26 PASS. Withdrawal/restore, full SSR/hydration and native certification pending.               |
+| FocusScope #645              | Source, 42-case owning file and changeset       | Prepared v3 OLD withdrawal/restoration; OLD/candidate owning proof UNRUN.                                                        |
+| CSP #90                      | Header source and owning test                   | OLD 4 PASS/1 FAIL; candidate 5 PASS. Browser fonts/site pending.                                                                 |
+| TagGroup #542                | Twin source, fixtures, tests and changeset      | Selected candidate SSR 6 PASS and hydration 6 PASS, 14 filtered each. OLD hydration timed out unclassified; full suites pending. |
+| Slider #74/#76               | Stately v2 tests only: 41 inherited plus 10 new | Production remains OLD; no execution. All lower/styled source and tests private.                                                 |
+| Landing #648                 | Diagnostic fixture/SSR/hydration tests only     | No actual result; source unadmitted; prepared runtime v3 inventory stale after Calendar apply.                                   |
+| Breadcrumb #429 / Table #646 | Contract/sorted visual test additions only      | No actual browser proof; Table reference correction remains private; skips stay.                                                 |
+| Dependencies #647            | Ticket only                                     | Approved overrides/sharp proposal private; manifest, lockfile, install/audit/consumer proof unchanged or UNRUN.                  |
+
+First next execution after resume and fresh admission is prepared Calendar
+candidate:
+`/tmp/ui-533-calendar-candidate-owning-runtime-request-20261009.json`;
+runner `/tmp/ui-533-calendar-candidate-owning-run-20261009.py`. Request SHA256
+`71c29cc8190c6085ffee482fece0d97736fb98b03cf6926c4183d7b9c32528de`;
+runner SHA256 `de6276b2315017d1a5836786f786ca8db38778b74edc457b0abeec803084b68c`.
+Root fully reviewed and verified the packet. Fresh grant must bind actual
+predecessor return/current HEAD, status
+`COORDINATOR_GRANTS_UI_CALENDAR_CANDIDATE_OWNING`, minimum 145s runway;
+one unchanged complete 79-case file, 120s deadline, existing vmThreads/one
+worker, no retry. Inspect full raw outcomes and actual process closure.
+Follow with Focus OLD/candidate, then ActionButton/Badge withdrawal/restore.
+Detailed exact packet paths, hashes and source-review limits are in the handoff.
+
+Slider API approval remains effective: exact inventory
+`/tmp/ui-slider-range-public-api-inventory-20261009.md` (array/indexed state,
+`SliderThumb` index/name/form and `createSliderThumb`; styled value shapes
+preserved). No need to ask again for those exact names. Private Stately v3 is
+frozen at `/tmp/ui-slider-stately-indexed-source-proposal-v3-20261009/`,
+manifest SHA256 `7d004977b3bd6d0943c27c0a37fc51c7cafa69a6e6521355c55887b93f466256`.
+V3 adds controlled non-drag proposal coherence and four extra tests, 55 total;
+it is neither applied, fully Root reviewed nor executed. Preserve frozen v2
+51-case OLD tests/request; review its entire request/runner before admission.
+
+Aria/components v1 remains private, with confirmed controlled no-echo reset,
+arbitrary-count reset ordering, native default-action synchronization and
+direct-hook disabled reset defects. **V2 is unfinished, not implemented.**
+Resume from `/tmp/ui-slider-aria-components-v2-WIP-checkpoint-20261009.md`.
+Independent review `/tmp/ui-slider-aria-components-independent-review-20261009.md`
+also flags captured versus reactive thumb index and non-composed shadow-form
+reset events. Do not accept v1 as reset-correct or silently weaken its tests.
+Styled consolidation is private and awaits final lower integration review,
+actual OLD/candidate proof, native/forms/geometry, owning-test types and fresh
+SSR/hydration identity proof. Slider and Range certification skips stay.
+
+Resume order after the three prepared owning slices: finish reviewed Slider
+integration/proof; refresh Landing and qualify actual route plus CSP/fonts;
+qualify Breadcrumb/Table and Visualmode installed acceptance; apply approved
+dependency remediation and qualify packed consumers; admit actual changesets,
+generate/check docs and run hub gate; full final same-SHA local/CI certification,
+readiness and site proof; version, commit/push, guarded RC publish and actual
+registry/external consumer verification. Zero FAIL/SKIP/WAIVER is the current
+qualification target; do not extend old RC0 waivers or infer full certification
+from focused results. #533/#534/#543/#532 foundation obligations remain until
+their required complete qualifications pass.
+
+Last complete certification at this HEAD was historical: 2225 PASS/38 FAIL/
+4 SKIP/0 WAIVER/0 FLAKY, total 2267. Current residual after focused changes is
+unknown. Recorded CI certification/readiness/site are red; release skipped.
+Current versions remain Stately/Aria 0.6.0-rc.0, components 0.7.0-rc.0,
+Spectrum/UI 0.8.0-rc.0; Kumo/Geist remain 0.0.0 ignored. Recount changesets at
+actual versioning. Existing standing RC publication delegation applies only
+after its exact green gates and owner resume; stable/#443 stays separate.
+
+Visualmode D17/D18/G17/D19–D26 remain mapped to #631–#641. #640/#641 and #254
+are held; earlier local fixes are not latest registry consumer delivery.
+G17 `components-no-fonts.css` and TableCell reactive getter contract remain
+approved. Preserve compatibility: owner withdrew the blanket no-compatibility
+instruction. Full #554 Effect retirement stays post-RC.
+
+Pause performed no new runtime/build/provider/release work. Fresh
+docs:generate/docs:check, eligibility CLI and hub ending gate are UNRUN here;
+run under fresh admitted custody after resume. `git diff --check` is the finite
+pause validation, not compiler or release proof. No staging, commit or push at
+this checkpoint. Preserve all current source and immutable private artifacts.
+
+## Actual local continuation returns — 2026-10-09
+
+Actual October9 continuation counts are79Calendar owning passes,82direct Calendar consumer passes,2Calendar SSR passes and1Calendar hydration pass with the recorded multiple-Solid warning. Source check passed; owning-signatures remains26diagnostics RED. Comparison produced18passing cases before its300s timeout and is not a completed green suite. Focus whole OLD control returned40PASS/2causal FAIL with candidate restored; restored owning candidate42PASS, but complete direct-consumer invocation202PASS/9FAIL remains RED with actual closure and conserved inputs. ActionButton/Badge whole OLD control returned18PASS/8causal FAIL, and restored four-file candidate26PASS with actual closure. These are current local receipts, not UNRUN and not complete RC qualification. Preserve all earlier frozen tables/history and reference the receipts in the corresponding ticket addenda. Release stays unchanged; no push, version, publication or deploy is authorized by this local progress. #647 actual install/audit/five-probe qualification and remaining integrated type/runtime/SSR/hydration/browser/full gates remain required.
+
+## Current local qualification sequence — 2026-10-09
+
+Calendar v2 is applied. Its complete owning-signature check exits0 and all161 Calendar unit cases pass; the production-wide typecheck times out at180seconds, actually exits-15 and closes with inputs conserved. See #533 and /tmp/ui-calendar-v2-direct-proof-20261009/04-source-types.return.json. Format check, lint and full build remain unrun.
+
+Next: apply the independently reviewed one-statement Focus timer teardown correction, rerun the unchanged12-file211-case assay, investigate the production compiler stall with its real config, then refresh the full package chain before complete comparison hydration. Qualify the approved five dependency replacements and the approved native Slider/shared RangeSlider candidate with complete owning, type, SSR/hydration and native browser proof. Run the real Landing route and font-delivery checks, then complete release-readiness/certification/accessibility/site and package-consumer qualification on the final local candidate. Keep failures/skips/waivers explicit; focused passes do not replace full gates.
+
+Direct GPT-6.1 Sol medium workers continue under the owner exception. Root reviews and integrates; UI and VisualMode main retain separate heavy slots. Release automation stays unchanged. No push, version, package publication or deployment is authorized in this local goal.
+
+### Focus follow-up actual return — 2026-10-09
+
+The unchanged twelve-file Focus/direct-consumer assay now passes 211/211 cases
+(including all 42 owning cases) after the reviewed one-line timer/spies teardown
+repair. Actual exit 0, no timeout, owned process closure and conserved inputs
+are recorded in `/tmp/ui-focus-teardown-direct-proof-20261009/01-focus-teardown-and-direct-consumers.return.json`
+(SHA256 `dbbd4a1328aedd86b787faf8671d8556804611686bda46be0e9bece189156954`).
+Flush-in-effect warnings remain. This is focused evidence; full browser
+certification remains required. The next admitted check diagnoses the production
+compiler timeout using its unchanged real config and a finite trace run.
+
+### Production compiler diagnostic actual return — 2026-10-09
+
+The installed compiler checked the unchanged real `tsconfig.typecheck.json`
+with no TypeScript errors and exit 0. Extended diagnostics report 3,087 files,
+21.46 seconds checking and 23.99 seconds total compiler time; trace type dumping
+adds 18.06 seconds. The supervised invocation returned in 44.43 seconds within
+its 180-second limit, with owned closure and all 4,961 bound inputs conserved.
+This clears the present production config; it does not establish why the earlier
+`vp run typecheck` invocation timed out. The original `vp run build` remains
+required and includes the normal production typecheck wrapper.
+
+Actual return: `/tmp/ui-production-type-diagnostic-reviewed-proof-20261009/01-production-types-trace.return.json`,
+SHA256 `596e81ccded179e0f67f7953f7aea63b8095398893e91aea768858d26c362cf1`.
+Both trace JSON files are complete. No source/config change or timeout increase
+was used for this diagnostic.
+
+### Current local goal and next execution — 2026-10-09
+
+The owner's current scope supersedes the earlier publication/resume sequence:
+qualify the continued local candidate, keep Release automation unchanged and
+stop before any push, version, publication or deployment. Direct GPT-6.1 Sol
+medium workers prepare and execute; the conductor reviews and integrates in
+this repository without OS/herdr. UI and VisualMode main have separate heavy
+slots, with actual process closure and one source writer within UI.
+
+Approved dependency remediation passed installation, both original audit
+policies, ceilings, formatting and all five actual installed-consumer probes;
+the full audit retains one moderate finding, and production has none. See #647.
+Joint Slider owning proof is now actual: OLD 160 passes/23 failures; the applied
+candidate has 117 passes/two assertion failures and four collection failures.
+See #74/#76. Correct these causes, rerun all six owners and strict types, then
+run the original full package build, paired SSR/hydration, native browser and
+real route/font checks. Generate/check work views before final complete
+release-readiness, certification, accessibility, site and packed-consumer
+qualification. Focused passes do not replace those gates.
+
+### Latest Slider and generated-view returns — 2026-10-09
+
+The complete six-owner Slider follow-up is 214 passed and one failed out of 215. The remaining failure is surviving native thumb identity after index0
+unmount; #74 and #76 retain both actual red return hashes. The original Aria
+diagnostic baseline is restored. No native browser or complete RC qualification
+is inferred from focused passes.
+
+The original docs generator and docs:check now pass on the current board and
+both generated views, after correcting history order in #74/#76. Actual docs
+check receipt
+`/tmp/ui-docs-board-qualified-proof-20261009/20-docs-check.return.json`, SHA256
+`7e1fefb01c76b84d527fcbe29afdfc575bbba5c91eacc3dc645682fec0e2deb7`.
+The acceptance cross-check also requires the separate original certification
+guards and whole styled/button contract floor in addition to the original
+readiness, site, accessibility, eight-shard certification and packed-consumer
+gates. Keep their original assertions and enclosing CI budgets. Release stays
+unchanged; this goal stops at local qualification, with no push or publication.
+
+### Latest local owning and production-type returns — 2026-10-09
+
+Joint Slider's latest full six-owner run passes 215/215 cases; unchanged normal
+production typecheck and strict owning types pass. After independent static
+format review, original scoped format/lint pass on all 29 paths. #74/#76 retain
+the exact latest receipts and earlier actual red returns. The previous wrapper
+timeout was not reproduced in the successful normal production runs. Calendar's
+exact ten-file format and type-aware lint checks both pass, with owned closure
+and conserved inputs; lint return:
+`/tmp/ui-serial-production-qualification-proof-20261009/02-calendar-lint.return.json`,
+SHA256 `7c7c3c8a1a583a8100fe78c2f42f72b82ab25cbb8090c116218fd704cd3deaa8`.
+
+The original 22-command source-guard deck now passes all 22 with actual exit 0,
+no timeout, all child and aggregate owned processes closed and bound inputs
+conserved. Receipt:
+`output/ui-missing-required-gates-successor-proof-20261009/01-missing-main-source-guards-deck.return.json`,
+SHA256 `1a2ce5e6ec3717413eed186d3b24dea423bb40629078a0826c9eab941f95778a`.
+This supersedes the earlier deck's five semantic failures for that invocation;
+it does not establish the remaining build or browser gates.
+
+Tree's defaultValue repair now passes all six unchanged owners and 131/131
+cases, plus original scoped format and lint. #625/#627 retain these actual
+closed returns and the preceding 130-pass/one-failure selection baseline. The
+wrapper callback is not established as the cause of that historical failure;
+fresh whole Tree SSR/hydration and browser qualification remain pending.
+
+Next are the full seven-package build and fresh native SSR/hydration, followed
+by affected whole browser owners and real route/font checks. Whole final units,
+all eight certification shards, original strict parity, full readiness,
+accessibility, site, styled/button contracts and packed-consumer gates remain
+required. Regenerate/check work views after these ticket prose updates. Keep
+original assertions and CI budgets. The conductor works directly in this repo
+under the owner exception; Release automation stays unchanged and this goal
+stops locally before push, version, publication or deployment.
+
+## Actual combined candidate checkpoint — 2026-10-09
+
+The original complete five-owner candidate closed at 23:57:54.099368 UTC
+with 24 PASS / 6 FAIL of 30, zero skips, exit 1, empty owned closure and
+14,891 conserved inputs. The certified subset was 7 PASS / 1 FAIL of 8.
+Both positive initial Table descriptions and sorted Table D6 now pass;
+the Breadcrumb computed-style comparison also passes with the corrected
+visible-link selector. Four initial Breadcrumb URL tails and overflow D6
+still fail, and Solid's Budget.xlsx rowheader remains unavailable to the
+original focus case. The candidate list-width pulse has not cleared the
+tail failures. These results identify remaining defects, not their native
+ResizeObserver chronology or component remount cause. No task/waiver closure
+or aggregate readiness is established.
+
+Receipt SHA256: de1228f09b2f29f7780b1b191cb6ae83dc1669da3c44d593dae20a9a12ad751b;
+raw SHA256: 35aebfdc7301bad3bf01435644012666c85b683a602b836b8e26b8436252eb29.
+Actual return: output/qualification-evidence/ui-reviewed-combined-browser-causal-successor-proof-20261009/04-table-candidate-breadcrumbs-table-full-owners.return.json.
+
+All candidate and cause-chain obligations remain: whole-five-owner GREEN
+before TABLE-ONLY withdrawal/restoration, followed by pulse-only withdrawal/
+restoration keeping the corrected visible selector. Unexpected failures stop
+for review. Neither passing descriptions nor a diagnostic substitutes for
+the original whole owners, matched SSR/hydration and final mandatory gates.
+
+## Bounded comparison callback-owner admission — #547 / #646
+
+This local qualification continuation admits ONLY the existing comparison
+helper apps/comparison/src/components/solid/solid-h.ts and its existing whole
+owner apps/comparison/test/solid-integration/hyperscript.hydrate.test.tsx,
+besides the already admitted fixtures and original browser oracles. Preserve
+every existing assertion and append two meaningful callback-return-array
+identity regressions covering zero-argument accessor and one-argument callback
+semantics, sibling native node identity and live reactive values. The resulting
+whole owner is twelve cases; no filter, skip, threshold or budget changes.
+
+The source-supported proposal materializes existing HC_THUNK component slots
+inside the marked callback owner before downstream shared reactive insertion,
+preserving the existing zero/one-argument distinction and leaving ordinary
+reactive accessors live. TableRow's append-only cell registry explains a
+possible missing rowheader after rematerialization; no native remount timeline
+has been observed. The helper repair remains pending, with no application or
+GREEN claim. No production package, public name, export, dependency, styling,
+normalization or original browser assertion is changed by this admission.
+
+Qualification requires actual OLD, candidate, helper-ONLY withdrawal and exact
+restoration runs of the complete twelve-case owner, with candidate/restored
+GREEN and matching actual OLD/withdrawn regression failures. Full comparison
+SSR/hydration and the same native whole-five-owner browser assay remain
+mandatory, preserving their original enclosing budgets and assertions. Any
+unexpected failure stops for root review. The conductor alone integrates and
+freshly admits each run after owned predecessor closure. No focused pass
+closes #646, #547 or local release readiness; no push/version/publication or
+deployment is admitted.
+
+## Latest focused local evidence — 2026-10-10 UTC
+
+[#646](./646-align-tableview-reference-column-text-values-and-qualify-sorted-ax.md)
+records the latest complete browser checkpoint (29 PASS / 1 FAIL), helper
+four-phase proof and remaining Table focus-ring failure. Its bounded production
+Table continuation is read-only until root accepts an exact source proposal;
+#646 is the single source for that admission. Whole mandatory gates, matched
+SSR/hydration and final eight-shard qualification remain required; no closure,
+remote success, push, version, publication or deployment is claimed.
+
+The separate complete Checkbox/RadioGroup diagnostic passes all 164 cases,
+zero skip/TODO, actual exit 0, closed owned processes and 7,143 conserved inputs;
+this is not the complete root unit suite. Return:
+`output/qualification-evidence/ui-readiness-a11y-two-owner-disk-diagnosis-proof-20261009/01-a11y-two-whole-owners.return.json`,
+SHA256 `cbb77365230f76480202c9a0dfba7bd2160f1469b7b9c5cdb86334f974e98180`;
+raw SHA256 `cac1d078e9dbf1c4224d57c03dcd17ab2d93639d9c2e066c598e996e979c1a21`;
+`01-a11y.results.json` SHA256
+`dbd6d8f9cc24664b14be6f39883c020b62522d72e5152538ab0b212cbba5b742`.
+
+The conditional Table divider successor and its exact production paths are
+owned solely by [#646](./646-align-tableview-reference-column-text-values-and-qualify-sorted-ax.md).
+It requires actual native cause before application and fresh measured
+forced-colors preservation before acceptance; it does not ratify the temporary
+architecture, close #490 or complete the remaining local qualification gates.
+
+## Current owner release objective — 2026-10-10 UTC
+
+The owner now authorizes completing the live release, including the candidate
+push and automatic publication. This supersedes the earlier local-only,
+no-version and no-push boundary. Release automation remains unchanged. The
+conductor continues directly in this repository with GPT-6.1 Sol medium
+workers, one source writer and the independent UI runtime slot.
+
+Finish the remaining event, overlay and native regressions, then qualify the
+versioned candidate through the complete readiness, certification, site and
+clean packed-consumer gates. Commit the source owners before the observed
+Changesets version outputs. Obtain all three remote evidence workflows green
+at the exact final pushed SHA, verify automatic RC publication and the five
+published-package dependency closure, and run a fresh registry consumer outside
+the workspace. Keep Kumo and Geist at their ignored workspace versions and
+preserve `latest`, `next` and prerelease mode. Historical RC0 evidence and
+focused local passes do not close this ticket.
+
+## First complete RC1 readiness attempt — 2026-10-10 UTC
+
+The original full readiness command closed with exit 1 after 526.994 seconds,
+without a command timeout. All 7,214 bound inputs were conserved and owned
+processes closed. Formatting, types, all seven package builds and artifact
+guards passed. The unit leg reported 8,186 passing cases, 71 failures and one
+expected failure across 421 files; four snapshots failed. SSR, hydration,
+Web units and journeys were not reached.
+
+The failures include synchronous assertions after deferred native events,
+RC0-specific waiver fixtures and a stale Modal tracked-effect count. Timeout
+failures remain separate pending fresh whole-suite proof. A SearchField clear
+callback reporting three calls where the original assertion requires one
+needs production review. No waiver, reduced gate or release success is claimed.
+
+Return: `output/qualification-evidence/ui-final-local-qualification-external-runtime-tmp-successor-proof-20261010/01-full-root-release-readiness.return.json`,
+SHA256 `5f70a8924df724dd62c3ebfa57faa049d8fa7ebb8ed37e78ea8e2d72e0461110`.
+Raw SHA256: `b584a868598414409ec3b5564af8d10ebe8ebb34963175509a957d1e6e260a16`.
+The conductor independently verified all 76 immutable evidence copies in
+manifest `d911907a735ebe832f2774c0422f0f6aec689cb48494eb7064a1c48b0fa186f4`.
+
+## Current whole-readiness retry — 2026-10-10 UTC
+
+After the event, SearchField and Toast repairs, the complete unit leg reached
+420 passing files and one failing file: the full-backlog parity CLI integration
+case exceeded its default five-second budget. Its output assertions completed.
+The conductor added a 20-second child deadline and a 30-second case budget,
+preserving its command and every assertion. No global test budget changed.
+
+The next original readiness run passed builds and typechecks, then closed with
+exit 143 during the unit leg; SSR, hydration and later steps were not reached.
+The supervisor did not time out or signal the child. The earlyoom journal
+identifies the same run's Vitest PID 3168785 as the SIGTERM target under low
+memory. Journal SHA256:
+`df7db214dd733aa912df87949120be3ad438455ab2f34ea057e52e2915a400bc`.
+Return:
+`output/qualification-evidence/ui-post-parity-cli-budget-full-readiness-proof-20261010/01-full-root-release-readiness.return.json`,
+SHA256 `3dea9951e44c648d9d4a809669070de0a44d56635fb156c97d9d13d6eb8acfac`.
+All 7,214 inputs were conserved and owned processes closed.
+
+Following ADR 0002, the conductor lowered `vmMemoryLimit` from 200 MB to
+100 MB as a worker-recycling experiment. Installed Vitest checks worker heap
+after a file completes; this setting does not cap startup or process RSS.
+Pool, default parallelism, discovery, assertions and original enclosing
+deadlines stay unchanged. Application receipt SHA256:
+`9786837999a25a2f6b42731f749a2918755e229741413f65dffd270a8c37753d`.
+Fresh complete readiness and all remaining gates are still required. No
+candidate commit, push, remote green or publication is claimed.
+
+The 100 MB retry completed the whole unit leg: 421 files, 420 passing and one
+failing; 8,266 passing cases, one failure and one expected failure. Its sole
+failure was the upstream-attribution CLI case "destructured shadow" exceeding
+the default five-second deadline at 5,263 ms. The command closed with exit 1
+after 303.707 seconds, without a supervisor timeout; all 7,214 inputs stayed
+conserved and owned processes closed. SSR, hydration and later steps were not
+reached. Return SHA256:
+`230fb8e1e5b524783a2f59aad2cd82eab2b6bf45a6b4ce3f6aa9bc3ab5f05d8e`;
+raw SHA256:
+`2d16fc6ec07b40cdf04111fd74cec03561dbac8e43d47bb0405350e8aebf6cfc`.
+
+All 34 upstream-attribution cases start the same fresh CLI process and assert
+exact facts, attribution or pin drift; none asserts response time. The conductor
+added a shared 20-second child deadline and a 30-second inherited case deadline
+in the three CLI suites, preserving every case, fixture, command and assertion.
+Application receipt SHA256:
+`63620d706cb911b565d5762870e85de19fc5a2f465bcd23121e1ffc8ff18e7e6`.
+Complete readiness and the remaining release gates require fresh proof. The
+owner authorizes autonomous overnight continuation of the live-release scope.
+
+The following complete readiness attempt closed with exit 143 after 262.861
+seconds, without a supervisor timeout. All 7,214 inputs stayed conserved and
+owned processes closed. Builds and typechecks passed; the unit leg printed no
+case summary and later legs were not reached. Return SHA256:
+`5fe9fa74b511b79b71c0fd5bcb50c3f5dbdf38345516c245bf14cb8c5635c9a0`.
+The journal identifies its Vitest PID 3206635 as the earlyoom SIGTERM target
+at 07:28:01 UTC, with 3,736 MiB process RSS, 653 MiB available and no free swap.
+Journal SHA256:
+`18ee6b5dfea073ed20123b54e0ee4e31a0c8a6b28d29e6c18691fc5ac4be2b48`.
+
+Installed Vitest 4.1.11 terminates isolated workers after each file regardless
+of the memory limit. Further lowering that limit would not address this
+scheduler's startup or aggregate RSS. The conductor applied a reviewed unit
+worker budget of `maxWorkers: "50%"`, sharing this host's 16 CPUs between the
+two independent runtime slots. UI now uses eight workers. ADR 0002 records the
+installed behavior and the changed concurrency; the pool, complete discovered
+set, original readiness command, assertions and deadlines stay intact.
+Application receipt SHA256:
+`a50e52acec705b5d8df876aa6ef52fffaab50c299d2cc12138b6942d96131bee`.
+Its efficacy remains unqualified until the complete readiness gate passes.
+Historical #556 claims and receipts remain unchanged. No temporary evidence
+was removed, host setting changed, candidate pushed or package published.
+
+The eight-worker complete readiness attempt closed with exit 143 after 384.893
+seconds, without a supervisor timeout. All 7,215 inputs stayed conserved and
+owned processes closed. Formatting, lint, audits, guards, typechecks and all
+seven package builds passed. Six partial unit suites reported ten failures;
+no complete unit summary or downstream qualification was reached. Return SHA256:
+`0b5dc131356af5099cd633231652c86f1349b95daad4b4eb7c980ddd0be6eaac`.
+At 07:51:43 UTC, earlyoom terminated its UI Vitest PID 3235342 with 2,757 MiB
+process RSS, 637 MiB available and no free swap. These are termination-time
+observations, not peak measurements. Journal SHA256:
+`f06604440e90533076b9fbdac46b57c3ca22d82abb7463d90360f5816910e20b`.
+The partial case failures remain unresolved until complete fresh proof.
+
+The conductor applied the reviewed worker expression
+`Math.max(1, Math.min(2, availableParallelism() - 1))`: two workers on this
+host, preserving the previous one-worker allowance on one- and two-CPU
+runners. The installed scheduler accepts this numeric budget directly.
+ADR 0002 records the failed eight-worker attempt and this unqualified change.
+Application receipt SHA256:
+`3d6eb052af508f042e91adb04cf53661903dceb02a77a4ab8f14b27138f7685c`.
+Fresh pinned-upstream preflight and the unchanged complete readiness gate
+must qualify the actual new source before further release integration.
+
+The first two-worker attempt reached its unchanged 1,800-second supervisor
+deadline while the unit leg was incomplete; builds and typechecks passed, all
+7,215 inputs stayed conserved and owned processes closed. Return SHA256:
+`687f170f57604e25b0bae8bbb4b078d665fd9e29c858ff95eb998485ac7a3a73`.
+A fresh complete retry closed with exit 1 after 603.116 seconds. Every one of
+421 unit files passed: 8,267 passing cases and one expected failure. SSR then
+reported 47 passing files and two failures, with 139 passing cases and two
+30-second timeouts in the Spectrum and UI ContextualHelpTrigger warm-server
+import cases. Later legs were not reached. All 7,215 inputs stayed conserved
+and owned processes closed. Return SHA256:
+`82eeae0c87d67091b622f511ed23fbb1f7c72136dbb42fb7cef746789cf16dd7`.
+The complete immutable archive contains 192 copies; manifest SHA256:
+`38f7685401a68fd7b0730aa581df586cb5e9aa79135abee13bb3f257d4c4b51a`.
+
+The root unit cap did not cover the independent SSR, hydration, Web and
+comparison Vitest configs. The conductor applied the same reviewed numeric
+worker expression to those four configs and recorded the actual failures in
+ADR 0002. Comparison's SSR and hydration configs inherit their root counterparts.
+Pools, compiler settings, complete discovery, assertions, original case and
+hook deadlines, browser concurrency and release commands remain unchanged.
+Application receipt SHA256:
+`84f8441f333f2a79ea64ae7002b4630017cc093b393040df1b9d016745f0d424`.
+This capacity change requires fresh complete qualification; the SSR timeouts'
+cause and the change's efficacy are not yet proven. No candidate commit, push,
+remote green or publication is claimed.
+
+## Comparison hydration continuation — 2026-10-10
+
+The unchanged full readiness retry passed all 421 unit files (8,267 cases and
+one expected failure), all 49 SSR files (141 cases), all 42 root hydration files
+(141 cases), and both comparison SSR files (nine cases). It then closed red in
+the whole comparison hydration suite; no later readiness leg received credit.
+Return SHA256: `bc12de765c675302988fb7696d107a7a6824ad92d61a0929e323f8fb0564e474`.
+
+The comparison fixture assertions now inspect the real native Slider inputs,
+preserving value, stepping, focus, retained identity and styling checks. Overlay
+focus assertions await the existing frame-delayed restoration before checking
+the original trigger. Neither change alters package behavior or case discovery.
+
+The DnD diagnostic retained the original option and collection, and proved that
+native focus succeeded before later settlement returned focus to body. The
+selectable-item focus effect now follows pinned React Aria's passive effect:
+Solid's two-phase effect owns the focus request, with a cancellable wait until
+after paint only when a real-focus request follows an active drag. Current key,
+ref, focus ownership, drag, mode, callback and child-focus strategy are rechecked;
+ordinary and virtual focus remain immediate after the flush. DragManager and the
+50ms drop fallback remain unchanged. Two-phase scheduling alone failed 177/178;
+that failed return is retained rather than credited.
+
+The original whole comparison hydration suite then passed all five files and
+178 cases with diagnostics removed, including focus on the retained Read option.
+Return SHA256: `8aeea7779dca91fbeeb828c1a97574299073101efa0899691839362647f1b374`.
+All bound inputs conserved and owned processes closed. Complete readiness and
+all remaining release gates still require fresh qualification. Versioning was
+already executed and was not repeated; no commit, push or publication is claimed.
