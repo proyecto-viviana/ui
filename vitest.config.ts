@@ -2,6 +2,7 @@ import { defineConfig } from "vite-plus";
 import solidPlugin from "@solidjs/vite-plugin";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { availableParallelism } from "node:os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -36,17 +37,17 @@ export default defineConfig({
     globals: true,
     // #562 / ADR 0002: vmThreads is load-bearing. The same run with
     // `--pool=threads` failed 120 tests on 2026-09-20
-    // (.agents/chain-walk-2026-09-20/pool-threads.out.txt). The ceiling below
-    // is the memory lever. Do not swap the pool.
+    // (.agents/chain-walk-2026-09-20/pool-threads.out.txt). Capacity and installed
+    // scheduler limits are documented below. Do not swap the pool.
     pool: "vmThreads",
-    // #556 item 2: over the whole discovered set the VM workers take the main
-    // process to ~10 GiB and earlyoom kills it. Vitest 4's default ceiling is
-    // `1 / maxWorkers` of total memory *per worker* (~1 GB each here), which in
-    // aggregate is the whole box; this recycles a worker much sooner. It is a
-    // memory ceiling, not a worker-count ceiling — parallelism is untouched, so
-    // it is not the fail-open #556 item 3 forbids. A later kill is still this
-    // ceiling, not `pool` (ADR 0002).
-    vmMemoryLimit: "400MB",
+    // Bound unit concurrency under the hub's two-slot memory pressure. The
+    // eight-worker run was terminated by earlyoom; two workers are a capacity
+    // experiment. Keep the CPU-minus-one budget on smaller runners (ADR 0002).
+    maxWorkers: Math.max(1, Math.min(2, availableParallelism() - 1)),
+    // Vitest 4.1.11 checks this limit after a file finishes. With the default
+    // isolate:true, workers already terminate after each file; this limit does
+    // not bound startup, in-file memory, or aggregate process RSS (ADR 0002).
+    vmMemoryLimit: "100MB",
     setupFiles: ["./vitest.setup.ts"],
     include: [
       "packages/**/test/**/*.test.{ts,tsx}",

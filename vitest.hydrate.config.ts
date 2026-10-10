@@ -1,3 +1,4 @@
+import { availableParallelism } from "node:os";
 import { defineConfig } from "vite-plus";
 import solidPlugin from "@solidjs/vite-plugin";
 import { resolve, dirname } from "node:path";
@@ -37,6 +38,7 @@ export default defineConfig({
     },
   },
   test: {
+    maxWorkers: Math.max(1, Math.min(2, availableParallelism() - 1)),
     name: "hydrate",
     environment: "jsdom",
     globals: true,

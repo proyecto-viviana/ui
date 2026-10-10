@@ -1,3 +1,4 @@
+import { availableParallelism } from "node:os";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite-plus";
@@ -13,6 +14,7 @@ export default defineConfig({
   root: here,
   resolve: { tsconfigPaths: true },
   test: {
+    maxWorkers: Math.max(1, Math.min(2, availableParallelism() - 1)),
     include: ["tests/app/**/*.test.ts"],
     environment: "node",
     globals: true,

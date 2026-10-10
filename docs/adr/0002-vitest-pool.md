@@ -3,7 +3,11 @@
 ## Decision
 
 Keep the three pools where they are. The unit project's pool is load-bearing.
-The memory lever is `vmMemoryLimit` in `vitest.config.ts`, not a different pool.
+Capacity is controlled in `vitest.config.ts`, without changing the pool or
+reducing the complete discovered test set. The unit project uses
+`maxWorkers: Math.max(1, Math.min(2, availableParallelism() - 1))`;
+`vmMemoryLimit: "100MB"` remains, with the installed
+version limitations described below.
 
 - `vitest.config.ts` uses `pool: "vmThreads"`.
 - `vitest.hydrate.config.ts` uses `pool: "vmThreads"` because it is the same
@@ -12,8 +16,9 @@ The memory lever is `vmMemoryLimit` in `vitest.config.ts`, not a different pool.
   with no jsdom `Window` and no setup polyfill.
 
 Do not pass `--pool=threads` to chase an OOM. #556 measured that `vmThreads`
-workers share the main process RSS, and it fixed that with
-`vmMemoryLimit: "400MB"`.
+workers share the main process RSS. Its historical passing measurement used
+`vmMemoryLimit: "400MB"`; that result does not establish the same recycling
+mechanism in the currently installed Vitest 4.1.11.
 
 ## Measurement
 
@@ -75,9 +80,13 @@ at 16:37:24. Neither printed a worker crash.
 
 `vmThreads` entered the unit config in scaffold commit `e652cb81` with no
 comment. It stays because the threads swap above is red, and because #556's
-ceiling is a `vmThreads` option (`vmMemoryLimit`). Vitest 4's default ceiling
-is `1 / maxWorkers` of total memory per worker, which in aggregate is the
-whole box. `400MB` recycles a worker sooner without lowering parallelism.
+ceiling is a `vmThreads` option (`vmMemoryLimit`). In installed Vitest 4.1.11,
+the default limit is `1 / maxWorkers` of total memory per worker. The limit
+is checked only on `testfileFinished`; it affects worker reuse only when
+`isolate` is false. The default is `isolate: true`, which this project keeps,
+so each worker is already terminated after its file regardless of the limit.
+Termination is started without awaiting completion before scheduling the next
+task. The limit does not cap startup, in-file memory, or aggregate RSS.
 
 Hydrate (commit `791261c1`) copies that pool. It sets `environment: "jsdom"`
 and `setupFiles: ["./vitest.setup.ts"]`, so it loads the same
@@ -94,6 +103,72 @@ vm realm, and it does not share the unit project's worker RSS.
 
 ## Context recovery
 
-Someone hitting an OOM should read the comment on `pool` in
-`vitest.config.ts`, then this ADR, then the `vmMemoryLimit` comment. Tune
-the ceiling. Do not set `--pool=threads`.
+Someone hitting an OOM should read the comments in `vitest.config.ts` and
+check the installed scheduler before changing a ceiling. Do not set
+`--pool=threads`.
+
+## Capacity proposal for Vitest 4.1.11
+
+The hub permits two independent heavy runtime slots. On this 16-CPU host,
+Vitest's unset worker count resolves to 15. The first capacity proposal used
+`maxWorkers: "50%"`, which resolved to eight workers here and one on a
+two-CPU CI runner. The unit project now proposes
+`maxWorkers: Math.max(1, Math.min(2, availableParallelism() - 1))`, using the
+Node standard library. It resolves to two on this 16-CPU host and one on
+one- or two-CPU runners. This retains the installed default's CPU-minus-one
+budget, with a floor of one, while capping larger hosts at two. In particular,
+it preserves the prior one-worker budget on two-CPU CI rather than doubling
+its concurrency. No browser worker setting or other project's pool
+configuration changes.
+
+At 2026-10-10 07:28:01 UTC, earlyoom sent SIGTERM to the pinned UI Vitest
+process (PID 3206635, VmRSS 3736 MiB) with 653 MiB host memory available and
+zero swap free. The subsequent eight-worker run was also terminated: at
+07:51:43 UTC, earlyoom sent SIGTERM to PID 3235342 with VmRSS 2757 MiB,
+637 MiB host memory available (5.88%), and zero swap free. This RSS is the
+victim's value at termination, not a measured run peak. Its full readiness
+return was 143 without a supervisor timeout or final test summary. The
+07:52:15 UTC host snapshot recorded memory full-pressure avg60 of 40.66.
+
+Two concurrent unit workers reduce active file concurrency; they do not
+bound aggregate RSS, startup or in-file allocations, and worker termination
+can overlap scheduling. `vmMemoryLimit: "100MB"` retains the installed
+post-file/isolation limitations described above. The complete discovered
+suite still runs in one original command, with unchanged vmThreads, default
+isolation, assertions, test/hook timeouts and full gate deadline. Only a
+complete original release-readiness run can validate this experiment; lower
+concurrency may still exhaust memory or miss that deadline. #556's historical
+receipts and status remain unchanged, including its reservation about ceilings.
+
+The installed primary implementation is `vitest/dist/chunks/defaults.9aQKnqFk.js`
+(`isolate: true`), `coverage.DM_a_rWm.js` (`resolveInlineWorkerOption` and
+`getWorkersCountByPercentage`), and `cli-api.CnMVyzaz.js`
+(`resolveMaxWorkers`, `Pool.schedule`, and `testfileFinished`). These show the
+percentage calculation, post-file check, isolated-worker termination, and
+non-awaited termination described above.
+
+## Independent test-project capacity proposal
+
+The unit cap does not apply to the separately loaded SSR, hydration, Web or
+comparison journey-driver configs. They currently omit `maxWorkers`, so
+installed Vitest 4.1.11 resolves their non-watch worker budget to CPUs minus
+one, with a floor of one. The SSR and hydration comparison configs spread
+their respective root configs, including `test`, and inherit their budget.
+
+The 2026-10-10 whole readiness attempt completed units (421 files passed,
+8267 cases passed and one expected failure), then SSR ended with 47 files
+passed and two failed, 139 cases passed and two failed. Both failures were
+ContextualHelpTrigger warm-server dynamic-import cases at their existing
+30-second deadlines. The SSR duration was 147.89 seconds; summed transform
+and import durations were 1350.00 and 2127.28 seconds. No import exception
+was reported. These timings do not prove contention caused the failures or
+identify which awaited import remained pending.
+
+The proposed independent configs use the same
+`Math.max(1, Math.min(2, availableParallelism() - 1))` capacity expression.
+This resolves to two workers on this 16-CPU host and one on one- or two-CPU
+runners. It preserves pools, compiler options, file discovery, isolation,
+assertions, test/hook timeouts and original command deadlines. No browser
+worker setting changes. The proposal is unqualified: the complete original
+readiness run remains required, and lower concurrency may still encounter a
+semantic failure, resource exhaustion or the original gate deadline.
