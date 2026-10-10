@@ -840,7 +840,6 @@ function writeUnlessDisposed(owner: Owner | null, write: () => void) {
 
 function TreeRenameField(props: { itemKey: Key; initialName: string; class: string }): JSX.Element {
   const { rename } = useContext(InternalTreeViewContext);
-  const [value, setValue] = createSignal(props.initialName);
   const [field, setField] = createSignal<HTMLDivElement | undefined>(undefined, {
     ownedWrite: true,
   });
@@ -849,7 +848,7 @@ function TreeRenameField(props: { itemKey: Key; initialName: string; class: stri
 
   const currentName = () => {
     const input = field()?.querySelector("input");
-    return input instanceof HTMLInputElement ? input.value : value();
+    return input instanceof HTMLInputElement ? input.value : props.initialName;
   };
 
   const commit = (name: string, restore: boolean) => {
@@ -921,8 +920,7 @@ function TreeRenameField(props: { itemKey: Key; initialName: string; class: stri
       <TextField
         aria-label={props.initialName}
         size="S"
-        value={value()}
-        onChange={setValue}
+        defaultValue={props.initialName}
         onBlur={(event) => {
           if (settled) return;
           const element = field();
@@ -1361,7 +1359,9 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 
   return (
     <div
-      ref={renameFrame}
+      ref={(element: HTMLDivElement) => {
+        renameFrame = element;
+      }}
       class={hasChrome() ? treeViewWrapper(null, mergedStyles()) : undefined}
       style={hasChrome() ? mergedUnsafeStyle() : { display: "contents" }}
     >
