@@ -556,8 +556,8 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     },
   };
   // RAC composes `<Button>` as the clear control. The slot object stays stable
-  // so Button's one-time slot read keeps these getters. `onClick` stays on the
-  // dedicated clear button: createPress would clear again if it were merged here.
+  // so Button's one-time slot read keeps these getters. Both the generic Button
+  // and dedicated clear button clear through a single onPress handler.
   const clearButtonSlot: ButtonProps = {
     get "aria-label"() {
       return searchFieldAria.clearButtonProps["aria-label"];
@@ -837,7 +837,6 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
     get isDisabled() {
       return context.isDisabled || context.isReadOnly;
     },
-    onClick: clear,
     onPress: clear,
   });
 
@@ -884,9 +883,6 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
         disabled={context.clearButtonProps?.disabled}
         onMouseDown={context.clearButtonProps?.onMouseDown}
         {...cleanPressProps()}
-        onPointerUp={clear}
-        onMouseUp={clear}
-        onClick={clear}
         {...cleanHoverProps()}
         class={renderProps.class()}
         style={renderProps.style()}

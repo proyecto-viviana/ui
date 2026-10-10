@@ -258,8 +258,9 @@ describe("SearchField", () => {
       const clearButton = screen.getByRole("button");
       await user.click(clearButton);
 
-      // Verify the clear callback was called
-      expect(onClear).toHaveBeenCalled();
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith("");
       expect(input).toHaveValue("");
       // After clicking clear, the clear button should no longer be visible (since value is empty)
       await waitFor(() => {
@@ -297,6 +298,138 @@ describe("SearchField", () => {
       const clearButton = screen.getByRole("button");
       expect(clearButton).toHaveAttribute("aria-label");
     });
+  });
+
+  describe("dedicated clear press protocols", () => {
+    it.each(["mouse", "touch"] as const)(
+      "clears exactly once after a completed %s pointer press and compatibility mouse events",
+      (pointerType) => {
+        const onClear = vi.fn();
+        const onChange = vi.fn();
+        render(() => <TestSearchField fieldProps={{ defaultValue: "hello", onClear, onChange }} />);
+        const input = screen.getByRole("searchbox");
+        const button = screen.getByRole("button");
+        input.focus();
+        const pointer = { pointerId: 1, pointerType, button: 0, width: 1, height: 1 };
+
+        fireEvent.pointerDown(button, pointer);
+        fireEvent.mouseDown(button, { button: 0 });
+        fireEvent.pointerUp(button, pointer);
+        fireEvent.mouseUp(button, { button: 0 });
+        expect(onClear).not.toHaveBeenCalled();
+        expect(onChange).not.toHaveBeenCalled();
+        expect(input).toHaveValue("hello");
+
+        fireEvent.click(button, { button: 0, detail: 1 });
+        expect(onClear).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith("");
+        expect(input).toHaveValue("");
+        expect(screen.getByRole("searchbox")).toBe(input);
+        expect(input.isConnected).toBe(true);
+        expect(input).toHaveFocus();
+      },
+    );
+
+    it.each(["Enter", " "])("clears exactly once on %s keyboard release", (key) => {
+      const onClear = vi.fn();
+      const onChange = vi.fn();
+      render(() => <TestSearchField fieldProps={{ defaultValue: "hello", onClear, onChange }} />);
+      const input = screen.getByRole("searchbox");
+      const button = screen.getByRole("button");
+      button.focus();
+
+      fireEvent.keyDown(button, { key });
+      expect(onClear).not.toHaveBeenCalled();
+      expect(onChange).not.toHaveBeenCalled();
+      fireEvent.keyUp(button, { key });
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith("");
+      expect(input).toHaveValue("");
+      expect(screen.getByRole("searchbox")).toBe(input);
+      expect(input).toHaveFocus();
+    });
+
+    it("clears exactly once from a virtual click without preceding pointer events", () => {
+      const onClear = vi.fn();
+      const onChange = vi.fn();
+      render(() => <TestSearchField fieldProps={{ defaultValue: "hello", onClear, onChange }} />);
+      const input = screen.getByRole("searchbox");
+      fireEvent.click(screen.getByRole("button"), { button: 0, detail: 0 });
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith("");
+      expect(input).toHaveValue("");
+      expect(screen.getByRole("searchbox")).toBe(input);
+      expect(input).toHaveFocus();
+    });
+
+    it.each(["canceled", "outside"] as const)("does not clear a %s pointer press", (ending) => {
+      const onClear = vi.fn();
+      const onChange = vi.fn();
+      render(() => <TestSearchField fieldProps={{ defaultValue: "hello", onClear, onChange }} />);
+      const input = screen.getByRole("searchbox");
+      const button = screen.getByRole("button");
+      const pointer = { pointerId: 1, pointerType: "mouse", button: 0, width: 1, height: 1 };
+      input.focus();
+      fireEvent.pointerDown(button, pointer);
+      fireEvent.mouseDown(button, { button: 0 });
+      if (ending === "canceled") {
+        fireEvent.pointerCancel(button, pointer);
+        fireEvent.mouseUp(button, { button: 0 });
+      } else {
+        fireEvent.pointerUp(document.body, pointer);
+        fireEvent.mouseUp(document.body, { button: 0 });
+      }
+      expect(onClear).not.toHaveBeenCalled();
+      expect(onChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue("hello");
+      expect(screen.getByRole("searchbox")).toBe(input);
+      expect(screen.getByRole("button")).toBe(button);
+      expect(input).toHaveFocus();
+    });
+
+    it("does not clear from an unpaired mouse release", () => {
+      const onClear = vi.fn();
+      const onChange = vi.fn();
+      render(() => <TestSearchField fieldProps={{ defaultValue: "hello", onClear, onChange }} />);
+      const input = screen.getByRole("searchbox");
+      fireEvent.mouseUp(screen.getByRole("button"), { button: 0 });
+      expect(onClear).not.toHaveBeenCalled();
+      expect(onChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue("hello");
+    });
+
+    it.each(["isDisabled", "isReadOnly"] as const)(
+      "does not clear a dedicated %s button",
+      (mode) => {
+        const onClear = vi.fn();
+        const onChange = vi.fn();
+        render(() => (
+          <TestSearchField
+            fieldProps={{ defaultValue: "hello", [mode]: true, onClear, onChange }}
+          />
+        ));
+        const input = screen.getByRole("searchbox");
+        const button = screen.getByRole("button");
+        expect(button).toBeDisabled();
+        const pointer = { pointerId: 1, pointerType: "mouse", button: 0, width: 1, height: 1 };
+        fireEvent.pointerDown(button, pointer);
+        fireEvent.mouseDown(button, { button: 0 });
+        fireEvent.pointerUp(button, pointer);
+        fireEvent.mouseUp(button, { button: 0 });
+        fireEvent.click(button, { button: 0, detail: 1 });
+        fireEvent.keyDown(button, { key: "Enter" });
+        fireEvent.keyUp(button, { key: "Enter" });
+        fireEvent.click(button, { button: 0, detail: 0 });
+        expect(onClear).not.toHaveBeenCalled();
+        expect(onChange).not.toHaveBeenCalled();
+        expect(input).toHaveValue("hello");
+        expect(screen.getByRole("searchbox")).toBe(input);
+        expect(screen.getByRole("button")).toBe(button);
+      },
+    );
   });
 
   describe("Button clear slot", () => {
