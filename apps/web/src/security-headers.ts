@@ -19,7 +19,7 @@ export function webContentSecurityPolicy(nonce: string): string {
     `script-src 'self' 'nonce-${nonce}' '${THEME_BOOT_SCRIPT_HASH}'`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "style-src-attr 'unsafe-inline'",
-    "font-src 'self' https://fonts.gstatic.com",
+    "font-src 'self' https://fonts.gstatic.com https://use.typekit.net",
     "img-src 'self' data: blob:",
     "connect-src 'self'",
     "frame-src 'none'",

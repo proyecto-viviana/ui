@@ -40,7 +40,9 @@ describe("docs response security headers", () => {
     );
     expect(directive("style-src")).not.toContain("nonce-");
     expect(directive("style-src-attr")).toBe("style-src-attr 'unsafe-inline'");
-    expect(directive("font-src")).toBe("font-src 'self' https://fonts.gstatic.com");
+    expect(directive("font-src")).toBe(
+      "font-src 'self' https://fonts.gstatic.com https://use.typekit.net",
+    );
     expect(directive("img-src")).toBe("img-src 'self' data: blob:");
     expect(directive("connect-src")).toBe("connect-src 'self'");
     expect(directive("frame-src")).toBe("frame-src 'none'");
