@@ -33,7 +33,7 @@ const SAFE_DIRECT_REFS = new Map<string, RegExp>([
     "packages/solid-spectrum/src/radio/index.tsx#circleElement",
     /radioPressScaleStyle\(circleElement/,
   ],
-  ["packages/solid-spectrum/src/slider/index.tsx#thumbElement", /pressScaleStyle\(thumbElement/],
+  ["packages/solid-spectrum/src/slider/shared.tsx#thumbElement", /pressScaleStyle\(thumbElement/],
   [
     "packages/solid-spectrum/src/switch/ToggleSwitch.tsx#handleElement",
     /switchHandlePressStyle\(\s*handleElement/,
@@ -48,7 +48,7 @@ const SAFE_DIRECT_REFS = new Map<string, RegExp>([
     /buttonPressScaleStyle\(incrementButtonElement/,
   ],
   ["packages/viviana-ui/src/radio/index.tsx#circleElement", /radioPressScaleStyle\(circleElement/],
-  ["packages/viviana-ui/src/slider/index.tsx#thumbElement", /pressScaleStyle\(thumbElement/],
+  ["packages/viviana-ui/src/slider/shared.tsx#thumbElement", /pressScaleStyle\(thumbElement/],
   [
     "packages/viviana-ui/src/switch/ToggleSwitch.tsx#handleElement",
     /switchHandlePressStyle\(\s*handleElement/,

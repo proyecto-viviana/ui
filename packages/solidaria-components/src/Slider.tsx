@@ -19,10 +19,21 @@
  * Solid adaptation of the pinned Slider component.
  */
 
-import { createContext, createMemo, useContext, Show } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  createEffect,
+  onCleanup,
+  useContext,
+  untrack,
+  Show,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createSlider,
+  createSliderThumb,
+  createId,
   createFocusRing,
   createHover,
   mergeProps,
@@ -65,15 +76,16 @@ export interface SliderRenderProps {
   orientation: SliderOrientation;
 }
 
-export interface SliderProps extends Omit<AriaSliderProps, "label">, SlotProps {
+export interface SliderProps<T extends number | number[] = number>
+  extends Omit<AriaSliderProps, "label">, SlotProps {
   /** The current value (controlled). */
-  value?: number;
+  value?: T;
   /** The default value (uncontrolled). */
-  defaultValue?: number;
+  defaultValue?: T;
   /** Handler called when the value changes. */
-  onChange?: (value: number) => void;
+  onChange?: (value: T) => void;
   /** Handler called when dragging ends. */
-  onChangeEnd?: (value: number) => void;
+  onChangeEnd?: (value: T) => void;
   /** The minimum value. */
   minValue?: number;
   /** The maximum value. */
@@ -138,6 +150,9 @@ export interface SliderThumbRenderProps {
 
 export interface SliderThumbProps
   extends SlotProps, Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children"> {
+  index?: number;
+  name?: string;
+  form?: string;
   /** The children of the thumb. */
   children?: RenderChildren<SliderThumbRenderProps>;
   /** The CSS className for the element. */
@@ -201,6 +216,13 @@ interface SliderContextValue {
   setInputRef: (el: HTMLInputElement) => void;
 }
 
+// Clearing is an internal root-owner operation. Keep the public context setter
+// narrow so existing custom providers remain assignable under strictFunctionTypes.
+const sliderInputRefOwners = new WeakMap<
+  SliderState,
+  { clear: (element: HTMLInputElement) => void }
+>();
+
 export const SliderContext = createContext<SliderContextValue | null>(null);
 export const SliderStateContext = SliderContext;
 export const SliderTrackContext = SliderContext;
@@ -210,8 +232,23 @@ export const SliderOutputContext = SliderContext;
 /**
  * A slider allows users to select a value from a range.
  */
-export function Slider(props: SliderProps): JSX.Element {
-  const [local, stateProps, ariaProps, rest] = splitProps(
+function arraySlider(
+  props: SliderProps | (SliderProps<number[]> & ({ value: number[] } | { defaultValue: number[] })),
+): props is SliderProps<number[]> & ({ value: number[] } | { defaultValue: number[] }) {
+  return Array.isArray(props.value) || Array.isArray(props.defaultValue);
+}
+interface SliderComponent {
+  (props: SliderProps<number[]> & ({ value: number[] } | { defaultValue: number[] })): JSX.Element;
+  (props: SliderProps): JSX.Element;
+  Track: typeof SliderTrack;
+  Thumb: typeof SliderThumb;
+  Fill: typeof SliderFill;
+  Output: typeof SliderOutput;
+}
+export const Slider: SliderComponent = ((
+  props: SliderProps | (SliderProps<number[]> & ({ value: number[] } | { defaultValue: number[] })),
+): JSX.Element => {
+  const [local, , ariaProps, rest] = splitProps(
     props,
     ["class", "style", "slot", "ref"],
     [
@@ -239,50 +276,19 @@ export function Slider(props: SliderProps): JSX.Element {
     ],
   );
 
-  const state = createSliderState({
-    get value() {
-      return stateProps.value;
-    },
-    get defaultValue() {
-      return stateProps.defaultValue;
-    },
-    get onChange() {
-      return stateProps.onChange;
-    },
-    get onChangeEnd() {
-      return stateProps.onChangeEnd;
-    },
-    get minValue() {
-      return stateProps.minValue;
-    },
-    get maxValue() {
-      return stateProps.maxValue;
-    },
-    get step() {
-      return stateProps.step;
-    },
-    get orientation() {
-      return stateProps.orientation;
-    },
-    get locale() {
-      return stateProps.locale;
-    },
-    get formatOptions() {
-      return stateProps.formatOptions;
-    },
-    get isDisabled() {
-      return ariaProps.isDisabled;
-    },
-  });
+  const state = arraySlider(props) ? createSliderState(props) : createSliderState(props);
 
-  let trackRef: HTMLElement | undefined;
-  const setTrackRef = (el: HTMLElement) => {
-    trackRef = el;
+  const [trackRef, setTrackRef] = createSignal<HTMLElement>();
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement>();
+  const inputRefOwner = {
+    clear: (element: HTMLInputElement) => {
+      setInputRef((current) => (current === element ? undefined : current));
+    },
   };
-  let inputRef: HTMLInputElement | undefined;
-  const setInputRef = (el: HTMLInputElement) => {
-    inputRef = el;
-  };
+  sliderInputRefOwners.set(state, inputRefOwner);
+  onCleanup(() => {
+    if (sliderInputRefOwners.get(state) === inputRefOwner) sliderInputRefOwners.delete(state);
+  });
 
   const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
   // A string `label` names the slider through the built-in span. Slot detection
@@ -320,8 +326,8 @@ export function Slider(props: SliderProps): JSX.Element {
       },
     },
     state,
-    () => trackRef ?? null,
-    () => inputRef ?? null,
+    () => trackRef() ?? null,
+    () => inputRef() ?? null,
   );
 
   const renderValues = createMemo<SliderRenderProps>(() => ({
@@ -370,7 +376,8 @@ export function Slider(props: SliderProps): JSX.Element {
     },
   };
 
-  const sliderChildren = () => evaluateRenderChildren(props.children, childRenderValues);
+  const sliderChildren = () =>
+    untrack(() => evaluateRenderChildren(props.children, childRenderValues));
 
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
@@ -383,6 +390,10 @@ export function Slider(props: SliderProps): JSX.Element {
         : (sliderAria.labelProps.id as string | undefined);
     },
     ref: labelRef,
+    onClick: (event) => {
+      const handler = sliderAria.labelProps.onClick;
+      if (typeof handler === "function") handler(event);
+    },
   };
 
   const cleanGroupProps = () => {
@@ -407,11 +418,11 @@ export function Slider(props: SliderProps): JSX.Element {
           return sliderAria.inputProps;
         },
         get trackRef() {
-          return trackRef;
+          return trackRef();
         },
         setTrackRef,
         get inputRef() {
-          return inputRef;
+          return inputRef();
         },
         setInputRef,
       }}
@@ -433,7 +444,7 @@ export function Slider(props: SliderProps): JSX.Element {
       </div>
     </SliderContext>
   );
-}
+}) as SliderComponent;
 
 /**
  * The track element of a slider.
@@ -471,6 +482,24 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
     renderValues,
   );
 
+  const childRenderValues: SliderTrackRenderProps = {
+    get isDisabled() {
+      return state.isDisabled;
+    },
+    get isDragging() {
+      return state.isDragging();
+    },
+    get valuePercent() {
+      return state.getValuePercent();
+    },
+    get orientation() {
+      return state.orientation;
+    },
+  };
+  // Invoke the child thunk here so insertion cannot track descendant setup reads.
+  const trackChildren = () =>
+    untrack(() => evaluateRenderChildren(props.children, childRenderValues));
+
   const cleanTrackProps = () => {
     const { ref: _ref, style: trackStyle, ...rest } = context.trackProps as Record<string, unknown>;
     return rest;
@@ -493,7 +522,7 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
       data-orientation={state.orientation}
       data-dragging={dataAttr(state.isDragging())}
     >
-      {renderProps.renderChildren()}
+      {trackChildren()}
     </div>
   );
 }
@@ -502,14 +531,71 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
  * The thumb element of a slider.
  */
 export function SliderThumb(props: SliderThumbProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, [
+    "class",
+    "style",
+    "slot",
+    "children",
+    "index",
+    "name",
+    "form",
+    "id",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
+    "role",
+    "tabindex",
+    "onKeyDown",
+    "onFocus",
+    "onBlur",
+  ]);
 
   const context = useContext(SliderContext);
   if (!context) {
     throw new Error("SliderThumb must be used within a Slider");
   }
 
-  const { state, setInputRef } = context;
+  const { state } = context;
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement>();
+  const index = () => local.index ?? 0;
+  const thumbLabelId = createId();
+  const [thumbLabelRef, hasThumbLabel] = useSlot(!local["aria-label"] && !local["aria-labelledby"]);
+  const thumbAria = createSliderThumb(
+    () => ({
+      index: index(),
+      id: typeof local.id === "string" ? local.id : undefined,
+      name: local.name,
+      form: local.form,
+      "aria-label": typeof local["aria-label"] === "string" ? local["aria-label"] : undefined,
+      "aria-labelledby":
+        typeof local["aria-labelledby"] === "string"
+          ? local["aria-labelledby"]
+          : local["aria-labelledby"] == null && hasThumbLabel()
+            ? thumbLabelId
+            : undefined,
+      "aria-describedby":
+        typeof local["aria-describedby"] === "string" ? local["aria-describedby"] : undefined,
+      "aria-details": typeof local["aria-details"] === "string" ? local["aria-details"] : undefined,
+    }),
+    state,
+    () => context.trackRef ?? null,
+    () => inputRef() ?? null,
+  );
+  const registerInput = (el: HTMLInputElement) => {
+    setInputRef(el);
+  };
+
+  createEffect(
+    () => ({ index: index(), element: inputRef() }),
+    ({ index: currentIndex, element }) => {
+      if (currentIndex !== 0 || !element) return;
+      context.setInputRef(element);
+      return () => {
+        sliderInputRefOwners.get(state)?.clear(element);
+      };
+    },
+  );
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -521,12 +607,12 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
 
   const renderValues = createMemo<SliderThumbRenderProps>(() => ({
     isDisabled: state.isDisabled,
-    isDragging: state.isDragging(),
-    isFocused: isFocused() || state.isFocused(),
+    isDragging: state.isThumbDragging(index()),
+    isFocused: isFocused() || state.focusedThumb() === index(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
-    value: state.value(),
-    valuePercent: state.getValuePercent(),
+    value: state.getThumbValue(index()),
+    valuePercent: state.getThumbPercent(index()),
   }));
 
   const renderProps = useRenderProps(
@@ -546,7 +632,11 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
   );
 
   const cleanThumbProps = () => {
-    const { ref: _ref, style: thumbStyle, ...rest } = context.thumbProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: thumbStyle,
+      ...rest
+    } = thumbAria.thumbProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -559,40 +649,48 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
   };
 
   const mergedStyle = () => {
-    const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
+    const thumbStyle = (thumbAria.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...thumbStyle, ...renderStyle };
   };
   const cleanInputProps = () => {
-    const { ref: _ref, ...rest } = context.inputProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = thumbAria.inputProps as Record<string, unknown>;
     return rest;
   };
   const mergedInputProps = () =>
     mergeProps(
       cleanInputProps() as Record<string, unknown>,
       cleanFocusProps() as Record<string, unknown>,
+      { onKeyDown: local.onKeyDown, onFocus: local.onFocus, onBlur: local.onBlur },
     ) as JSX.InputHTMLAttributes<HTMLInputElement>;
 
   return (
-    <>
+    <div
+      {...domProps}
+      {...coerceDomRecord(cleanThumbProps() as Record<string, unknown>)}
+      {...cleanHoverProps()}
+      class={renderProps.class()}
+      style={mergedStyle()}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-dragging={dataAttr(state.isThumbDragging(index()))}
+      data-focused={dataAttr(isFocused() || state.focusedThumb() === index())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
+    >
       <VisuallyHidden>
-        <input ref={setInputRef} {...mergedInputProps()} />
+        <input ref={registerInput} {...mergedInputProps()} />
       </VisuallyHidden>
-      <div
-        {...domProps}
-        {...coerceDomRecord(cleanThumbProps() as Record<string, unknown>)}
-        {...cleanHoverProps()}
-        class={renderProps.class()}
-        style={mergedStyle()}
-        data-disabled={dataAttr(state.isDisabled)}
-        data-dragging={dataAttr(state.isDragging())}
-        data-focused={dataAttr(isFocused() || state.isFocused())}
-        data-focus-visible={dataAttr(isFocusVisible())}
-        data-hovered={dataAttr(isHovered())}
+      <LabelContext
+        value={{
+          get id() {
+            return hasThumbLabel() ? thumbLabelId : undefined;
+          },
+          ref: thumbLabelRef,
+        }}
       >
         {renderProps.renderChildren()}
-      </div>
-    </>
+      </LabelContext>
+    </div>
   );
 }
 
@@ -605,10 +703,9 @@ function clampFill(value: number, min: number, max: number): number {
  * The fill element of a slider, displaying the selected range.
  *
  * Solid adaptation of the pinned `SliderFill`. Upstream reads the
- * array-based `SliderState` (`values`/`getThumbPercent`); our `SliderState` is
- * single-value, so this fills from `offset` (default the slider's minValue, i.e.
- * 0%) to the current value — the single-thumb branch of upstream's math, using
- * the same `(v - min) / (max - min)` percent formula the state itself uses.
+ * array-based state. Two thumbs fill between their selected values; a scalar
+ * fills from the clamped offset to index 0. Numeric render props remain the
+ * index 0 compatibility view.
  */
 export function SliderFill(props: SliderFillProps): JSX.Element {
   const [local, domProps] = splitProps(props, [
@@ -643,9 +740,14 @@ export function SliderFill(props: SliderFillProps): JSX.Element {
   };
 
   const offset = () =>
-    local.offset != null ? clampFill(local.offset, state.minValue, state.maxValue) : state.minValue;
-  const start = () => percentOf(offset());
-  const end = () => state.getValuePercent() * 100;
+    local.offset != null
+      ? clampFill(local.offset, state.minValue, state.maxValue)
+      : state.values().length > 1
+        ? state.getThumbValue(0)
+        : state.minValue;
+  const start = () =>
+    state.values().length > 1 ? state.getThumbPercent(0) * 100 : percentOf(offset());
+  const end = () => state.getThumbPercent(state.values().length - 1) * 100;
   const startPercent = () => Math.min(start(), end());
   const sizePercent = () => Math.max(0, Math.max(start(), end()) - startPercent());
 

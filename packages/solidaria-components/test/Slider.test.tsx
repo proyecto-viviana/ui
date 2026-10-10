@@ -12,11 +12,19 @@
  * - Orientation
  */
 
-import { createSignal, flush, type JSX } from "solid-js";
+import { createSignal, flush, useContext, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Label } from "../src/Label";
-import { Slider, SliderTrack, SliderThumb, SliderFill, SliderOutput } from "../src/Slider";
+import {
+  Slider,
+  SliderTrack,
+  SliderThumb,
+  SliderFill,
+  SliderOutput,
+  SliderContext,
+} from "../src/Slider";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -65,7 +73,8 @@ describe("Slider", () => {
       const slider = screen.getByRole("slider");
       expect(slider).toBeInTheDocument();
       const input = document.querySelector('input[type="range"]') as HTMLInputElement;
-      expect(slider.contains(input)).toBe(false);
+      expect(slider).toBe(input);
+      expect(document.querySelector(".solidaria-Slider-thumb")?.contains(input)).toBe(true);
     });
 
     it("should render track", () => {
@@ -112,14 +121,14 @@ describe("Slider", () => {
       render(() => <TestSlider sliderProps={{ defaultValue: 50, minValue: 0, maxValue: 100 }} />);
 
       const slider = screen.getByRole("slider");
-      expect(slider).toHaveAttribute("aria-valuenow", "50");
+      expect(slider).toHaveAttribute("value", "50");
     });
 
     it("should display controlled value", () => {
       render(() => <TestSlider sliderProps={{ value: 75, minValue: 0, maxValue: 100 }} />);
 
       const slider = screen.getByRole("slider");
-      expect(slider).toHaveAttribute("aria-valuenow", "75");
+      expect(slider).toHaveAttribute("value", "75");
     });
 
     it("should fire onChange when value changes", async () => {
@@ -154,14 +163,14 @@ describe("Slider", () => {
       render(() => <TestSlider sliderProps={{ minValue: 10, maxValue: 100 }} />);
 
       const slider = screen.getByRole("slider");
-      expect(slider).toHaveAttribute("aria-valuemin", "10");
+      expect(slider).toHaveAttribute("min", "10");
     });
 
     it("should have aria-valuemax", () => {
       render(() => <TestSlider sliderProps={{ minValue: 0, maxValue: 200 }} />);
 
       const slider = screen.getByRole("slider");
-      expect(slider).toHaveAttribute("aria-valuemax", "200");
+      expect(slider).toHaveAttribute("max", "200");
     });
 
     it("should not go below minValue", async () => {
@@ -172,7 +181,7 @@ describe("Slider", () => {
       await user.keyboard("{ArrowLeft}");
 
       // Value should remain at minValue
-      expect(slider).toHaveAttribute("aria-valuenow", "0");
+      expect(slider).toHaveAttribute("value", "0");
     });
 
     it("should not go above maxValue", async () => {
@@ -183,7 +192,7 @@ describe("Slider", () => {
       await user.keyboard("{ArrowRight}");
 
       // Value should remain at maxValue
-      expect(slider).toHaveAttribute("aria-valuenow", "100");
+      expect(slider).toHaveAttribute("value", "100");
     });
   });
 
@@ -332,7 +341,7 @@ describe("Slider", () => {
       render(() => <TestSlider sliderProps={{ isDisabled: true }} />);
 
       const slider = screen.getByRole("slider");
-      expect(slider).toHaveAttribute("aria-disabled", "true");
+      expect(slider).toBeDisabled();
     });
 
     it("should have data-disabled attribute", () => {
@@ -427,7 +436,7 @@ describe("Slider", () => {
       render(() => <TestSlider sliderProps={{ defaultValue: 42 }} />);
 
       const slider = screen.getByRole("slider");
-      expect(slider).toHaveAttribute("aria-valuenow", "42");
+      expect(slider).toHaveAttribute("value", "42");
     });
 
     it("should have aria-orientation for horizontal", () => {
@@ -461,8 +470,10 @@ describe("Slider", () => {
       expect(slider).toHaveAttribute("aria-details", "volume-details");
       expect(group).not.toHaveAttribute("aria-describedby");
       expect(group).not.toHaveAttribute("aria-details");
-      expect(input).not.toHaveAttribute("aria-describedby");
-      expect(input).not.toHaveAttribute("aria-details");
+      expect(document.querySelector(".solidaria-Slider-thumb")).not.toHaveAttribute(
+        "aria-describedby",
+      );
+      expect(document.querySelector(".solidaria-Slider-thumb")).not.toHaveAttribute("aria-details");
     });
   });
 
@@ -795,5 +806,434 @@ describe("SliderOutput", () => {
 
   it("should throw when used outside a Slider", () => {
     expect(() => render(() => <SliderOutput />)).toThrow(/must be used within a Slider/);
+  });
+});
+
+describe("Slider native owner regression (#74)", () => {
+  afterEach(cleanup);
+  it("places the one focusable native slider inside its role-free visible thumb", () => {
+    render(() => <TestSlider sliderProps={{ defaultValue: 40 }} />);
+    const input = document.querySelector('input[type="range"]');
+    const wrapper = document.querySelector(".solidaria-Slider-thumb");
+    expect(screen.getByRole("slider", { name: "Test Slider" })).toBe(input);
+    expect(wrapper?.contains(input)).toBe(true);
+    expect(wrapper).not.toHaveAttribute("role");
+    expect(wrapper).not.toHaveAttribute("tabindex");
+    expect(input).toHaveAttribute("tabindex", "0");
+  });
+  it("completes one native keyboard update once", () => {
+    const onChange = vi.fn(),
+      onChangeEnd = vi.fn();
+    render(() => <TestSlider sliderProps={{ defaultValue: 40, onChange, onChangeEnd }} />);
+    fireEvent.keyDown(document.querySelector('input[type="range"]')!, { key: "ArrowRight" });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith(41);
+    expect(onChangeEnd).toHaveBeenCalledTimes(1);
+    expect(onChangeEnd).toHaveBeenLastCalledWith(41);
+  });
+  it("resets through a separately associated native form", async () => {
+    render(() => (
+      <>
+        <form id="slider-native-reset" />
+        <TestSlider
+          sliderProps={{ defaultValue: 25, name: "volume", form: "slider-native-reset" }}
+        />
+      </>
+    ));
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
+    fireEvent.input(input, { target: { value: "60" } });
+    expect(new FormData(input.form!).get("volume")).toBe("60");
+    fireEvent.reset(input.form!);
+    await waitFor(() => expect(input.value).toBe("25"));
+    expect(new FormData(input.form!).get("volume")).toBe("25");
+  });
+});
+
+describe("Slider indexed native owners (#76; candidate API)", () => {
+  afterEach(cleanup);
+  it("shares root state while preserving each native name, bounds, id and output association", async () => {
+    const change = vi.fn(),
+      end = vi.fn();
+    render(() => (
+      <>
+        <form id="pair-form" />
+        <Slider
+          aria-label="Price"
+          defaultValue={[20, 80]}
+          onChange={change}
+          onChangeEnd={end}
+          form="pair-form"
+        >
+          {() => (
+            <>
+              <SliderTrack>
+                {() => (
+                  <>
+                    <SliderFill />
+                    <SliderThumb index={0} name="start" aria-label="Minimum" />
+                    <SliderThumb index={1} name="end" aria-label="Maximum" />
+                  </>
+                )}
+              </SliderTrack>
+              <SliderOutput />
+            </>
+          )}
+        </Slider>
+      </>
+    ));
+    const inputs = Array.from(
+      document.querySelectorAll('input[type="range"]'),
+    ) as HTMLInputElement[];
+    expect(inputs).toHaveLength(2);
+    expect(screen.getAllByRole("slider")).toEqual(inputs);
+    expect(inputs[0].id).not.toBe(inputs[1].id);
+    expect(document.querySelector("output")).toHaveAttribute(
+      "for",
+      inputs.map((input) => input.id).join(" "),
+    );
+    expect(inputs[0].max).toBe("80");
+    expect(inputs[1].min).toBe("20");
+    fireEvent.keyDown(inputs[1], { key: "ArrowLeft" });
+    expect(change).toHaveBeenCalledTimes(1);
+    expect(change).toHaveBeenLastCalledWith([20, 79]);
+    expect(end).toHaveBeenCalledTimes(1);
+    expect(end).toHaveBeenLastCalledWith([20, 79]);
+    expect(inputs[0].value).toBe("20");
+    expect(inputs[1].value).toBe("79");
+    expect(new FormData(inputs[0].form!).get("start")).toBe("20");
+    expect(new FormData(inputs[1].form!).get("end")).toBe("79");
+    fireEvent.focus(inputs[1]);
+    expect(document.querySelectorAll(".solidaria-Slider-thumb[data-focused]")).toHaveLength(1);
+    fireEvent.reset(inputs[0].form!);
+    await waitFor(() => expect(inputs.map((input) => input.value)).toEqual(["20", "80"]));
+  });
+});
+
+// These controls use native form.reset(), including the browser default action.
+// They deliberately withhold controlled echoes and exercise more than two thumbs.
+describe("Slider full indexed integration (#74/#76; v2 candidate)", () => {
+  afterEach(cleanup);
+  const inputs = () =>
+    Array.from(document.querySelectorAll('input[type="range"]')) as HTMLInputElement[];
+  const form = (id = "component-form-a") => document.getElementById(id) as HTMLFormElement;
+  function Three(props: {
+    value?: number[];
+    defaults: number[];
+    indices?: number[];
+    association?: string;
+    change: (value: number[]) => void;
+    end?: (value: number[]) => void;
+  }) {
+    const slots = Array.from({ length: props.defaults.length }, (_, slot) => slot);
+    return (
+      <Slider
+        aria-label="Three values"
+        defaultValue={props.defaults}
+        value={props.value}
+        onChange={props.change}
+        onChangeEnd={props.end}
+        form={props.association ?? "component-form-a"}
+      >
+        {() => (
+          <>
+            <SliderTrack>
+              {() => (
+                <>
+                  {slots.map((slot) => (
+                    <SliderThumb
+                      index={props.indices?.[slot] ?? slot}
+                      name={`component-value-${slot}`}
+                      aria-label={`Value ${slot}`}
+                      data-testid={`component-thumb-${slot}`}
+                    >
+                      {(render) => (
+                        <span data-testid={`component-value-${slot}`}>{render.value}</span>
+                      )}
+                    </SliderThumb>
+                  ))}
+                </>
+              )}
+            </SliderTrack>
+            <SliderOutput />
+          </>
+        )}
+      </Slider>
+    );
+  }
+  it("holds controlled native values and defaults through a three-thumb reset without an echo or drag end", async () => {
+    const change = vi.fn(),
+      end = vi.fn();
+    render(() => (
+      <>
+        <form id="component-form-a" />
+        <Three defaults={[20, 30, 90]} value={[0, 10, 100]} change={change} end={end} />
+      </>
+    ));
+    const native = inputs();
+    form().reset();
+    await waitFor(() =>
+      expect(change.mock.calls.map((call) => call[0])).toEqual([
+        [0, 10, 90],
+        [0, 30, 90],
+        [20, 30, 90],
+      ]),
+    );
+    expect(native.map((input) => input.value)).toEqual(["0", "10", "100"]);
+    expect(native.map((input) => input.defaultValue)).toEqual(["0", "10", "100"]);
+    expect([...new FormData(form()).values()]).toEqual(["0", "10", "100"]);
+    expect(end).not.toHaveBeenCalled();
+  });
+  it("resets three uncontrolled thumbs across both ordering directions and successful native controls", async () => {
+    const change = vi.fn(),
+      end = vi.fn();
+    render(() => (
+      <>
+        <form id="component-form-a" />
+        <Three defaults={[20, 30, 90]} change={change} end={end} />
+      </>
+    ));
+    const native = inputs();
+    fireEvent.input(native[0], { target: { value: "0" } });
+    fireEvent.input(native[1], { target: { value: "10" } });
+    fireEvent.input(native[2], { target: { value: "100" } });
+    change.mockClear();
+    form().reset();
+    await waitFor(() =>
+      expect(change.mock.calls.map((call) => call[0])).toEqual([
+        [0, 10, 90],
+        [0, 30, 90],
+        [20, 30, 90],
+      ]),
+    );
+    expect(native.map((input) => input.value)).toEqual(["20", "30", "90"]);
+    expect(native.map((input) => input.defaultValue)).toEqual(["20", "30", "90"]);
+    expect([...new FormData(form()).values()]).toEqual(["20", "30", "90"]);
+    expect(end).not.toHaveBeenCalled();
+  });
+  it("rebases reset proposals and native defaults after a controlled echo and later correction", async () => {
+    const [value, setValue] = createSignal([0, 20]);
+    const [defaults, setDefaults] = createSignal([25, 75]);
+    const change = vi.fn(),
+      end = vi.fn();
+    render(() => (
+      <>
+        <form id="component-form-a" />
+        <Three defaults={defaults()} value={value()} change={change} end={end} />
+      </>
+    ));
+    form().reset();
+    await waitFor(() =>
+      expect(change.mock.calls.map((call) => call[0])).toEqual([
+        [0, 75],
+        [25, 75],
+      ]),
+    );
+    setValue([25, 75]);
+    flush();
+    expect(inputs().map((input) => input.defaultValue)).toEqual(["25", "75"]);
+    setValue([40, 90]);
+    setDefaults([10, 60]);
+    flush();
+    change.mockClear();
+    form().reset();
+    await waitFor(() =>
+      expect(change.mock.calls.map((call) => call[0])).toEqual([
+        [10, 90],
+        [10, 60],
+      ]),
+    );
+    expect(inputs().map((input) => input.value)).toEqual(["40", "90"]);
+    expect(inputs().map((input) => input.defaultValue)).toEqual(["40", "90"]);
+    expect(end).not.toHaveBeenCalled();
+  });
+  it("moves actual form custody reactively and honors a later preventing listener", async () => {
+    const [association, setAssociation] = createSignal("component-form-a");
+    const change = vi.fn();
+    render(() => (
+      <>
+        <form id="component-form-a" />
+        <form id="component-form-b" />
+        <Three defaults={[25, 75]} value={[0, 20]} association={association()} change={change} />
+      </>
+    ));
+    setAssociation("component-form-b");
+    flush();
+    await waitFor(() =>
+      expect(inputs().map((input) => input.form)).toEqual([
+        form("component-form-b"),
+        form("component-form-b"),
+      ]),
+    );
+    form().reset();
+    await Promise.resolve();
+    expect(change).not.toHaveBeenCalled();
+    const prevent = (event: Event) => event.preventDefault();
+    form("component-form-b").addEventListener("reset", prevent);
+    form("component-form-b").reset();
+    await Promise.resolve();
+    expect(change).not.toHaveBeenCalled();
+    form("component-form-b").removeEventListener("reset", prevent);
+    form("component-form-b").reset();
+    await waitFor(() =>
+      expect(change.mock.calls.map((call) => call[0])).toEqual([
+        [0, 75],
+        [25, 75],
+      ]),
+    );
+    expect(inputs().map((input) => input.value)).toEqual(["0", "20"]);
+  });
+  it("keeps the focused native node, live render values, keyboard index and output membership during a three-thumb index swap", () => {
+    const [indices, setIndices] = createSignal([0, 1, 2]);
+    const change = vi.fn(),
+      end = vi.fn();
+    render(() => (
+      <>
+        <form id="component-form-a" />
+        <Three defaults={[10, 40, 90]} indices={indices()} change={change} end={end} />
+      </>
+    ));
+    const native = inputs();
+    native[0].focus();
+    flush();
+    expect(document.activeElement).toBe(native[0]);
+    setIndices([2, 1, 0]);
+    flush();
+    expect(inputs()).toEqual(native);
+    expect(document.activeElement).toBe(native[0]);
+    expect(native.map((input) => input.value)).toEqual(["90", "40", "10"]);
+    expect(screen.getByTestId("component-value-0")).toHaveTextContent("90");
+    expect(native[0].min).toBe("40");
+    expect(native[0].max).toBe("100");
+    expect(screen.getByTestId("component-thumb-0")).toHaveAttribute("data-focused");
+    expect(document.querySelector("output")).toHaveAttribute(
+      "for",
+      [native[2].id, native[1].id, native[0].id].join(" "),
+    );
+    fireEvent.keyDown(native[0], { key: "ArrowLeft" });
+    expect(change).toHaveBeenLastCalledWith([10, 40, 89]);
+    expect(end).toHaveBeenLastCalledWith([10, 40, 89]);
+  });
+  it("does not dispatch queued or later reset proposals after component teardown", async () => {
+    const change = vi.fn();
+    const view = render(() => (
+      <>
+        <form id="component-form-a" />
+        <Three defaults={[25, 75]} value={[0, 20]} change={change} />
+      </>
+    ));
+    const actual = form();
+    actual.reset();
+    view.unmount();
+    await Promise.resolve();
+    actual.dispatchEvent(new Event("reset", { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+    expect(change).not.toHaveBeenCalled();
+  });
+});
+
+// Compile-time assignment is intentional: a provider's old narrow setter must
+// remain accepted even with strictFunctionTypes. No undefined is sent to it.
+describe("Slider context compatibility (#74/#76; v3 candidate)", () => {
+  afterEach(cleanup);
+  it("accepts an existing custom provider with a narrow native-input setter", async () => {
+    const { createSliderState } = await import("@proyecto-viviana/solid-stately");
+    const { createSlider } = await import("@proyecto-viviana/solidaria");
+    const received: HTMLInputElement[] = [];
+    function CustomProvider() {
+      const state = createSliderState({ defaultValue: 40 });
+      const [track, setTrack] = createSignal<HTMLElement>();
+      const [input, setInput] = createSignal<HTMLInputElement>();
+      const aria = createSlider(
+        { "aria-label": "Custom volume" },
+        state,
+        () => track() ?? null,
+        () => input() ?? null,
+      );
+      const narrowSetter: (element: HTMLInputElement) => void = (element) => {
+        received.push(element);
+        setInput(element);
+      };
+      const value: NonNullable<Parameters<typeof SliderContext>[0]["value"]> = {
+        state,
+        get trackProps() {
+          return aria.trackProps;
+        },
+        get thumbProps() {
+          return aria.thumbProps;
+        },
+        get outputProps() {
+          return aria.outputProps;
+        },
+        get inputProps() {
+          return aria.inputProps;
+        },
+        get trackRef() {
+          return track();
+        },
+        setTrackRef: setTrack,
+        get inputRef() {
+          return input();
+        },
+        setInputRef: narrowSetter,
+      };
+      return (
+        <SliderContext value={value}>
+          <SliderTrack>{() => <SliderThumb />}</SliderTrack>
+          <SliderOutput />
+        </SliderContext>
+      );
+    }
+    const view = render(() => <CustomProvider />);
+    flush();
+    const native = screen.getByRole("slider", { name: "Custom volume" }) as HTMLInputElement;
+    expect(received).toContain(native);
+    fireEvent.keyDown(native, { key: "ArrowRight" });
+    expect(native.value).toBe("41");
+    view.unmount();
+    expect(received.every((element) => element instanceof HTMLInputElement)).toBe(true);
+  });
+  it("clears the built-in optional index0 reference when its native registration unmounts", () => {
+    const [showZero, setShowZero] = createSignal(true);
+    function RefProbe() {
+      const context = useContext(SliderContext)!;
+      return <span data-testid="slider-compatibility-ref">{context.inputRef?.name ?? "none"}</span>;
+    }
+    render(() => (
+      <Slider aria-label="Values" defaultValue={[10, 40, 90]}>
+        {() => (
+          <>
+            <SliderTrack>
+              {() => (
+                <>
+                  <Show when={showZero()}>
+                    <SliderThumb index={0} name="zero" />
+                  </Show>
+                  <SliderThumb index={1} name="one" />
+                  <SliderThumb index={2} name="two" />
+                </>
+              )}
+            </SliderTrack>
+            <RefProbe />
+          </>
+        )}
+      </Slider>
+    ));
+    flush();
+    const one = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="range"]')).find(
+      (input) => input.name === "one",
+    );
+    expect(screen.getByTestId("slider-compatibility-ref")).toHaveTextContent("zero");
+    setShowZero(false);
+    flush();
+    expect(screen.getByTestId("slider-compatibility-ref")).toHaveTextContent("none");
+    expect(one?.isConnected).toBe(true);
+    setShowZero(true);
+    flush();
+    expect(screen.getByTestId("slider-compatibility-ref")).toHaveTextContent("zero");
+    expect(
+      Array.from(document.querySelectorAll<HTMLInputElement>('input[type="range"]')).find(
+        (input) => input.name === "one",
+      ),
+    ).toBe(one);
   });
 });

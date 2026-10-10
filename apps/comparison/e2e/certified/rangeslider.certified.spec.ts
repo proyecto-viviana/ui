@@ -1,3 +1,6 @@
+import { registerFocusTrailDriver } from "../drivers/focus";
+import { registerTargetSizeDriver } from "../drivers/target-size";
+import { registerSliderNativeTargetProof } from "./slider-native-target-proof";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -17,11 +20,10 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *                                 SliderThumb#0 (minimum)  -> VisuallyHidden<input> + thumb
  *                                 SliderThumb#1 (maximum)  -> VisuallyHidden<input> + thumb
  *
- * The Solid port does NOT share the slider spine: `RangeSlider.tsx` is fully
- * hand-rolled (its own pointer/keyboard math and its own DUPLICATED copies of every
- * Slider style object). Those duplicates carried the exact same four presentational
- * divergences already realigned in `Slider` — so the same four reverts are applied
- * here to the RangeSlider copies (verified against the pinned
+ * The indexed repair shares SliderBase across scalar and RangeSlider. Historically,
+ * the duplicated RangeSlider style macros carried the same four divergences; the
+ * following source corrections remain represented by unchanged byte-identical macros
+ * (verified against the pinned
  * `@react-spectrum/s2@1.5.1` `Slider.tsx`/`RangeSlider.tsx`/`Field.tsx` source):
  *
  *   (1) FILL NESTING. The port rendered the filled track as a *sibling* of the
@@ -78,32 +80,19 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *
  * SCOPE — D1/D3 run at `states:["default"]`: no D1 part (root grid, label, output,
  * track, upperTrack, fill) reacts to a gesture; only the two thumbs do, and the thumbs
- * are NOT D1 parts (deferred inversion below). Everything that varies (size / disabled /
+ * are NOT D1 parts. Everything that varies (size / disabled /
  * emphasized / track-style / thumb-style / range-span / label-position) is prop-driven
  * and captured at rest. The thumb parts are excluded from D1 because the port's thumb
- * subtree has an extra VisuallyHidden sibling, so a shared nth-child selector cannot
- * resolve the SAME logical element on both stacks; the thumbs' pixels are certified by
+ * subtree includes VisuallyHidden; thumb nth-child selectors need their own review
+ * to resolve the SAME logical element on both stacks; the thumbs' pixels are certified by
  * D3 (whole-canvas diff) in every case.
  *
  * Applicable drivers: D1 (rest-state style matrix), D3 (pixel — both round knobs + the
  * range fill + the outline hairline), D6 (AX: the two `slider` nodes named "Minimum"/
  * "Maximum" inside `role="group"`), D7 (contrast: the label + the output value text).
- * NOT registered — the SAME deferred concerns as single Slider, doubled for two thumbs:
- *   - D5 focus/keyboard trails + D8 target size: depend on WHICH element is focusable.
- *     Upstream's are the two native `<input type=range>` (tabindex 0) inside the
- *     thumbContainers; the port inverts this — the thumb `<div>` carries
- *     `role="slider"`+`tabindex 0` while the `<input>` (there is none; the port has no
- *     native input at all) is absent. Tracked as `slider-thumb-native-input-semantics`
- *     (shared spine with Slider/ColorSlider/ColorArea) and deferred.
- *   - D4 events + D2 motion: per-gesture thumb concerns, out of scope at rest.
- *
- * D6 uses the `default` case. Both stacks expose two `slider` nodes named
- * "Minimum"/"Maximum" (en-US) inside the `role="group"` wrapper — role/name/group all
- * match. React's native `<input type=range>` exposes each value ("30"/"60") in the AX
- * tree; the port's `<div role=slider aria-valuenow>` does not surface a value in
- * Chromium's computed AX despite correct ARIA. Matching that requires the native input
- * to back the slider semantics — the deferred `slider-thumb-native-input-semantics`
- * inversion — so D6 default is registered as a known divergence until it lands.
+ * D5 now uses native-input tab/arrow walks. D8 inventories native controls and
+ * separately measures/drives each thumb hit area. D6 inversion-waiver retirement
+ * remains contingent on a real native ownership + AX run of this candidate.
  */
 
 const root = '[data-comparison-control-root="rangeslider"]';
@@ -136,6 +125,7 @@ const fillTarget: TargetResolver = ({ canvas }) =>
     `${root} > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)`,
   );
 
+/** Native-input D5/D6 and pointer-hit-area D8 run after the indexed ownership repair. */
 const rangeSliderScenario: DriverScenario = {
   slug: "rangeslider",
   title: "RangeSlider",
@@ -229,23 +219,33 @@ const rangeSliderScenario: DriverScenario = {
       },
     ],
   },
-  // D6: two `slider` nodes ("Minimum"/"Maximum") inside the `role="group"` wrapper.
-  // React's native `<input type=range>` exposes each value in the AX tree; the port's
-  // `<div role=slider aria-valuenow>` does not surface a value in Chromium's computed
-  // AX despite correct ARIA. Matching upstream's value output requires the native input
-  // to back the slider semantics — the deferred `slider-thumb-native-input-semantics`
-  // inversion (shared spine with Slider/ColorSlider/ColorArea). Registered as a known
-  // divergence until that lands; role/name/group/output all otherwise match.
-  ax: {
-    cases: ["default"],
-    roots: {
-      group: groupTarget,
-    },
-    knownDivergences: {
-      default:
-        "slider-thumb-native-input-semantics: div[role=slider] omits AX value vs native input",
-    },
+  focus: {
+    cases: ["default", "size-s", "size-l", "size-xl", "thumb-precise"],
+    walks: [
+      {
+        id: "native-tab-cycle",
+        start: ({ canvas }) => canvas.locator(`${root} input[type="range"]`).first(),
+        keys: [
+          "ArrowRight",
+          "ArrowLeft",
+          "Tab",
+          "ArrowRight",
+          "ArrowLeft",
+          "Tab",
+          "Shift+Tab",
+          "Shift+Tab",
+        ],
+      },
+    ],
   },
+  // D8 inventories native controls. Dedicated proof below also measures and drives
+  // the painted thumb hit areas, since the native inputs are visually clipped.
+  targetSize: {
+    cases: ["default", "size-s", "size-l", "size-xl", "thumb-precise"],
+    root: groupTarget,
+  },
+  // D6 has no inversion waiver once native-input ownership is proved.
+  ax: { cases: ["default"], roots: { group: groupTarget } },
   // D7: the label + output value text, resting + disabled, both themes.
   contrast: {
     cases: ["default", "disabled"],
@@ -256,3 +256,7 @@ registerStateMatrixDriver(rangeSliderScenario);
 registerPixelDriver(rangeSliderScenario);
 registerAxTreeDriver(rangeSliderScenario);
 registerContrastDriver(rangeSliderScenario);
+
+registerFocusTrailDriver(rangeSliderScenario);
+registerTargetSizeDriver(rangeSliderScenario);
+registerSliderNativeTargetProof(rangeSliderScenario, root, 2);

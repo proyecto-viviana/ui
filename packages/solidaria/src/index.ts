@@ -309,7 +309,7 @@ export {
 
 export { createSearchField, type AriaSearchFieldProps, type SearchFieldAria } from "./searchfield";
 
-export { createSlider, type AriaSliderProps, type SliderAria } from "./slider";
+export { createSlider, createSliderThumb, type AriaSliderProps, type SliderAria } from "./slider";
 
 export {
   createTooltip,

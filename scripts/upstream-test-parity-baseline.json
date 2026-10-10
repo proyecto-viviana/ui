@@ -195,6 +195,7 @@
     "slider|aria|aria-describedby",
     "slider|aria|aria-details",
     "slider|aria|aria-disabled",
+    "slider|aria|aria-hidden",
     "slider|aria|aria-valuemax",
     "slider|aria|aria-valuemin",
     "slider|aria|aria-valuenow",
@@ -562,6 +563,15 @@
         "togglebutton|key|enter": "Exact change-before-press callback order and count; pinned useToggleButton chains toggle before onPress via Enter-capable press behavior.",
         "tokenfield|aria|aria-invalid": "Meaningful absence assertion in an ordinary labeled and described fixture. Does not claim invalid=true implementation; stays scored.",
         "tree|role|menuitem": "Copy belongs to nested ActionMenu/MenuItem opened by pointer, virtual click and Enter, not a Tree row. Cases prove opening and presence, not Copy invocation. Current aggregation retains composed vocabulary; deferred target-provenance debt remains explicit."
+      }
+    },
+    {
+      "ticket": 74,
+      "at": "2026-10-09",
+      "added": {
+        "suspects": ["slider|aria|aria-hidden"],
+        "coverageGaps": [],
+        "upstreamOnly": []
       }
     }
   ]

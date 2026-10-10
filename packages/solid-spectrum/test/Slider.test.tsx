@@ -17,7 +17,7 @@ describe("Slider (solid-spectrum)", () => {
     expect(input.min).toBe("0");
     expect(input.max).toBe("100");
     expect(slider).toHaveAttribute("aria-valuetext", "40");
-    expect(slider.contains(input)).toBe(false);
+    expect(slider).toBe(input);
   });
 
   it("supports vertical orientation", () => {
@@ -147,5 +147,30 @@ describe("Slider (solid-spectrum)", () => {
 
     expect(output.style.width).toBe("2ch");
     expect(output.style.minWidth).toBe("2ch");
+  });
+  it("keeps role, focus, output association, and form value on one native slider input", () => {
+    const [value, setValue] = createSignal(40);
+    const { container } = render(() => (
+      <form>
+        <Slider label="Volume" name="volume" value={value()} />
+      </form>
+    ));
+    const input = container.querySelector<HTMLInputElement>('input[type="range"]')!;
+    expect(screen.getByRole("slider", { name: "Volume" })).toBe(input);
+    expect(input.tabIndex).toBe(0);
+    expect(input).not.toHaveAttribute("aria-hidden", "true");
+    expect(container.querySelectorAll('[role="slider"]')).toHaveLength(0);
+    expect(container.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+    const output = container.querySelector("output")!;
+    expect(input.id).not.toBe("");
+    expect(output.getAttribute("for")).toBe(input.id);
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    setValue(65);
+    flush();
+    expect(screen.getByRole("slider", { name: "Volume" })).toBe(input);
+    expect(input.value).toBe("65");
+    expect(document.activeElement).toBe(input);
+    expect(new FormData(container.querySelector("form")!).get("volume")).toBe("65");
   });
 });

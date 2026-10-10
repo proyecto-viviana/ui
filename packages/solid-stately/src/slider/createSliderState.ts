@@ -17,21 +17,21 @@
  * Based on @react-stately/slider useSliderState.
  */
 
-import { createMemo } from "solid-js";
+import { createMemo, createEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 
 export type SliderOrientation = "horizontal" | "vertical";
 
-export interface SliderStateProps {
+export interface SliderStateProps<T extends number | number[] = number> {
   /** The current value (controlled). */
-  value?: number;
+  value?: T;
   /** The default value (uncontrolled). */
-  defaultValue?: number;
+  defaultValue?: T;
   /** Handler called when the value changes. */
-  onChange?: (value: number) => void;
+  onChange?: (value: T) => void;
   /** Handler called when the user stops dragging. */
-  onChangeEnd?: (value: number) => void;
+  onChangeEnd?: (value: T) => void;
   /** The minimum value. */
   minValue?: number;
   /** The maximum value. */
@@ -58,14 +58,35 @@ export interface SliderState {
   /** Gets the value as a percent (0-1). */
   getValuePercent: Accessor<number>;
   /** Gets the formatted value string. */
-  getFormattedValue: Accessor<string>;
-  /** Whether the thumb is being dragged. */
+  getFormattedValue: {
+    (): string;
+    (value: number | readonly number[]): string;
+  };
+  /** Canonical values; legacy numeric members address thumb zero. */
+  values: Accessor<readonly number[]>;
+  /** Current reset defaults, normalized to the domain. */
+  defaultValues: Accessor<readonly number[]>;
+  getThumbValue: (index: number) => number;
+  setThumbValue: (index: number, value: number) => void;
+  setThumbPercent: (index: number, percent: number) => void;
+  getThumbPercent: (index: number) => number;
+  getThumbMinValue: (index: number) => number;
+  getThumbMaxValue: (index: number) => number;
+  getThumbValueLabel: (index: number) => string;
+  isThumbDragging: (index: number) => boolean;
+  setThumbDragging: (index: number, dragging: boolean) => void;
+  focusedThumb: Accessor<number | undefined>;
+  setFocusedThumb: (index: number | undefined) => void;
+  /** Absolute value distance, at least state.step. */
+  incrementThumb: (index: number, stepSize?: number) => void;
+  decrementThumb: (index: number, stepSize?: number) => void;
+  /** Whether any thumb is being dragged. */
   isDragging: Accessor<boolean>;
-  /** Sets the dragging state. */
+  /** Sets thumb zero dragging state. */
   setDragging: (dragging: boolean) => void;
   /** Whether the slider is focused. */
   isFocused: Accessor<boolean>;
-  /** Sets the focused state. */
+  /** Focuses thumb zero; false clears only thumb zero. */
   setFocused: (focused: boolean) => void;
   /** Increments the value by step. */
   increment: (stepMultiplier?: number) => void;
@@ -110,17 +131,40 @@ function snapToStep(value: number, min: number, max: number, step: number): numb
 /**
  * Provides state management for a slider component.
  */
-export function createSliderState(props: MaybeAccessor<SliderStateProps>): SliderState {
+export function createSliderState(
+  props: MaybeAccessor<
+    SliderStateProps<number[]> & ({ value: number[] } | { defaultValue: number[] })
+  >,
+): SliderState;
+export function createSliderState(props: MaybeAccessor<SliderStateProps>): SliderState;
+export function createSliderState(
+  props: MaybeAccessor<SliderStateProps | SliderStateProps<number[]>>,
+): SliderState {
   const getProps = () => access(props);
-
   const initialProps = getProps();
-  const initialMinValue = initialProps.minValue ?? DEFAULT_MIN;
-  const initialMaxValue = initialProps.maxValue ?? DEFAULT_MAX;
-  const initialStep = initialProps.step ?? DEFAULT_STEP;
-
-  const minValue = createMemo(() => getProps().minValue ?? DEFAULT_MIN);
-  const maxValue = createMemo(() => getProps().maxValue ?? DEFAULT_MAX);
-  const step = createMemo(() => getProps().step ?? DEFAULT_STEP);
+  // Mode is established by explicit input shape, never by callback arity.
+  const arrayMode = Array.isArray(initialProps.value) || Array.isArray(initialProps.defaultValue);
+  const initialArray = Array.isArray(initialProps.value)
+    ? initialProps.value
+    : initialProps.defaultValue;
+  const initialCount = Array.isArray(initialArray) ? initialArray.length : 1;
+  const finite = (value: number | undefined, fallback: number) =>
+    typeof value === "number" && Number.isFinite(value) ? value : fallback;
+  const minValue = createMemo(() =>
+    arrayMode ? finite(getProps().minValue, DEFAULT_MIN) : (getProps().minValue ?? DEFAULT_MIN),
+  );
+  const step = createMemo(() => {
+    const next = arrayMode
+      ? finite(getProps().step, DEFAULT_STEP)
+      : (getProps().step ?? DEFAULT_STEP);
+    return arrayMode && next <= 0 ? DEFAULT_STEP : next;
+  });
+  const maxValue = createMemo(() => {
+    const next = arrayMode
+      ? finite(getProps().maxValue, DEFAULT_MAX)
+      : (getProps().maxValue ?? DEFAULT_MAX);
+    return arrayMode && next <= minValue() ? minValue() + step() : next;
+  });
   const orientation = createMemo(() => getProps().orientation ?? "horizontal");
   const isDisabled = createMemo(() => getProps().isDisabled ?? false);
   const pageStep = createMemo(() =>
@@ -129,103 +173,183 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
       snapToStep((maxValue() - minValue()) / 10, 0, maxValue() - minValue(), step()),
     ),
   );
-
-  // Controlled vs uncontrolled
   const isControlled = () => getProps().value !== undefined;
-
-  // Internal signal for uncontrolled mode
-  const [internalValue, setInternalValue] = createInternalSignal(
-    snapToStep(
-      initialProps.defaultValue ?? initialMinValue,
-      initialMinValue,
-      initialMaxValue,
-      initialStep,
-    ),
+  const fallbackValues = () =>
+    Array.from({ length: initialCount }, (_, index) => (index === 0 ? minValue() : maxValue()));
+  const normalize = (raw: number | readonly number[] | undefined): number[] => {
+    const items = raw === undefined ? fallbackValues() : typeof raw === "number" ? [raw] : raw;
+    const snapped = items.map((item, index) =>
+      snapToStep(
+        arrayMode ? finite(item, index === 0 ? minValue() : maxValue()) : item,
+        minValue(),
+        maxValue(),
+        step(),
+      ),
+    );
+    return arrayMode ? snapped.sort((a, b) => a - b) : snapped;
+  };
+  const [internalValues, setInternalValues] = createInternalSignal(
+    normalize(initialProps.defaultValue),
   );
-
-  // Dragging and focus state
-  const [isDragging, setIsDragging] = createInternalSignal(false);
-  const [isFocused, setIsFocused] = createInternalSignal(false);
-
-  // Current value accessor
-  const value = createMemo(() => {
+  const values: Accessor<readonly number[]> = () =>
+    normalize(isControlled() ? getProps().value : internalValues());
+  const initialValues = [...values()];
+  const initialDefaultValues = normalize(initialProps.defaultValue ?? initialValues);
+  const defaultValues: Accessor<readonly number[]> = () =>
+    // Scalar defaults are captured at mount; RangeSlider resets to current domain defaults.
+    normalize(arrayMode ? getProps().defaultValue : initialDefaultValues);
+  if (arrayMode) {
+    // Preserve RangeSlider's reactive uncontrolled default/domain reset policy.
+    // The compute phase reads only props/bounds, never the mutable current values.
+    const resetSnapshot = () =>
+      isControlled()
+        ? undefined
+        : {
+            defaults: normalize(getProps().defaultValue),
+            min: minValue(),
+            max: maxValue(),
+            step: step(),
+          };
+    // Seed before effects drain: an initial equal default must not erase setters
+    // called during setup. Only a changed default/domain/control mode resets.
+    let previousReset = resetSnapshot();
+    createEffect(resetSnapshot, (next) => {
+      const previous = previousReset;
+      previousReset = next;
+      if (
+        next &&
+        (!previous ||
+          next.min !== previous.min ||
+          next.max !== previous.max ||
+          next.step !== previous.step ||
+          next.defaults.length !== previous.defaults.length ||
+          next.defaults.some((value, index) => value !== previous.defaults[index]))
+      ) {
+        setInternalValues(next.defaults);
+      }
+    });
+  }
+  const [draggings, setDraggings] = createInternalSignal<boolean[]>(initialValues.map(() => false));
+  const [focusedThumb, setFocusedThumbValue] = createInternalSignal<number | undefined>(undefined);
+  const isDragging = () => draggings().some(Boolean);
+  let pendingValues = [...initialValues];
+  let hasPendingUpdate = false;
+  // Upstream retains each setter proposal outside drag too. Rebase when rendered values change.
+  let nonDraggingRenderedSnapshot: readonly number[] | undefined;
+  const validIndex = (index: number) =>
+    Number.isInteger(index) && index >= 0 && index < values().length;
+  const getThumbValue = (index: number) => values()[index];
+  const getThumbMinValue = (index: number) => (index === 0 ? minValue() : values()[index - 1]);
+  const getThumbMaxValue = (index: number) =>
+    index === values().length - 1 ? maxValue() : values()[index + 1];
+  const emit = (kind: "onChange" | "onChangeEnd", next: readonly number[]) => {
     const p = getProps();
-    const rawValue = isControlled() ? (p.value ?? minValue()) : internalValue();
-    return snapToStep(rawValue, minValue(), maxValue(), step());
-  });
-
-  // Value as percent (0-1)
-  const getValuePercent = createMemo(() => {
-    return (value() - minValue()) / (maxValue() - minValue());
-  });
-
-  // Formatted value
-  const getFormattedValue = createMemo(() => {
-    const p = getProps();
-    const formatter = new Intl.NumberFormat(p.locale, p.formatOptions);
-    return formatter.format(value());
-  });
-
-  // Set value function
-  const setValue = (newValue: number) => {
-    if (isDisabled()) return;
-
-    const p = getProps();
-    const snappedValue = snapToStep(newValue, minValue(), maxValue(), step());
-
-    if (!isControlled()) {
-      setInternalValue(snappedValue);
+    // The public overloads guarantee this callback shape for the established mode.
+    if (arrayMode) (p as SliderStateProps<number[]>)[kind]?.([...next]);
+    else (p as SliderStateProps)[kind]?.(next[0]);
+  };
+  const setThumbValue = (index: number, nextValue: number) => {
+    if (isDisabled() || !validIndex(index)) return;
+    const rendered = values();
+    const retainNonDraggingProposal =
+      arrayMode &&
+      isControlled() &&
+      nonDraggingRenderedSnapshot !== undefined &&
+      rendered.length === nonDraggingRenderedSnapshot.length &&
+      rendered.every((item, i) => item === nonDraggingRenderedSnapshot![i]);
+    const base = normalize(isDragging() || retainNonDraggingProposal ? pendingValues : rendered);
+    const lower = index === 0 ? minValue() : base[index - 1];
+    const upper = index === base.length - 1 ? maxValue() : base[index + 1];
+    // Current RangeSlider anchors snapping to the whole domain, then clamps to neighbors.
+    const snapped = clamp(snapToStep(nextValue, minValue(), maxValue(), step()), lower, upper);
+    const next = [...base];
+    next[index] = snapped;
+    pendingValues = next;
+    hasPendingUpdate = true;
+    nonDraggingRenderedSnapshot =
+      !isDragging() && arrayMode && isControlled() ? [...rendered] : undefined;
+    const changed = next.some((item, i) => item !== rendered[i]);
+    if (!isControlled() && (!arrayMode || changed)) setInternalValues(next);
+    // Scalar's duplicate callbacks and RangeSlider's equal-pair suppression are intentional.
+    if (!arrayMode || changed) emit("onChange", next);
+  };
+  const setThumbPercent = (index: number, percent: number) =>
+    setThumbValue(index, clamp(percent, 0, 1) * (maxValue() - minValue()) + minValue());
+  const getThumbPercent = (index: number) =>
+    (getThumbValue(index) - minValue()) / (maxValue() - minValue());
+  const isThumbDragging = (index: number) => draggings()[index] ?? false;
+  const setThumbDragging = (index: number, dragging: boolean) => {
+    if (dragging && (!validIndex(index) || (arrayMode && isDisabled()))) return;
+    const wasDragging = isThumbDragging(index);
+    if (wasDragging === dragging) return;
+    // One snapshot per drag session: a second handle cannot discard unechoed updates.
+    if (dragging && !isDragging()) {
+      pendingValues = [...values()];
+      hasPendingUpdate = false;
+      nonDraggingRenderedSnapshot = undefined;
     }
-
-    p.onChange?.(snappedValue);
-  };
-
-  // Set value by percent
-  const setValuePercent = (percent: number) => {
-    const clampedPercent = clamp(percent, 0, 1);
-    const newValue = clampedPercent * (maxValue() - minValue()) + minValue();
-    setValue(newValue);
-  };
-
-  // Dragging state management
-  const setDragging = (dragging: boolean) => {
-    const wasDragging = isDragging();
-    setIsDragging(dragging);
-
-    // Call onChangeEnd when dragging stops
-    if (wasDragging && !dragging) {
-      getProps().onChangeEnd?.(value());
+    const next = [...draggings()];
+    next[index] = dragging;
+    setDraggings(next);
+    // Allow disabled endings to release ownership; completion occurs only at the final end.
+    if (wasDragging && !isDragging()) {
+      emit("onChangeEnd", normalize(hasPendingUpdate ? pendingValues : values()));
     }
   };
-
-  // Increment/decrement
-  const increment = (stepMultiplier = 1) => {
-    if (isDisabled()) return;
-    setValue(value() + step() * stepMultiplier);
+  const setFocusedThumb = (index: number | undefined) => {
+    if (index === undefined || validIndex(index)) setFocusedThumbValue(index);
   };
-
-  const decrement = (stepMultiplier = 1) => {
-    if (isDisabled()) return;
-    setValue(value() - step() * stepMultiplier);
-  };
-
-  // Set focused state
-  const setFocused = (focused: boolean) => {
-    setIsFocused(focused);
-  };
-
+  const incrementThumb = (index: number, stepSize = 1) =>
+    setThumbValue(index, getThumbValue(index) + Math.max(stepSize, step()));
+  const decrementThumb = (index: number, stepSize = 1) =>
+    setThumbValue(index, getThumbValue(index) - Math.max(stepSize, step()));
+  const formatter = createMemo(
+    () => new Intl.NumberFormat(getProps().locale, getProps().formatOptions),
+  );
+  function getFormattedValue(): string;
+  function getFormattedValue(value: number | readonly number[]): string;
+  function getFormattedValue(value: number | readonly number[] = values()): string {
+    const items = typeof value === "number" ? [value] : value;
+    if (items.length === 0) return "";
+    if (items.length === 1) return formatter().format(items[0]);
+    if (items.length === 2) return formatter().formatRange(items[0], items[1]);
+    return new Intl.ListFormat(formatter().resolvedOptions().locale, { type: "unit" }).format(
+      items.map((item) => formatter().format(item)),
+    );
+  }
+  const value = () => getThumbValue(0) ?? minValue();
+  const setValue = (next: number) => setThumbValue(0, next);
   return {
+    values,
+    defaultValues,
+    getThumbValue,
+    setThumbValue,
+    setThumbPercent,
+    getThumbPercent,
+    getThumbMinValue,
+    getThumbMaxValue,
+    getThumbValueLabel: (index) => getFormattedValue(getThumbValue(index)),
+    isThumbDragging,
+    setThumbDragging,
+    focusedThumb,
+    setFocusedThumb,
+    incrementThumb,
+    decrementThumb,
     value,
     setValue,
-    setValuePercent,
-    getValuePercent,
+    setValuePercent: (percent) => setThumbPercent(0, percent),
+    getValuePercent: () => getThumbPercent(0),
     getFormattedValue,
     isDragging,
-    setDragging,
-    isFocused,
-    setFocused,
-    increment,
-    decrement,
+    setDragging: (dragging) => setThumbDragging(0, dragging),
+    isFocused: () => focusedThumb() !== undefined,
+    setFocused: (focused) => {
+      if (focused) setFocusedThumb(0);
+      else if (focusedThumb() === 0) setFocusedThumb(undefined);
+    },
+    // Preserve even zero/negative scalar multiplier semantics, rather than using indexed delta.
+    increment: (multiplier = 1) => setValue(value() + step() * multiplier),
+    decrement: (multiplier = 1) => setValue(value() - step() * multiplier),
     get minValue() {
       return minValue();
     },
