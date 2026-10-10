@@ -260,3 +260,78 @@ it("owns exactly one theme listener and removes it on disposal", async () => {
   await settle();
   expect(read!()).toBe("dark");
 });
+
+for (const arity of [0, 1] as const) {
+  it(`keeps marked render-prop sibling state and focus live with arity ${arity}`, async () => {
+    const Context = createContext("outside");
+    const [active, setActive] = createSignal(false);
+    const mounted = vi.fn();
+    const cleaned = vi.fn();
+    const callbackValues: string[] = [];
+    const contexts: string[] = [];
+    const Status = () => {
+      const context = useContext(Context);
+      contexts.push(context);
+      mounted("status");
+      onCleanup(() => cleaned("status"));
+      return () => `${context}: ${active() ? "active" : "idle"}`;
+    };
+    const Editor = () => {
+      contexts.push(useContext(Context));
+      mounted("editor");
+      onCleanup(() => cleaned("editor"));
+      const [value, setValue] = createSignal("initial");
+      return h("input", {
+        value,
+        onFocus: () => setActive(true),
+        onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+          setValue(event.currentTarget.value),
+      })();
+    };
+    const siblings = () => [hc(Status), hc(Editor)];
+    const callback =
+      arity === 0
+        ? () => {
+            callbackValues.push("zero");
+            return siblings();
+          }
+        : (value: string) => {
+            callbackValues.push(value);
+            return siblings();
+          };
+    const marked = renderProp(callback);
+    expect(marked.length).toBe(arity);
+    const Host = (props: { children: (value: string) => JSX.Element }) =>
+      props.children("callback value");
+    dispose = render(() => hc(Context, { value: "inside" }, [hc(Host, {}, marked)])(), container);
+    await settle();
+    const input = container.querySelector("input");
+    expect(input).not.toBeNull();
+    if (!input) throw new Error("Expected the sibling editor");
+    expect(contexts).toEqual(["inside", "inside"]);
+    expect(callbackValues).toEqual([arity === 0 ? "zero" : "callback value"]);
+    expect(container.textContent).toBe("inside: idle");
+    input.value = "local typed value";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await settle();
+    input.focus();
+    await settle();
+    expect(container.textContent).toBe("inside: active");
+    expect(container.querySelector("input")).toBe(input);
+    expect(input.isConnected).toBe(true);
+    expect(input.value).toBe("local typed value");
+    expect(document.activeElement).toBe(input);
+    setActive(false);
+    await settle();
+    expect(container.textContent).toBe("inside: idle");
+    expect(container.querySelector("input")).toBe(input);
+    expect(input.isConnected).toBe(true);
+    expect(input.value).toBe("local typed value");
+    expect(document.activeElement).toBe(input);
+    expect(mounted.mock.calls).toEqual([["status"], ["editor"]]);
+    expect(cleaned).not.toHaveBeenCalled();
+    dispose();
+    dispose = undefined;
+    expect(cleaned.mock.calls.map(([name]) => name).sort()).toEqual(["editor", "status"]);
+  });
+}

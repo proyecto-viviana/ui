@@ -123,6 +123,7 @@ function ReactTableViewDemo() {
                     SpectrumColumn,
                     {
                       id: column.id,
+                      textValue: column.name,
                       isRowHeader: column.isRowHeader,
                       align: demoProps.showDividers ? column.align : undefined,
                       showDivider: demoProps.showDividers ? column.showDivider : undefined,

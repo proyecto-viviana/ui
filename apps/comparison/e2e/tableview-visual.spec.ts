@@ -285,6 +285,43 @@ function expectTableViewStateToMatch(
 }
 
 test.describe("comparison TableView visual parity", () => {
+  for (const sortCase of [
+    {
+      column: "name",
+      headerName: /Name/,
+      direction: "ascending",
+      description: "sorted by column Name in ascending order",
+    },
+    {
+      column: "status",
+      headerName: /Status/,
+      direction: "descending",
+      description: "sorted by column Status in descending order",
+    },
+  ] as const) {
+    test(`initial ${sortCase.column} ${sortCase.direction} exposes the named sort description and header state in both stacks`, async ({
+      page,
+    }) => {
+      const fixtures = await tableViewFixtures(
+        page,
+        `?locale=en-US&selectionMode=multiple&selectionSource=defaultSelectedKeys&defaultSelectedKeys=project-brief&sortColumn=${sortCase.column}&sortDirection=${sortCase.direction}`,
+      );
+
+      for (const { framework, root } of [
+        { framework: "React Spectrum", root: fixtures.reactRoot },
+        { framework: "Solidaria", root: fixtures.solidRoot },
+      ]) {
+        await test.step(framework, async () => {
+          const grid = root.getByRole("grid", { name: "Project documents", exact: true });
+          await expect(grid).toHaveAccessibleDescription(sortCase.description);
+          await expect(
+            grid.getByRole("columnheader", { name: sortCase.headerName }),
+          ).toHaveAttribute("aria-sort", sortCase.direction);
+        });
+      }
+    });
+  }
+
   test("default collection matches current React Spectrum", async ({ page }) => {
     const fixtures = await tableViewFixtures(page);
 
@@ -393,9 +430,9 @@ test.describe("comparison TableView visual parity", () => {
     const fixtures = await tableViewFixtures(page, "?selectionMode=none&showDividers=true");
     const budgetRow = /Budget\.xlsx/;
 
-    // The vendored upstream source for this port is S2 1.5. The comparison app
-    // still installs S2 1.3, which has CellFocusRing but not row focusIndicator
-    // vars, so this guards the fixture drift instead of claiming false equality.
+    // Both the pinned React Spectrum S2 1.7 reference and the vendored upstream
+    // use the row focusIndicator overlay and inherited cell focus-ring offsets.
+    // Keep positive geometry checks and compare both implementations directly.
     const reactRow = await focusBodyRow(page, fixtures.reactRoot, budgetRow);
     const reactRowFocusRing = await rowFocusRingContract(reactRow);
     await reactRow.evaluate((element) => element.blur());
@@ -405,10 +442,10 @@ test.describe("comparison TableView visual parity", () => {
     await solidRow.evaluate((element) => element.blur());
 
     expect(reactRowFocusRing.focusVisible).toBe(true);
-    expect(reactRowFocusRing.topFocusRing).toBe("");
-    expect(reactRowFocusRing.bottomPosition).toBe("");
-    expect(reactRowFocusRing.afterContent).toBe("none");
-    expect(reactRowFocusRing.afterPosition).toBe("static");
+    expect(reactRowFocusRing.topFocusRing).toBe("-1px");
+    expect(reactRowFocusRing.bottomPosition).toBe("-1px");
+    expect(reactRowFocusRing.afterContent).not.toBe("none");
+    expect(reactRowFocusRing.afterPosition).toBe("absolute");
 
     expect(solidRowFocusRing.focusVisible).toBe(true);
     expect(solidRowFocusRing.topFocusRing).toBe("-1px");
@@ -421,6 +458,7 @@ test.describe("comparison TableView visual parity", () => {
     expect(solidRowFocusRing.afterOutlineWidth).toBe("2px");
     expect(solidRowFocusRing.afterOutlineOffset).toBe("-2px");
     expect(solidRowFocusRing.afterPointerEvents).toBe("none");
+    expect(solidRowFocusRing).toEqual(reactRowFocusRing);
 
     const reactCell = await focusBodyRowHeader(page, fixtures.reactRoot, budgetRow);
     const reactCellFocusRing = await cellFocusRingContract(reactCell);
@@ -431,10 +469,10 @@ test.describe("comparison TableView visual parity", () => {
 
     expect(reactCellFocusRing.focusVisible).toBe(true);
     expect(reactCellFocusRing.presentationChildCount).toBe(1);
-    expect(reactCellFocusRing.topFocusRing).toBe("");
-    expect(reactCellFocusRing.bottomPosition).toBe("");
-    expect(reactCellFocusRing.ringTop).toBe("0px");
-    expect(reactCellFocusRing.ringTopDelta).toBe(0);
+    expect(reactCellFocusRing.topFocusRing).toBe("-1px");
+    expect(reactCellFocusRing.bottomPosition).toBe("-1px");
+    expect(reactCellFocusRing.ringTop).toBe("-1px");
+    expect(reactCellFocusRing.ringTopDelta).toBe(-1);
 
     expect(solidCellFocusRing.focusVisible).toBe(reactCellFocusRing.focusVisible);
     expect(solidCellFocusRing.presentationChildCount).toBe(
@@ -454,6 +492,7 @@ test.describe("comparison TableView visual parity", () => {
     expect(solidCellFocusRing.ringOutlineWidth).toBe("2px");
     expect(solidCellFocusRing.ringOutlineOffset).toBe("-2px");
     expect(solidCellFocusRing.ringTopDelta).toBe(-1);
+    expect(solidCellFocusRing).toEqual(reactCellFocusRing);
   });
 
   test("empty state and ActionBar are wired on both stacks", async ({ page }) => {

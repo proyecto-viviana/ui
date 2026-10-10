@@ -115,22 +115,6 @@ const behaviorScenario: DriverScenario = {
     roots: {
       grid,
     },
-    knownDivergences: {
-      // The grid's sort live-region description ("sorted by column <name> in
-      // <direction> order") reads the sorted column's `textValue` in both ports
-      // (faithful to react-aria's `useTable`). They diverge on what that
-      // `textValue` is: this data-driven TableView carries a real column
-      // `textValue` (from the `name` field of its `columns` prop — "Name"),
-      // while S2's JSX-driven `Column` passes a *render-function* child to
-      // `RACColumn` and no explicit `textValue`, so RAC cannot derive one and
-      // the node's `textValue` is empty (S2 TableView.tsx:777-808). The S2
-      // oracle therefore announces "sorted by column  in ascending order"
-      // (empty name) whereas our announcement is richer ("…column Name…"). This
-      // is a data-model divergence, not a port bug — our column legitimately has
-      // a name — so the sorted AX case is a documented known divergence.
-      sorted:
-        "grid sort-description columnName differs: data-driven TableView carries a real column textValue ('Name') while S2's JSX render-prop Column child erases it (empty name in the S2 oracle). Our announcement is richer but diverges from the S2 oracle.",
-    },
   },
 };
 

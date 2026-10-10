@@ -692,17 +692,17 @@ const tableRow = style<
       },
     },
   },
-  // Highlight mode draws the gray row divider as the row's box-shadow. A real
-  // `<tr>` border can't be used here: under `border-collapse: separate` CSS
-  // ignores borders set on `<tr>`, so upstream's row `borderBottom` has no
-  // real-DOM equivalent — the box-shadow is its faithful realization (checkbox
-  // mode keeps the divider on the cell's bottom border instead). The divider is
-  // suppressed under selection: when the row itself is selected, or the row
-  // below it is, the rounded blue highlight-block border paints that edge, so
-  // the gray line would otherwise double up. Mirrors upstream's divider
-  // `borderColor` going `transparent` on both `isSelected` and `isNextSelected`.
+  // S2 draws the gray divider on the row. Native `<tr>` borders are ignored
+  // under `border-collapse: separate`, so an inset shadow realizes that edge
+  // without shrinking the cell focus ring's containing block with a cell border.
+  // Highlight selection suppresses the gray line when this row or the next is
+  // selected, matching upstream's transparent divider beneath the blue block.
   boxShadow: {
     selectionStyle: {
+      checkbox: {
+        default: "[inset 0 -1px 0px var(--borderColorGray)]",
+        forcedColors: "[inset 0 -1px 0px ButtonBorder]",
+      },
       highlight: {
         default: "[inset 0 -1px 0px var(--borderColorGray)]",
         isSelected: "[inset 0 0 0 var(--borderColorGray)]",
@@ -758,14 +758,8 @@ const tableCell = style<
   },
   verticalAlign: "middle",
   borderWidth: 0,
-  // Checkbox mode draws the gray row divider here; highlight mode draws it as the
-  // row's box-shadow instead, so the cell border is suppressed to avoid doubling.
-  borderBottomWidth: {
-    default: 1,
-    selectionStyle: {
-      highlight: 0,
-    },
-  },
+  // The row owns the divider, as in S2; cell focus rings use the full cell box.
+  borderBottomWidth: 0,
   borderStyle: "solid",
   borderColor: "gray-300",
   borderEndWidth: {

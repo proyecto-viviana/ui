@@ -127,11 +127,15 @@ function resolveDeep(value: unknown): unknown {
 }
 
 export function renderProp<T>(fn: (item: T) => unknown) {
-  Object.defineProperty(fn, RENDER_PROP_MARKER, {
+  // Materialize component thunks inside the callback owner, before the
+  // renderer unwraps the returned array in a shared reactive insertion.
+  const resolved = (item: T) => resolveDeep(fn(item));
+  Object.defineProperty(resolved, "length", { value: fn.length });
+  Object.defineProperty(resolved, RENDER_PROP_MARKER, {
     value: true,
     enumerable: false,
   });
-  return fn as MarkedRenderProp<T>;
+  return resolved as MarkedRenderProp<T>;
 }
 
 function normalizeCallbackProps(component: ComponentLike, props?: Props | null) {
