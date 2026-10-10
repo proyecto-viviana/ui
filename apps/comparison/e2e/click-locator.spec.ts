@@ -21,38 +21,101 @@ test.describe("clickLocator", () => {
     const trigger = canvas.getByRole("button", { name: "Open Dialog" }).first();
 
     await trigger.evaluate((element) => {
-      const el = element as HTMLElement;
-      const w = window as Window & { __clickLocatorMidPressFocus?: boolean };
+      const w = window as Window & {
+        __clickLocatorMidPressFocus?: boolean;
+        __clickLocatorNativeProbe?: {
+          pointerDownObserved: boolean;
+          pointerUpObserved: boolean;
+          pointerDownTrusted: boolean;
+          pointerUpTrusted: boolean;
+          restore: () => void;
+        };
+      };
       w.__clickLocatorMidPressFocus = false;
       const originalFocus = HTMLElement.prototype.focus;
-      const originalDispatch = EventTarget.prototype.dispatchEvent;
-      let afterPointerDown = false;
-      EventTarget.prototype.dispatchEvent = function (event) {
-        const result = originalDispatch.call(this, event);
-        if (this === el && event instanceof PointerEvent && event.type === "pointerdown") {
-          afterPointerDown = true;
-        }
-        if (this === el && event instanceof PointerEvent && event.type === "pointerup") {
-          afterPointerDown = false;
-        }
-        return result;
+      let pointerDown: Event | undefined;
+      let pointerUp: Event | undefined;
+      const probe = {
+        pointerDownObserved: false,
+        pointerUpObserved: false,
+        pointerDownTrusted: false,
+        pointerUpTrusted: false,
+        restore: () => {
+          window.removeEventListener("pointerdown", onPointerDown, true);
+          window.removeEventListener("pointerup", onPointerUp, true);
+          HTMLElement.prototype.focus = originalFocus;
+        },
       };
+      const onPointerDown = (event: Event) => {
+        if (!(event.target instanceof Node) || !element.contains(event.target)) return;
+        pointerDown = event;
+        probe.pointerDownObserved = true;
+        probe.pointerDownTrusted = event.isTrusted;
+      };
+      const onPointerUp = (event: Event) => {
+        if (!(event.target instanceof Node) || !element.contains(event.target)) return;
+        pointerUp = event;
+        probe.pointerUpObserved = true;
+        probe.pointerUpTrusted = event.isTrusted;
+      };
+      window.addEventListener("pointerdown", onPointerDown, true);
+      window.addEventListener("pointerup", onPointerUp, true);
       HTMLElement.prototype.focus = function (...args) {
-        if (afterPointerDown && this === el) {
+        if (
+          this === element &&
+          pointerDown?.eventPhase === Event.NONE &&
+          (!pointerUp || pointerUp.eventPhase !== Event.NONE)
+        ) {
           w.__clickLocatorMidPressFocus = true;
         }
         return originalFocus.apply(this, args as []);
       };
+      w.__clickLocatorNativeProbe = probe;
     });
 
-    await clickLocator(trigger);
-    expect(
-      await page.evaluate(
-        () =>
-          (window as Window & { __clickLocatorMidPressFocus?: boolean })
-            .__clickLocatorMidPressFocus,
-      ),
-    ).toBe(false);
+    try {
+      await clickLocator(trigger);
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __clickLocatorMidPressFocus?: boolean })
+              .__clickLocatorMidPressFocus,
+        ),
+      ).toBe(false);
+      expect(
+        await page.evaluate(() => {
+          const probe = (
+            window as Window & {
+              __clickLocatorNativeProbe?: {
+                pointerDownObserved: boolean;
+                pointerUpObserved: boolean;
+                pointerDownTrusted: boolean;
+                pointerUpTrusted: boolean;
+              };
+            }
+          ).__clickLocatorNativeProbe;
+          return {
+            pointerDownObserved: probe?.pointerDownObserved,
+            pointerUpObserved: probe?.pointerUpObserved,
+            pointerDownTrusted: probe?.pointerDownTrusted,
+            pointerUpTrusted: probe?.pointerUpTrusted,
+          };
+        }),
+      ).toEqual({
+        pointerDownObserved: true,
+        pointerUpObserved: true,
+        pointerDownTrusted: true,
+        pointerUpTrusted: true,
+      });
+    } finally {
+      await page.evaluate(() => {
+        const w = window as Window & {
+          __clickLocatorNativeProbe?: { restore: () => void };
+        };
+        w.__clickLocatorNativeProbe?.restore();
+        delete w.__clickLocatorNativeProbe;
+      });
+    }
   });
 
   for (const stack of stacks) {

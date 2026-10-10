@@ -309,99 +309,26 @@ export async function pressLocator(target: Locator) {
   );
 }
 
-/**
- * Touch tap without Playwright's `touchscreen.tap` stability wait.
- * Element pointer events with `pointerType: "touch"` — CDP `Input.dispatchTouchEvent`
- * closed the page on this box and took the preview down with it.
- */
+/** Touch input at the scrolled viewport center, including disabled targets. */
 export async function tapLocator(target: Locator) {
   await scrollLocatorIntoView(target);
   const { x, y } = await layoutBoxCenter(target);
-  await target.evaluate(
-    (element, point) => {
-      const el = element as HTMLElement;
-      const pointerInit: PointerEventInit = {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-        pointerId: 1,
-        pointerType: "touch",
-        isPrimary: true,
-        clientX: point.x,
-        clientY: point.y,
-      };
-      el.dispatchEvent(new PointerEvent("pointerdown", { ...pointerInit, buttons: 1, button: 0 }));
-      el.dispatchEvent(new PointerEvent("pointerup", pointerInit));
-      el.dispatchEvent(
-        new MouseEvent("click", {
-          bubbles: true,
-          cancelable: true,
-          clientX: point.x,
-          clientY: point.y,
-        }),
-      );
-    },
-    { x, y },
-  );
+  await target.page().touchscreen.tap(x, y);
 }
 
-/**
- * Dismiss a portaled overlay without Playwright actionability.
- *
- * RAC `useOverlay` / Solid `createOverlay` put Escape on the overlay
- * element (`overlayProps.onKeyDown`), not document. A CDP key to the
- * still-focused trigger never reaches that listener — RAC also ignores
- * portal-bubbled keydowns whose target is outside the overlay.
- */
+/** Escape follows the browser's current focus; overlay ownership stays observable. */
 export async function dismissOverlay(overlay: Locator) {
   if ((await overlay.count()) === 0) {
     return;
   }
-  const node = overlay.first();
-  await node.evaluate((element) => {
-    const init = {
-      key: "Escape",
-      code: "Escape",
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-    } satisfies KeyboardEventInit;
-    element.dispatchEvent(new KeyboardEvent("keydown", init));
-    element.dispatchEvent(new KeyboardEvent("keyup", init));
-  });
+  await overlay.page().keyboard.press("Escape");
 }
 
-/**
- * Activate without waiting for compositor-stable frames.
- * Playwright's `locator.click()` deadlocks on this box. Native
- * `HTMLElement.click()` is enough for form controls; RAC `usePress`
- * listens to pointerdown/up, so overlay triggers also need those.
- * Do not focus between pointerdown and pointerup — that leaves the
- * trigger focused after the overlay opens, so Escape never hits
- * RAC `useOverlay`'s overlay listener.
- */
+/** Mouse input at the scrolled viewport center, without locator actionability. */
 export async function clickLocator(target: Locator) {
   await scrollLocatorIntoView(target);
   const { x, y } = await layoutBoxCenter(target);
-  await target.evaluate(
-    (element, point) => {
-      const el = element as HTMLElement;
-      const pointerInit: PointerEventInit = {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-        pointerId: 1,
-        pointerType: "mouse",
-        isPrimary: true,
-        clientX: point.x,
-        clientY: point.y,
-      };
-      el.dispatchEvent(new PointerEvent("pointerdown", { ...pointerInit, buttons: 1, button: 0 }));
-      el.dispatchEvent(new PointerEvent("pointerup", pointerInit));
-      el.click();
-    },
-    { x, y },
-  );
+  await target.page().mouse.click(x, y);
 }
 
 /**

@@ -53,35 +53,7 @@ export const mouseClickGesture: EventGesture = {
   id: "mouse-click",
   run: async ({ page, target }) => {
     const { x, y } = await centerOf(target);
-    await page.mouse.move(x, y);
-    await target.evaluate(
-      (element, point) => {
-        const el = element as HTMLElement;
-        const pointerInit: PointerEventInit = {
-          bubbles: true,
-          cancelable: true,
-          composed: true,
-          pointerId: 1,
-          pointerType: "mouse",
-          isPrimary: true,
-          clientX: point.x,
-          clientY: point.y,
-        };
-        el.dispatchEvent(
-          new PointerEvent("pointerdown", { ...pointerInit, buttons: 1, button: 0 }),
-        );
-        el.dispatchEvent(new PointerEvent("pointerup", pointerInit));
-        el.dispatchEvent(
-          new MouseEvent("click", {
-            bubbles: true,
-            cancelable: true,
-            clientX: point.x,
-            clientY: point.y,
-          }),
-        );
-      },
-      { x, y },
-    );
+    await page.mouse.click(x, y);
   },
 };
 

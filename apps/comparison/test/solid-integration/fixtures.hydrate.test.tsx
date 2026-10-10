@@ -948,9 +948,17 @@ it("stage A collections DnD ListBox reorders by keyboard and publishes the live 
     "admin",
   ]);
   expect(JSON.parse(listbox?.dataset.comparisonOrder ?? "[]")).toEqual(["write", "admin", "read"]);
-  const focused = document.activeElement as HTMLElement;
-  expect(focused.getAttribute("role")).toBe("option");
-  expect(focused.textContent).toContain("Read");
+  await vi.waitFor(
+    () => {
+      flush();
+      const focused = document.activeElement as HTMLElement;
+      expect(focused.getAttribute("role")).toBe("option");
+      expect(focused.textContent).toContain("Read");
+      expect(focused).toBe(read);
+      expect(stageACollectionItem("option", "Read")).toBe(read);
+    },
+    { timeout: 1000, interval: 20 },
+  );
 });
 
 it("stage A collections Virtualizer windows semantic options and retains focused keyed identity", async () => {
@@ -1320,6 +1328,7 @@ it("stage B async tail Picker navigates, selects, and returns trigger focus on E
   expect(root?.dataset.comparisonValue).toBe("enterprise");
   expect(trigger?.textContent).toContain("Enterprise");
   expect(document.querySelector('[role="listbox"]')).toBeNull();
+  await nextAnimationFrame();
   expect(document.activeElement).toBe(trigger);
 
   await user.keyboard("{ArrowDown}");
@@ -1332,6 +1341,7 @@ it("stage B async tail Picker navigates, selects, and returns trigger focus on E
   await user.keyboard("{Escape}");
   await settle();
   expect(document.querySelector('[role="listbox"]')).toBeNull();
+  await nextAnimationFrame();
   expect(document.activeElement).toBe(trigger);
 });
 
@@ -1638,6 +1648,7 @@ it.each([
     await user.keyboard("{Escape}");
     await settle();
     expect(root?.dataset.comparisonOpen).toBe("false");
+    await nextAnimationFrame();
     expect(document.activeElement).toBe(trigger);
     expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
   },
@@ -1832,6 +1843,7 @@ it.each([
     expect(root?.dataset.comparisonActionCount).toBe("1");
     expect(root?.dataset.comparisonLastAction).not.toBe("");
     expect(root?.dataset.comparisonLastOpenState).toBe("false");
+    await nextAnimationFrame();
     expect(document.activeElement).toBe(trigger);
 
     await user.keyboard("{Enter}");
@@ -1840,6 +1852,7 @@ it.each([
     await user.keyboard("{Escape}");
     await settle();
     expect(document.querySelector('[role="menu"]')).toBeNull();
+    await nextAnimationFrame();
     expect(document.activeElement).toBe(trigger);
     expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
   },
@@ -1896,6 +1909,7 @@ it("stage B contextual help permits Escape close, pins external open, and keeps 
   await user.keyboard("{Escape}");
   await settle();
   expect(document.querySelector('[role="dialog"]')).toBeNull();
+  await nextAnimationFrame();
   expect(document.activeElement).toBe(trigger);
 
   const removeControl = addPinnedOpenControl("contextualhelp");
@@ -1958,6 +1972,7 @@ it("stage B dialog preserves its trigger owner, live content, callback, and focu
   await settle();
   expect(root?.dataset.comparisonOpen).toBe("false");
   expect(document.querySelector('[role="dialog"]')).toBeNull();
+  await nextAnimationFrame();
   expect(document.activeElement).toBe(trigger);
   expect(
     callbacks.some(
@@ -2000,6 +2015,7 @@ it("stage B popover permits Escape close, pins external open, and retains live d
   await user.keyboard("{Escape}");
   await settle();
   expect(root?.dataset.comparisonOpen).toBe("false");
+  await nextAnimationFrame();
   expect(document.activeElement).toBe(trigger);
 
   controls("popover", {
@@ -2831,16 +2847,22 @@ it("slider retains its live thumb and handles keyboard stepping", async () => {
   dispose = render(() => Slider(), container);
   await settle();
   const root = container.querySelector<HTMLElement>('[data-comparison-control-root="slider"]');
-  const thumb = container.querySelector<HTMLElement>('[role="slider"]');
+  const thumb = container.querySelector<HTMLInputElement>('input[type="range"]');
   expect(root).not.toBeNull();
+  expect(container.querySelectorAll('input[type="range"]')).toHaveLength(1);
+  expect(thumb).not.toHaveAttribute("aria-hidden", "true");
+  expect(thumb?.parentElement?.parentElement).not.toHaveAttribute("role", "slider");
+  expect(thumb?.parentElement?.parentElement).not.toHaveAttribute("tabindex");
+  expect(thumb?.value).toBe("40");
   expect(thumb?.getAttribute("aria-valuenow")).toBe("40");
   thumb?.focus();
   expect(document.activeElement).toBe(thumb);
   keyDown(thumb!, "ArrowRight");
   await settle();
+  expect(thumb?.value).toBe("41");
   expect(thumb?.getAttribute("aria-valuenow")).toBe("41");
   expect(root?.dataset.comparisonValue).toBe("41");
-  expect(container.querySelector('[role="slider"]')).toBe(thumb);
+  expect(container.querySelector('input[type="range"]')).toBe(thumb);
   const fill = container.querySelector<HTMLElement>('div[style*="inset-inline-start"]');
   const output = container.querySelector<HTMLElement>("output");
   expect(fill).not.toBeNull();
@@ -2852,7 +2874,7 @@ it("slider retains its live thumb and handles keyboard stepping", async () => {
     new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "dark" } }),
   );
   await settle();
-  expect(container.querySelector('[role="slider"]')).toBe(thumb);
+  expect(container.querySelector('input[type="range"]')).toBe(thumb);
   expect(container.textContent).toContain("Output");
   expect(root?.dataset.comparisonColorScheme).toBe("dark");
   expect(fill?.className).not.toBe(defaultFillClass);
@@ -2868,25 +2890,33 @@ it("range slider retains and independently steps both live thumbs", async () => 
   dispose = render(() => RangeSlider(), container);
   await settle();
   const root = container.querySelector<HTMLElement>('[data-comparison-control-root="rangeslider"]');
-  const thumbs = [...container.querySelectorAll<HTMLElement>('[role="slider"]')];
+  const thumbs = [...container.querySelectorAll<HTMLInputElement>('input[type="range"]')];
   expect(root).not.toBeNull();
   expect(thumbs).toHaveLength(2);
+  for (const thumb of thumbs) {
+    expect(thumb).not.toHaveAttribute("aria-hidden", "true");
+    expect(thumb.parentElement?.parentElement).not.toHaveAttribute("role", "slider");
+    expect(thumb.parentElement?.parentElement).not.toHaveAttribute("tabindex");
+  }
+  expect(thumbs.map((thumb) => thumb.value)).toEqual(["30", "60"]);
   expect(thumbs[0].getAttribute("aria-valuenow")).toBe("30");
   expect(thumbs[1].getAttribute("aria-valuenow")).toBe("60");
   thumbs[0].focus();
   expect(document.activeElement).toBe(thumbs[0]);
   keyDown(thumbs[0], "ArrowRight");
   await settle();
+  expect(thumbs[0].value).toBe("31");
   expect(thumbs[0].getAttribute("aria-valuenow")).toBe("31");
-  expect(container.querySelectorAll('[role="slider"]')[0]).toBe(thumbs[0]);
+  expect(container.querySelectorAll('input[type="range"]')[0]).toBe(thumbs[0]);
   expect(document.activeElement).toBe(thumbs[0]);
   thumbs[1].focus();
   expect(document.activeElement).toBe(thumbs[1]);
   keyDown(thumbs[1], "ArrowLeft");
   await settle();
+  expect(thumbs[1].value).toBe("59");
   expect(thumbs[1].getAttribute("aria-valuenow")).toBe("59");
   expect(root?.dataset.comparisonValue).toBe("31:59");
-  const stepped = [...container.querySelectorAll('[role="slider"]')];
+  const stepped = [...container.querySelectorAll('input[type="range"]')];
   expect(stepped[0]).toBe(thumbs[0]);
   expect(stepped[1]).toBe(thumbs[1]);
   expect(document.activeElement).toBe(thumbs[1]);
@@ -2895,7 +2925,7 @@ it("range slider retains and independently steps both live thumbs", async () => 
     new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "dark" } }),
   );
   await settle();
-  const retained = [...container.querySelectorAll('[role="slider"]')];
+  const retained = [...container.querySelectorAll('input[type="range"]')];
   expect(retained[0]).toBe(thumbs[0]);
   expect(retained[1]).toBe(thumbs[1]);
   expect(container.textContent).toContain("Budget");
