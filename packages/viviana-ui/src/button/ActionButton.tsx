@@ -63,7 +63,7 @@ import {
   mergeContextUnsafeStyle,
   type RefLike,
 } from "./spectrum-context";
-import { getSingleTextChild } from "./text-child";
+import { getSingleTextChild, memoizeChildAccessors } from "./text-child";
 import CornerTriangle from "../icon/ui-icons/CornerTriangle";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -404,11 +404,14 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     };
 
     function ResolvedContent() {
-      // Cache the authored child value without recursively resolving dynamic members.
-      // Solid's children() helper turns mixed text into a snapshot that goes stale
-      // when this branch is hydrated.
-      const content = createMemo(() => local.children);
-      const textChild = () => getSingleTextChild(content());
+      const content = createMemo(() => memoizeChildAccessors(local.children));
+      const textChild = () => {
+        let value: unknown = content();
+        while (typeof value === "function") {
+          value = (value as () => unknown)();
+        }
+        return getSingleTextChild(value);
+      };
 
       return (
         <>

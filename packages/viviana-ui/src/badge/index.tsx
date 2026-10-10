@@ -26,6 +26,7 @@ import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { control, getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { SkeletonWrapper } from "../skeleton";
 import { Text, TextContext } from "../text";
+import { memoizeChildAccessors } from "../button/text-child";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
@@ -458,22 +459,20 @@ function normalizeVariant(variant: BadgeVariant | undefined): S2BadgeVariant {
 }
 
 function isTextOnly(value: unknown): boolean {
-  if (typeof value === "string" || typeof value === "number" || typeof value === "function") {
-    return true;
+  if (typeof value === "function") {
+    return isTextOnly((value as () => unknown)());
   }
 
   if (Array.isArray(value)) {
-    return value.every(
-      (item) =>
-        item == null ||
-        typeof item === "string" ||
-        typeof item === "number" ||
-        typeof item === "boolean" ||
-        typeof item === "function",
-    );
+    return value.every(isTextOnly);
   }
 
-  return value == null || typeof value === "boolean";
+  return (
+    value == null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  );
 }
 
 export function Badge(props: BadgeProps): JSX.Element {
@@ -506,11 +505,11 @@ export function Badge(props: BadgeProps): JSX.Element {
   );
 
   function BadgeContent() {
-    // Cache the authored child value without recursively resolving dynamic members.
-    // Solid's children() helper turns mixed text into a snapshot that goes stale
-    // when this branch is hydrated.
-    const content = createMemo(() => (local.count !== undefined ? local.count : local.children));
-    return isTextOnly(content()) ? <Text>{content()}</Text> : content();
+    const content = createMemo(() =>
+      memoizeChildAccessors(local.count !== undefined ? local.count : local.children),
+    );
+    const textOnly = createMemo(() => isTextOnly(content()));
+    return <>{textOnly() ? <Text>{content()}</Text> : content()}</>;
   }
 
   return (

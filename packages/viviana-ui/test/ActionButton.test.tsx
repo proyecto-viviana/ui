@@ -1,8 +1,10 @@
 import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { createSignal, flush } from "solid-js";
+import { createMemo, createSignal, flush } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { ActionButton } from "../src/button";
+import { Text } from "../src/text";
 
 describe("ActionButton", () => {
   it("does not copy string children onto aria-label when pending", () => {
@@ -82,5 +84,55 @@ describe("ActionButton", () => {
     flush();
     expect(screen.getByRole("button")).toBe(button);
     expect(button).toHaveTextContent("count: 1");
+  });
+
+  it("preserves literal and explicit Text child slot ancestry", () => {
+    render(() => (
+      <>
+        <ActionButton>Literal inspect</ActionButton>
+        <ActionButton>
+          <Text>Explicit inspect</Text>
+        </ActionButton>
+      </>
+    ));
+    for (const name of ["Literal inspect", "Explicit inspect"]) {
+      const button = screen.getByRole("button", { name });
+      const text = screen.getByText(name);
+      expect(text).toHaveAttribute("data-rsp-slot", "text");
+      expect(text.parentElement).toBe(button);
+      expect(button.querySelectorAll('[data-rsp-slot="text"]')).toHaveLength(1);
+    }
+  });
+
+  it("keeps a memo string child in the text slot with reactive original identities", () => {
+    let setLabel!: (value: string) => void;
+    render(() => {
+      const [label, updateLabel] = createSignal("Memo inspect");
+      setLabel = updateLabel;
+      // Match the lazy, single memo child shape of component hyperscript authoring.
+      // The renderer accepts accessor children; JSX.Element excludes functions.
+      const props = {
+        get children(): JSX.Element {
+          return createMemo(() => label()) as unknown as JSX.Element;
+        },
+      };
+      return <ActionButton {...props} />;
+    });
+    const button = screen.getByRole("button", { name: "Memo inspect" });
+    const text = screen.getByText("Memo inspect");
+    expect(text).toHaveAttribute("data-rsp-slot", "text");
+    expect(text.parentElement).toBe(button);
+    expect(button.querySelectorAll('[data-rsp-slot="text"]')).toHaveLength(1);
+    expect(button).not.toHaveAttribute("aria-label");
+    expect(button).not.toHaveAttribute("aria-labelledby");
+
+    setLabel("Updated memo inspect");
+    flush();
+    expect(screen.getByRole("button", { name: "Updated memo inspect" })).toBe(button);
+    expect(screen.getByText("Updated memo inspect")).toBe(text);
+    expect(text.parentElement).toBe(button);
+    expect(button.querySelectorAll('[data-rsp-slot="text"]')).toHaveLength(1);
+    expect(button).not.toHaveAttribute("aria-label");
+    expect(button).not.toHaveAttribute("aria-labelledby");
   });
 });
