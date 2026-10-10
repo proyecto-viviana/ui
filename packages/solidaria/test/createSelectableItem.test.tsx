@@ -1180,5 +1180,109 @@ it("defers row focus during a keyboard drag and resumes after cancellation", asy
     dragTarget.remove();
   }
   expect(isVirtualDragging()).toBe(false);
-  expect(document.activeElement).toBe(el);
+  await vi.waitFor(() => expect(document.activeElement).toBe(el));
+});
+
+describe("createSelectableItem — keyboard drag focus handoff", () => {
+  async function startKeyboardDrag(dragTarget: HTMLElement) {
+    dragTarget.focus();
+    setInteractionModality("keyboard");
+    beginDragging(
+      { element: dragTarget, items: [{ "text/plain": "Apple" }], allowedDropOperations: ["move"] },
+      { format: (key: string) => key } as unknown as LocalizedStringFormatter,
+    );
+    await Promise.resolve();
+    expect(isVirtualDragging()).toBe(true);
+  }
+
+  function cancelKeyboardDrag() {
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    flush();
+    expect(isVirtualDragging()).toBe(false);
+  }
+
+  it("defers custom focus until after cancellation and preserves its options receiver", async () => {
+    const dragTarget = document.createElement("button");
+    document.body.append(dragTarget);
+    const calls: unknown[] = [];
+    let state!: ListState<Item>;
+    let el!: HTMLDivElement;
+    const options: CreateSelectableItemOptions = {
+      key: "a",
+      focus() {
+        calls.push(this);
+        el.focus();
+      },
+    };
+    render(() => {
+      state = createListState<Item>({ items, getKey: (item) => item.key });
+      createSelectableItem(
+        () => options,
+        state,
+        () => el,
+      );
+      return <div ref={el} tabIndex={-1} />;
+    });
+    try {
+      await startKeyboardDrag(dragTarget);
+      state.setFocused(true);
+      state.setFocusedKey("a");
+      flush();
+      expect(calls).toEqual([]);
+      cancelKeyboardDrag();
+      expect(calls).toEqual([]);
+      await vi.waitFor(() => {
+        expect(calls).toEqual([options]);
+        expect(document.activeElement).toBe(el);
+      });
+    } finally {
+      if (isVirtualDragging()) cancelKeyboardDrag();
+      dragTarget.remove();
+    }
+  });
+
+  it("cancels pending custom focus when its owner is disposed, even with a connected target", async () => {
+    const dragTarget = document.createElement("button");
+    const target = document.createElement("button");
+    document.body.append(dragTarget, target);
+    const calls: unknown[] = [];
+    let state!: ListState<Item>;
+    let disposeOwner!: () => void;
+    const options: CreateSelectableItemOptions = {
+      key: "a",
+      focus() {
+        calls.push(this);
+        target.focus();
+      },
+    };
+    createRoot((dispose) => {
+      disposeOwner = dispose;
+      state = createListState<Item>({ items, getKey: (item) => item.key });
+      createSelectableItem(
+        () => options,
+        state,
+        () => target,
+      );
+    });
+    try {
+      await startKeyboardDrag(dragTarget);
+      state.setFocused(true);
+      state.setFocusedKey("a");
+      flush();
+      cancelKeyboardDrag();
+      expect(calls).toEqual([]);
+      disposeOwner();
+      expect(target.isConnected).toBe(true);
+      // Observe completed native frames, rather than advancing or mocking the scheduler.
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      expect(calls).toEqual([]);
+      expect(document.activeElement).not.toBe(target);
+    } finally {
+      if (isVirtualDragging()) cancelKeyboardDrag();
+      disposeOwner();
+      dragTarget.remove();
+      target.remove();
+    }
+  });
 });

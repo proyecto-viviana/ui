@@ -42,7 +42,7 @@
  *   not carry collection-provided press handlers. Ticket #97 owns this boundary.
  */
 
-import { createUniqueId, createTrackedEffect, untrack } from "solid-js";
+import { createUniqueId, createEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type {
@@ -57,7 +57,7 @@ import { createPress, type PressEvent } from "../interactions/createPress";
 import { createLongPress } from "../interactions/createLongPress";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import { focusSafely } from "../utils/focus";
+import { focusSafely, runAfterPaint } from "../utils/focus";
 import { getOwnerDocument, getEventTarget, openLink } from "../utils/dom";
 import { moveVirtualFocus } from "../focus/virtualFocus";
 import { useRouter } from "../utils/openLink";
@@ -84,7 +84,7 @@ export function whileItemDOMFocusSuppressed(run: () => void): void {
   try {
     run();
   } finally {
-    // createTrackedEffect flushes on a microtask queued by the write.
+    // The focus effect flushes on a microtask queued by the write.
     // Drop the flag on a later microtask so that flush still sees it.
     queueMicrotask(() => {
       itemDOMFocusSuppressed -= 1;
@@ -362,45 +362,111 @@ export function createSelectableItem<T>(
   // is the imperative half of roving tabindex — the tabIndex 0/-1 swap below is
   // only declarative.
   const dragSession = createDragSession();
-  createTrackedEffect(() => {
-    // While a keyboard drag session is active, real DOM focus is owned by the
-    // DragManager (it lives on drop indicators / the collection), and upstream's
-    // React `useSelectableItem` focus effect provably cannot re-run mid-drag —
-    // its dep array `[ref, key, focusedKey, childFocusStrategy, isFocused]` stays
-    // frozen. Our reactive effect would otherwise re-fire and steal focus back
-    // onto the focused option, bouncing focus off the drop indicator. Reading the
-    // reactive drag-session accessor here also re-runs this effect once the drag
-    // ends, restoring normal roving-tabindex focus.
-    if (dragSession()) {
-      return;
-    }
+  let dragWasActive = false;
+  createEffect(
+    () => {
+      // While a keyboard drag session is active, real DOM focus is owned by the
+      // DragManager (it lives on drop indicators / the collection), and upstream's
+      // React `useSelectableItem` focus effect provably cannot re-run mid-drag —
+      // its dep array `[ref, key, focusedKey, childFocusStrategy, isFocused]` stays
+      // frozen. Our reactive effect would otherwise re-fire and steal focus back
+      // onto the focused option, bouncing focus off the drop indicator. Reading the
+      // reactive drag-session accessor here also re-runs this effect once the drag
+      // ends, restoring normal roving-tabindex focus.
+      if (dragSession()) {
+        return { dragging: true, request: null };
+      }
 
-    if (key() !== manager.focusedKey() || !manager.isFocused()) {
-      return;
-    }
+      if (key() !== manager.focusedKey() || !manager.isFocused()) {
+        return { dragging: false, request: null };
+      }
 
-    if (itemDOMFocusSuppressed > 0) {
-      return;
-    }
+      if (itemDOMFocusSuppressed > 0) {
+        return { dragging: false, request: null };
+      }
 
-    const o = getOptions();
-    const virtualFocus = shouldUseVirtualFocus();
-    const focus = o.focus;
-    // Track scheduling inputs, but not arbitrary reactive reads made by custom
-    // focus callbacks or by native/virtual focus and blur event handlers.
-    if (!virtualFocus && focus) {
-      untrack(() => focus.call(o));
-    } else {
+      const o = getOptions();
+      const virtualFocus = shouldUseVirtualFocus();
+      const focus = o.focus;
       const el = ref();
-      untrack(() => {
-        if (virtualFocus) {
-          moveVirtualFocus(el ?? null);
-        } else if (el && getOwnerDocument(el).activeElement !== el) {
-          focusSafely(el);
+      const itemKey = key();
+      const childFocusStrategy = manager.childFocusStrategy?.();
+      return {
+        dragging: false,
+        request: { o, virtualFocus, focus, el, itemKey, childFocusStrategy },
+      };
+    },
+    ({ dragging, request }) => {
+      if (dragging) {
+        dragWasActive = true;
+        return;
+      }
+      const restoreAfterDrag = dragWasActive;
+      dragWasActive = false;
+      // Upstream uses a passive effect: focus must follow DOM updates, including
+      // moving the retained option after a keyboard drop. The tracked phase can
+      // focus successfully before that move, which then returns DOM focus to body.
+      if (
+        !request ||
+        dragSession() ||
+        key() !== manager.focusedKey() ||
+        !manager.isFocused() ||
+        itemDOMFocusSuppressed > 0
+      ) {
+        return;
+      }
+      const { o, virtualFocus, focus, el, itemKey, childFocusStrategy } = request;
+      if (
+        virtualFocus !== shouldUseVirtualFocus() ||
+        focus !== getOptions().focus ||
+        request.childFocusStrategy !== manager.childFocusStrategy?.() ||
+        el !== ref() ||
+        (el && !el.isConnected)
+      ) {
+        return;
+      }
+      const activeBeforeRestore = el ? getOwnerDocument(el).activeElement : null;
+      const applyFocus = () => {
+        if (
+          dragSession() ||
+          itemKey !== key() ||
+          key() !== manager.focusedKey() ||
+          !manager.isFocused() ||
+          itemDOMFocusSuppressed > 0 ||
+          virtualFocus !== shouldUseVirtualFocus() ||
+          focus !== getOptions().focus ||
+          childFocusStrategy !== manager.childFocusStrategy?.() ||
+          el !== ref() ||
+          (el && !el.isConnected)
+        ) {
+          return;
         }
-      });
-    }
-  });
+        if (restoreAfterDrag && el) {
+          const doc = getOwnerDocument(el);
+          const active = doc.activeElement;
+          if (active !== activeBeforeRestore && active !== doc.body && active !== el) {
+            return;
+          }
+        }
+        if (!virtualFocus && focus) {
+          focus.call(o);
+        } else {
+          if (virtualFocus) {
+            moveVirtualFocus(el ?? null);
+          } else if (el && getOwnerDocument(el).activeElement !== el) {
+            focusSafely(el);
+          }
+        }
+      };
+      if (restoreAfterDrag && !virtualFocus) {
+        // Drop-indicator removal and keyed reordering can continue after this
+        // flush. Match passive focus timing only for the drag handoff; cleanup
+        // cancels the request if its owner or focus state changes first.
+        return runAfterPaint(applyFocus, el ? getOwnerDocument(el) : undefined);
+      }
+      applyFocus();
+    },
+  );
 
   const { pressProps, isPressed } = createPress({
     get isDisabled() {

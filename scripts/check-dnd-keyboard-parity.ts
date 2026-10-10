@@ -142,7 +142,9 @@ async function main(): Promise<void> {
     const filePath = COMPONENT_PATHS[i];
     const source = componentSources[i];
     const hasUseDroppableCollectionCall = hasPattern(source, /useDroppableCollection\s*\(/);
-    const hasKeyboardDelegateOption = hasPattern(source, /keyboardDelegate\s*:/);
+    const hasKeyboardDelegateOption =
+      hasPattern(source, /keyboardDelegate\s*:/) ||
+      hasPattern(source, /\bget\s+keyboardDelegate\s*\(\s*\)\s*\{/);
     const needsHorizontal = filePath.endsWith("GridList.tsx") || filePath.endsWith("Table.tsx");
     const hasHorizontalMethods = needsHorizontal
       ? hasPattern(source, /getKeyLeftOf\s*:/) && hasPattern(source, /getKeyRightOf\s*:/)
