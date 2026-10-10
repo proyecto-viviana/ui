@@ -1,5 +1,5 @@
 import { jsx } from "react/jsx-runtime";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Breadcrumb as SpectrumBreadcrumb,
   Breadcrumbs as SpectrumBreadcrumbs,
@@ -22,6 +22,50 @@ function ReactBreadcrumbsDemo() {
   );
   const [actionCount, setActionCount] = useState(0);
   const [lastAction, setLastAction] = useState("");
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    if (demoProps.itemSet !== "overflow") {
+      return;
+    }
+
+    let cancelled = false;
+    let resizeFrame = 0;
+    let restoreFrame = 0;
+    let restoreWidth = () => {};
+
+    // #429: let S2's current ResizeObserver callback measure after fonts settle.
+    (document.fonts?.ready ?? Promise.resolve()).then(() => {
+      if (cancelled) {
+        return;
+      }
+      resizeFrame = requestAnimationFrame(() => {
+        const row = rowRef.current;
+        if (!(row instanceof HTMLElement) || row.offsetWidth <= 1) {
+          return;
+        }
+        const width = row.offsetWidth;
+        const previousWidth = row.style.getPropertyValue("inline-size");
+        const previousPriority = row.style.getPropertyPriority("inline-size");
+        restoreWidth = () => {
+          if (previousWidth) {
+            row.style.setProperty("inline-size", previousWidth, previousPriority);
+          } else {
+            row.style.removeProperty("inline-size");
+          }
+        };
+        row.style.setProperty("inline-size", `${width - 1}px`, previousPriority);
+        restoreFrame = requestAnimationFrame(restoreWidth);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(resizeFrame);
+      cancelAnimationFrame(restoreFrame);
+      restoreWidth();
+    };
+  }, [demoProps.itemSet]);
 
   useEffect(() => {
     const handleControlsChange = (event) => {
@@ -85,6 +129,7 @@ function ReactBreadcrumbsDemo() {
 
   return renderReactSpectrumReference(
     jsx("div", {
+      ref: rowRef,
       className: "comparison-breadcrumbs-row",
       "data-comparison-control-root": "breadcrumbs",
       "data-comparison-control-props": serializeBreadcrumbsDemoProps(demoProps),

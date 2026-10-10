@@ -42,18 +42,7 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  *         text). This is the case the fix is about: the current crumb must NOT
  *         carry a `link` role or `[disabled]`.
  *       · `overflow` — the 5-item set that collapses into a "More items" menu
- *         button. DEFERRED as a tracked `knownDivergence` (see `ax` below): the
- *         collapse SEMANTICS agree (root link + a closed `aria-haspopup` "More
- *         items" button), but the collapse POINT diverges oracle-side. Measured
- *         live, the inputs are byte-identical between stacks (hidden widths
- *         [51,43,62,61,91], gap 6, folder 32, container ~512) and the same S2
- *         algorithm on either stack's settled DOM computes tail = 2. Solid renders
- *         that (fits 255px of 512px, no spill); the S2 oracle renders a STALE
- *         tail = 0, having measured `visibleItems` during an initial narrow-layout
- *         window with a ResizeObserver that never re-fires in this fixed-width
- *         harness. Forcing byte-parity would mean regressing Solid's correct
- *         re-measurement to mimic React's stale state, so the case is tracked and
- *         visible in the report rather than passed or force-matched.
+ *         button. Its complete accessibility tree is pair-diffed against S2.
  *   - D5 (focus trail) — minimal, one forward walk on `standard`. Focus the
  *     "Home" link and press Tab. This certifies the defining consequence of the
  *     fix: the current crumb is NOT a tab stop, so Tab from the last link LEAVES
@@ -137,35 +126,6 @@ const scenario: DriverScenario = {
     cases: ["standard", "overflow"],
     roots: {
       list: list,
-    },
-    // The overflow COLLAPSE POINT diverges — but oracle-side, not port-side, so
-    // it is deferred (tracked, visible in the report) rather than forced to
-    // byte-parity. Measured live in this harness: the collapse INPUTS are
-    // byte-identical between stacks — hidden-item widths [51,43,62,61,91],
-    // container gap 6px, folder 32px, container width ~512/506 — and both run the
-    // SAME S2 algorithm, which on either stack's SETTLED DOM computes tail = 2.
-    // Solid renders that (Home + "More items" + Reports + Annual report, filling
-    // 255px of the 512px container, no spill). The S2 oracle instead renders a
-    // STALE tail = 0 (Home + "More items"): its `visibleItems` was measured during
-    // an initial narrow-layout window and its ResizeObserver — bound to a
-    // fixed-width container that never resizes in the two-panel comparison harness
-    // — never re-fires to correct it (verified stable across shrink→760→restore).
-    // Byte-parity would require regressing Solid's correct re-measurement to mimic
-    // React's stale state. The collapse SEMANTICS both DO agree on (root stays a
-    // link; the collapsed group is a "More items" button with `aria-haspopup`,
-    // closed) are certified by the `standard` D6 case + the D5 walk.
-    knownDivergences: {
-      overflow:
-        "Overflow collapse point is an ORACLE-side measurement-timing artifact, " +
-        "not a port divergence. Byte-identical inputs (hidden widths " +
-        "[51,43,62,61,91], gap 6, folder 32, container ~512) + the byte-identical " +
-        "S2 collapse algorithm compute tail=2 on either stack's settled DOM; Solid " +
-        "renders that (fits 255px of 512px, no spill). The S2 oracle renders a stale " +
-        "tail=0 — visibleItems measured in an initial narrow window, its " +
-        "ResizeObserver (fixed-width container, never resizes in this harness) never " +
-        "re-fires. Byte-parity would mean regressing Solid's correct re-measurement " +
-        "to replicate React's stale state. Collapse semantics (root link + closed " +
-        "'More items' aria-haspopup button) are certified by the standard D6 + D5.",
     },
   },
 };

@@ -169,3 +169,130 @@ test.describe("comparison Breadcrumbs route contract", () => {
       });
   });
 });
+
+// #429: require the settled wide shape before any resize or live-control update.
+async function expectWideOverflowItems(reactPanel: Locator, solidPanel: Locator) {
+  const expected = [
+    { text: "Home", hasMenuButton: false },
+    { text: "", hasMenuButton: true },
+    { text: "Reports", hasMenuButton: false },
+    { text: "Annual report", hasMenuButton: false },
+  ];
+  await expect
+    .poll(async () => ({
+      react: await visibleBreadcrumbItems(reactPanel),
+      solid: await visibleBreadcrumbItems(solidPanel),
+    }))
+    .toEqual({ react: expected, solid: expected });
+  for (const panel of [reactPanel, solidPanel]) {
+    const list = panel.getByRole("list", { name: "Project location" });
+    await expect(list).toBeVisible();
+    await expect(list.getByRole("link", { name: "Home", exact: true })).toBeVisible();
+    await expect(list.locator("li").last().getByRole("link")).toHaveCount(0);
+    await expect(list.locator("li").last().getByRole("button")).toHaveCount(0);
+  }
+}
+
+async function exactWideOverflowMenu(page: Page, panel: Locator) {
+  const trigger = panel.getByRole("button", { name: "More items", exact: true });
+  await expect(trigger).toBeEnabled();
+  await expect(trigger).toHaveAttribute("aria-haspopup", /^(menu|true)$/);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect.poll(() => trigger.getAttribute("aria-controls")).toBeTruthy();
+  const menuId = await trigger.getAttribute("aria-controls");
+  expect(menuId).toBeTruthy();
+  const menu = page.locator(`[id="${menuId}"]`);
+  await expect(menu).toBeVisible();
+  await expect(menu).toHaveAttribute("role", "menu");
+  await expect(menu.getByRole("menuitem")).toHaveText(["Files", "Projects"]);
+  return { trigger, menu };
+}
+
+test.describe("comparison Breadcrumbs URL overflow remeasurement (#429)", () => {
+  for (const { label, size, isDisabled } of [
+    { label: "M", size: "M", isDisabled: false },
+    { label: "L", size: "L", isDisabled: false },
+    { label: "disabled M", size: "M", isDisabled: true },
+    { label: "disabled L", size: "L", isDisabled: true },
+  ]) {
+    test(`Breadcrumbs URL overflow retains the wide tail and exact menu: ${label}`, async ({
+      page,
+    }) => {
+      const { reactPanel, solidPanel, reactRoot, solidRoot } = await breadcrumbsFixtures(page, {
+        size,
+        itemSet: "overflow",
+        isDisabled,
+      });
+      await expectWideOverflowItems(reactPanel, solidPanel);
+      for (const [panel, root] of [
+        [reactPanel, reactRoot],
+        [solidPanel, solidRoot],
+      ]) {
+        await expect(root).toHaveAttribute(
+          "data-comparison-control-props",
+          JSON.stringify({ size, itemSet: "overflow", isDisabled }),
+        );
+        await expect(root).toHaveAttribute(
+          "data-comparison-path",
+          "home,files,projects,reports,annual-report",
+        );
+        await expect(root).toHaveAttribute("data-comparison-action-count", "0");
+        await expect(root).toHaveAttribute("data-comparison-last-action", "");
+        const trigger = panel.getByRole("button", { name: "More items", exact: true });
+        if (isDisabled) {
+          await expect(trigger).toBeDisabled();
+          await expect(trigger).toHaveAttribute("aria-expanded", "false");
+          await expect(page.getByRole("menu")).toHaveCount(0);
+        } else {
+          const { menu } = await exactWideOverflowMenu(page, panel);
+          await menu.getByRole("menuitem", { name: "Projects", exact: true }).click();
+          await expect(page.getByRole("menu")).toHaveCount(0);
+          await expect(root).toHaveAttribute("data-comparison-action-count", "1");
+          await expect(root).toHaveAttribute("data-comparison-last-action", "projects");
+          await expect(root).toHaveAttribute("data-comparison-path", "home,files,projects");
+        }
+      }
+    });
+  }
+
+  test("Breadcrumbs live standard-to-overflow controls retain the wide tail and exact menu", async ({
+    page,
+  }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await breadcrumbsFixtures(page);
+    for (const root of [reactRoot, solidRoot]) {
+      await expect(root).toHaveAttribute("data-comparison-path", "home,breadcrumbs");
+    }
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("comparison:controls-change", {
+          detail: {
+            component: "breadcrumbs",
+            props: { size: "M", itemSet: "overflow", isDisabled: false },
+          },
+        }),
+      );
+    });
+    await expectWideOverflowItems(reactPanel, solidPanel);
+    for (const [panel, root] of [
+      [reactPanel, reactRoot],
+      [solidPanel, solidRoot],
+    ]) {
+      await expect(root).toHaveAttribute(
+        "data-comparison-control-props",
+        JSON.stringify({ size: "M", itemSet: "overflow", isDisabled: false }),
+      );
+      await expect(root).toHaveAttribute(
+        "data-comparison-path",
+        "home,files,projects,reports,annual-report",
+      );
+      const { trigger } = await exactWideOverflowMenu(page, panel);
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("menu")).toHaveCount(0);
+      await expect(trigger).toHaveAttribute("aria-expanded", "false");
+      await expect(root).toHaveAttribute("data-comparison-action-count", "0");
+      await expect(root).toHaveAttribute("data-comparison-last-action", "");
+    }
+  });
+});

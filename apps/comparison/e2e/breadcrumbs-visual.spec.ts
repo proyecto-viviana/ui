@@ -88,7 +88,10 @@ function breadcrumbsContract(root: Locator) {
         };
       }
 
-      const first = element.querySelector("a, [role='link']");
+      const first =
+        Array.from(element.querySelectorAll("a, [role='link']")).find(
+          (node) => !node.closest("[data-hidden-breadcrumb]"),
+        ) ?? null;
       const last = element.querySelector("li:last-child");
 
       return {
