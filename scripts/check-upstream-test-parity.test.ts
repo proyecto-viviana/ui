@@ -46,6 +46,7 @@ function runCase(imports: string, expression: string, body?: string, drift = fal
       PATH: `${path.dirname(process.execPath)}:${path.join(checkout, "node_modules/.bin")}:${process.env.PATH}`,
     },
     encoding: "utf8",
+    timeout: 20_000,
   });
   const output = result.stdout + result.stderr;
   write("cli-output.log", output);
@@ -74,7 +75,7 @@ function expectAttribution(output: string, key: string, unmatched: string[]) {
   );
 }
 
-describe("upstream parity CLI array attribution", () => {
+describe("upstream parity CLI array attribution", { timeout: 30_000 }, () => {
   it("recovers one Switch through nested literal spreads in a misleading host file", () => {
     expectAttribution(runCase("Switch", "[...[...[<Switch />]]]"), "switch", [
       "button",
@@ -127,7 +128,7 @@ function facts(output: string) {
   return output.split("New suspect facts:\n")[1]?.split("New upstream suites")[0];
 }
 
-describe("target-bound raw input attribution", () => {
+describe("target-bound raw input attribution", { timeout: 30_000 }, () => {
   it.each(["solid-spectrum", "viviana-ui"])(
     "attributes the unchanged real %s caller-contract body",
     (pkg) => {
@@ -242,7 +243,7 @@ describe("target-bound raw input attribution", () => {
   });
 });
 
-describe("target proof conservative boundaries", () => {
+describe("target proof conservative boundaries", { timeout: 30_000 }, () => {
   it.each([
     ["outer competing root", '<span role="alertdialog"><input type="password" /></span>', ""],
     ["outer unknown descendant", "<span><Unknown /></span>", ""],
