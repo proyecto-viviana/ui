@@ -15,7 +15,7 @@ overrides:
   yaml: "^2.9.0"
   undici: "^7.29.1"
   js-yaml: "^4.3.2"
-  sharp: "^0.35.4"
+  sharp: "0.35.5"
   svgo: "^4.1.0"
   devalue: "^5.9.1"
   read-yaml-file: "2.1.0"
@@ -23,6 +23,10 @@ overrides:
   "@babel/core": "^7.29.6"
   "@tsdown/css": "0.22.14"
   http-cache-semantics: "^4.3.0"
+  tinypool: "2.1.2"
+  shell-quote: "1.11.0"
+  source-map-js: "1.2.2"
+  smol-toml: "1.9.0"
 
 # Native build hooks are denied unless explicitly trusted here. These three
 # install platform binaries required by the repository's macro, bundler, and
