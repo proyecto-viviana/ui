@@ -30,6 +30,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { createId, createSlotId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { nodeContains } from "../utils/dom";
+import { focusWithoutScrolling } from "../utils/focus";
 import type {
   SelectState,
   SelectSelectionMode,
@@ -265,15 +266,21 @@ export function createSelect<T, M extends SelectSelectionMode = "single">(
     get isDisabled() {
       return getProps().isDisabled ?? state.isDisabled;
     },
-    onPress(e) {
-      if (e.pointerType === "keyboard") {
-        return;
+    preventFocusOnPress: true,
+    onPressStart(e) {
+      if (
+        e.pointerType !== "touch" &&
+        e.pointerType !== "keyboard" &&
+        !(getProps().isDisabled ?? state.isDisabled)
+      ) {
+        focusWithoutScrolling(e.target as HTMLElement);
+        state.open(e.pointerType === "virtual" ? "first" : null);
       }
-
-      if (state.isOpen()) {
-        state.close();
-      } else {
-        openWithFocus();
+    },
+    onPress(e) {
+      if (e.pointerType === "touch" && !(getProps().isDisabled ?? state.isDisabled)) {
+        focusWithoutScrolling(e.target as HTMLElement);
+        state.toggle();
       }
     },
   });

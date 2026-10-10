@@ -526,6 +526,7 @@ describe("Picker (solid-spectrum)", () => {
     expect(onSelectionChange).toHaveBeenCalledWith("enterprise");
     expect(trigger).toHaveTextContent("Enterprise");
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
     expect(document.activeElement).toBe(trigger);
   });
 

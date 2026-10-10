@@ -231,7 +231,11 @@ describe("Picker popup focus", () => {
 
       await user.click(originalTrigger);
       await waitFor(() => {
-        expect(screen.getByRole("dialog")).toBe(document.activeElement);
+        expect(
+          screen.getByRole("option", {
+            name: selectedKey === "" ? "Default" : "Accordion",
+          }),
+        ).toBe(document.activeElement);
       });
       let currentDialog = screen.getByRole("dialog");
       const selectedOption = screen.getByRole("option", {
@@ -239,7 +243,11 @@ describe("Picker popup focus", () => {
       });
       expect(selectedOption).toHaveAttribute("data-focused");
       expect(selectedOption).toHaveAttribute("tabindex", "0");
-      expect(selectedOption).not.toBe(document.activeElement);
+      expect(selectedOption).toBe(document.activeElement);
+      expect(selectedOption).toHaveAttribute("aria-selected", "true");
+      expect(
+        screen.getAllByRole("option").filter((option) => option.getAttribute("tabindex") === "0"),
+      ).toEqual([selectedOption]);
 
       for (let attempt = 0; attempt < 2; attempt++) {
         await user.keyboard("{Escape}");

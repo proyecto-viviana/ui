@@ -42,7 +42,6 @@ import {
   createFocusRing,
   FocusScope,
   focusSafely,
-  getInteractionModality,
   mergeProps,
   type AriaSelectProps,
   type AriaListBoxProps,
@@ -1280,10 +1279,6 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     if (!isOpen()) return;
     const focusedKey = state.focusedKey();
     if (focusedKey == null) return;
-    // Overlay non-keyboard-open: keep manager `isFocused` + selected `focusedKey`
-    // (roving tabindex / `data-focused`) but do not `focusSafely` the option.
-    // Keyboard-open must hand real focus to that option for subsequent navigation.
-    if (local.isInPopover === true && getInteractionModality() !== "keyboard") return;
 
     queueMicrotask(() => {
       const option = Array.from(
@@ -1383,7 +1378,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
           {renderStaticChildren()}
         </StaticCollectionProbeContext>
       </Show>
-      <Show when={isOpen()}>
+      <Show when={local.isInPopover || isOpen()}>
         <Show
           when={local.isInPopover}
           fallback={

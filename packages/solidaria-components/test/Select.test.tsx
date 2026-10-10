@@ -1730,7 +1730,7 @@ describe("Select", () => {
       expect(document.querySelector("input")).toBeNull();
     });
 
-    it("click-open inside a popover keeps the dialog active and freezes option tabindexes", async () => {
+    it("click-open inside a popover focuses the selected option and transfers arrow focus without changing selection", async () => {
       const SelectPopover = () => {
         const ctx = useContext(SelectContext);
         return (
@@ -1776,17 +1776,23 @@ describe("Select", () => {
       expect(selectedOption).not.toBeNull();
       expect(selectedOption).toHaveTextContent("Dog");
       expect(selectedOption).toHaveAttribute("tabindex", "0");
-      expect(selectedOption).not.toBe(document.activeElement);
+      await waitFor(() => {
+        expect(selectedOption).toBe(document.activeElement);
+      });
+      expect(selectedOption).toHaveAttribute("aria-selected", "true");
 
-      const tabindexesBefore = Array.from(dialog.querySelectorAll("[role='option']")).map(
-        (option) => option.getAttribute("tabindex"),
-      );
-      fireEvent.keyDown(dialog, { key: "ArrowDown" });
-      const tabindexesAfter = Array.from(dialog.querySelectorAll("[role='option']")).map((option) =>
-        option.getAttribute("tabindex"),
-      );
-      expect(tabindexesAfter).toEqual(tabindexesBefore);
-      expect(selectedOption).toHaveAttribute("tabindex", "0");
+      await user.keyboard("{ArrowDown}");
+      const nextOption = screen.getByRole("option", { name: "Kangaroo" });
+      await waitFor(() => {
+        expect(nextOption).toBe(document.activeElement);
+        expect(nextOption).toHaveAttribute("tabindex", "0");
+        expect(nextOption).toHaveAttribute("data-focused");
+        expect(selectedOption).toHaveAttribute("tabindex", "-1");
+      });
+      expect(selectedOption).toHaveAttribute("aria-selected", "true");
+      expect(nextOption).toHaveAttribute("aria-selected", "false");
+      expect(dialog.querySelectorAll("[role='option'][tabindex='0']")).toHaveLength(1);
+      expect(dialog.isConnected).toBe(true);
     });
 
     it("overlay root carries aria-labelledby from the select menu", async () => {
@@ -2029,5 +2035,79 @@ describe("Select", () => {
       const selectElement = screen.getByRole("button").closest(".invalid-select");
       expect(selectElement).toHaveClass("invalid-select");
     });
+  });
+});
+
+describe("Select listbox exit lifetime", () => {
+  afterEach(() => cleanup());
+
+  it("retains the focused selected option until its popover exit completes", async () => {
+    const [isExiting, setIsExiting] = createSignal(false);
+    const onSelectionChange = vi.fn();
+    const SelectPopover = () => {
+      const context = useContext(SelectContext);
+      return (
+        <Popover
+          trigger="Select"
+          isOpen={context?.isOpen() ?? false}
+          isExiting={isExiting()}
+          triggerRef={() => context?.triggerRef() ?? null}
+          onOpenChange={(open) => {
+            if (!open) context?.state.close();
+          }}
+        >
+          <SelectListBox isInPopover>
+            {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+          </SelectListBox>
+        </Popover>
+      );
+    };
+
+    render(() => (
+      <Select
+        aria-label="Pet"
+        items={testItems}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+        defaultSelectedKey="cat"
+        onSelectionChange={onSelectionChange}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectPopover />
+      </Select>
+    ));
+
+    const trigger = screen.getByRole("button");
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    flush();
+    await waitFor(() => expect(screen.getByRole("option", { name: "Cat" })).toHaveFocus());
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
+    flush();
+    const option = screen.getByRole("option", { name: "Dog" });
+    await waitFor(() => expect(option).toHaveFocus());
+    const listbox = screen.getByRole("listbox");
+    setIsExiting(true);
+    flush();
+
+    fireEvent.keyDown(option, { key: "Enter" });
+    await settleSelectionTurn();
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect(onSelectionChange).toHaveBeenCalledWith("dog");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(listbox.isConnected).toBe(true);
+    expect(option.isConnected).toBe(true);
+    expect(listbox.querySelector("[role='option'][data-selected]")).toBe(option);
+    expect(option).toHaveFocus();
+    expect(screen.getByRole("option", { name: "Dog" })).toBe(option);
+
+    fireEvent.keyUp(option, { key: "Enter" });
+    setIsExiting(false);
+    flush();
+    await waitFor(() => expect(listbox.isConnected).toBe(false));
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
   });
 });
