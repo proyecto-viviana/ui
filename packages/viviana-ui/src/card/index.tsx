@@ -20,12 +20,15 @@ import {
   Show,
   createContext,
   createMemo,
+  createRoot,
   createSignal,
   getOwner,
+  onCleanup,
   runWithOwner,
   useContext,
 } from "solid-js";
 import type { Accessor } from "solid-js";
+import { isServer } from "@solidjs/web";
 import type { JSX } from "@solidjs/web";
 import { FocusableContext } from "@proyecto-viviana/solidaria/interactions";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
@@ -1075,7 +1078,9 @@ export function Card(props: CardProps): JSX.Element {
   const press = () => pressScale(() => rootElement, rootStyle());
   // Same once-per-card build as solid-spectrum. This file is diverged (mesh,
   // root style); the hover render prop must still return one element.
-  const cardOwner = getOwner();
+  // Capture a stable child scope before deferred SSR children leave their For row.
+  const cardScope = createRoot((dispose) => ({ owner: getOwner(), dispose }));
+  onCleanup(cardScope.dispose);
   // The grid/link callback runs inside the item render computation. These
   // signals mirror that snapshot for children; ownedWrite is the supported
   // opt-in for a write that has to happen there.
@@ -1127,7 +1132,7 @@ export function Card(props: CardProps): JSX.Element {
     );
   };
   const mountOnce = (build: () => JSX.Element): JSX.Element =>
-    cardOwner ? runWithOwner(cardOwner, build) : build();
+    cardScope.owner ? runWithOwner(cardScope.owner, build) : build();
   let linkSurface: JSX.Element | undefined;
   let linkBuilt = false;
   let gridSurface: JSX.Element | undefined;
@@ -1172,7 +1177,7 @@ export function Card(props: CardProps): JSX.Element {
           data-mesh={meshVariant()}
         >
           {(renderProps: LinkRenderProps) => {
-            applyInteraction(renderProps);
+            if (!isServer) applyInteraction(renderProps);
             if (!linkBuilt) {
               linkBuilt = true;
               linkSurface = mountOnce(() => (

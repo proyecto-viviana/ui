@@ -16,8 +16,18 @@
 
 // Port of packages/@react-spectrum/s2/src/Card.tsx.
 
-import { Show, createContext, createSignal, getOwner, runWithOwner, useContext } from "solid-js";
+import {
+  Show,
+  createContext,
+  createRoot,
+  createSignal,
+  getOwner,
+  onCleanup,
+  runWithOwner,
+  useContext,
+} from "solid-js";
 import type { Accessor } from "solid-js";
+import { isServer } from "@solidjs/web";
 import type { JSX } from "@solidjs/web";
 import { FocusableContext } from "@proyecto-viviana/solidaria/interactions";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
@@ -805,7 +815,9 @@ export function Card(props: CardProps): JSX.Element {
   // signal reads on one context object. A new context value each run would
   // be invisible to children that already captured the first one, and a new
   // element each run is what drops an open menu.
-  const cardOwner = getOwner();
+  // Capture a stable child scope before deferred SSR children leave their For row.
+  const cardScope = createRoot((dispose) => ({ owner: getOwner(), dispose }));
+  onCleanup(cardScope.dispose);
   // The grid/link callback runs inside the item render computation. These
   // signals mirror that snapshot for children; ownedWrite is the supported
   // opt-in for a write that has to happen there.
@@ -857,7 +869,7 @@ export function Card(props: CardProps): JSX.Element {
     );
   };
   const mountOnce = (build: () => JSX.Element): JSX.Element =>
-    cardOwner ? runWithOwner(cardOwner, build) : build();
+    cardScope.owner ? runWithOwner(cardScope.owner, build) : build();
   let linkSurface: JSX.Element | undefined;
   let linkBuilt = false;
   let gridSurface: JSX.Element | undefined;
@@ -897,7 +909,7 @@ export function Card(props: CardProps): JSX.Element {
         data-variant={variant()}
       >
         {(renderProps: LinkRenderProps) => {
-          applyInteraction(renderProps);
+          if (!isServer) applyInteraction(renderProps);
           if (!linkBuilt) {
             linkBuilt = true;
             linkSurface = mountOnce(() => (
