@@ -77,7 +77,7 @@
   {
     "localPath": "packages/solid-spectrum/src/button/text-child.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "332da7d536e0ea06ce53623ee3ab9b622fe3e5b15082d5d99f8661a17bb630d0"
+    "contentSha256": "e933e591a36e93f24eab381e22e7bc076b49ddef1ba344a9b526f6e67c70a46d"
   },
   {
     "localPath": "packages/solid-spectrum/src/ButtonGroup.ts",
@@ -877,7 +877,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "d813df7bb2ca5454ecb0250fe7a3aaee313b77b9ce2e4523e66f53a837a7ae60"
+    "contentSha256": "978a267b4002f5f033af78129c30ce7130ac35f2736fdc4edf118d07978a3080"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",
@@ -967,7 +967,7 @@
   {
     "localPath": "packages/solidaria/src/slider/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "e0ce62d8e9afe491848be9666588495d132f0fd142cfef54dec0f952c8c12447"
+    "contentSha256": "cb601f8824109f54ce168f50697c12ed7ee25f3ed39e47790b4bc39d59430afd"
   },
   {
     "localPath": "packages/solidaria/src/spinbutton/index.ts",
