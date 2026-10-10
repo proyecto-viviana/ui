@@ -51,23 +51,11 @@ export type ElementAccessor = () => Element | null | undefined;
  * Runs `onEnd` once the element's animations settle while `isActive` is true.
  * Mirrors the private `useAnimation` helper in react-aria's animation utils.
  *
- * `deferNoAnimation` mirrors React's timing for the no-animation case. Upstream
- * runs `onEnd` inside a `useLayoutEffect`, so an animation-less exit unmounts
- * *after* React commits — i.e. after the triggering input event finishes
- * dispatching (empirically, an Escape's teardown lands after `keyup`, not
- * between `keydown` and `keyup`). A Solid `createEffect` runs synchronously
- * inside the handler, so an animation-less exit would tear the overlay out
- * mid-gesture, firing `focusout` before `keyup` and retargeting `keyup` to the
- * body. Deferring `onEnd` to the next frame — the same primitive `FocusScope`
- * uses to defer focus restore — reproduces React's post-commit ordering. Only
- * the real-browser no-animation branch defers; the JSDOM branch stays
- * synchronous so unit tests that assert immediate unmount are unaffected.
  */
 function createAnimation(
   ref: ElementAccessor,
   isActive: Accessor<boolean>,
   onEnd: () => void,
-  deferNoAnimation = false,
 ): void {
   // Split createEffect so `onEnd` (signal writes) runs in apply. A tracked
   // effect is an owned scope and rejects those writes even with ownedWrite.
@@ -87,49 +75,22 @@ function createAnimation(
         return;
       }
 
-      // `settle` mirrors React's post-commit `useLayoutEffect` timing (see the
-      // `deferNoAnimation` note above): a Solid effect runs synchronously inside
-      // the triggering input handler, and even the Web-Animations `finished`
-      // promise resolves in a microtask that drains *before* the gesture's later
-      // events (e.g. an Escape's `keyup`). Deferring the settle to the next frame
-      // pushes the overlay teardown past the rest of the current event dispatch,
-      // reproducing React's ordering (teardown after `keyup`, not between
-      // `keydown` and `keyup`). A real, non-trivial exit transition already
-      // finishes long after the gesture, so the extra frame is imperceptible; it
-      // only matters for the instant/near-zero-duration exits that would
-      // otherwise tear the focused overlay out mid-gesture. Unit environments
-      // (no `requestAnimationFrame`, or the no-defer callers) settle synchronously.
-      //
-      // `canceled` guards the promise path, whose `.then` runs outside the
-      // reactive owner. Apply's returned cleanup both sets the flag and
-      // cancels a pending frame.
+      // The pinned helper completes immediately when no animations exist and
+      // directly after their finished promises settle. Cleanup cancels only
+      // the outstanding promise callback, without adding a frame delay.
       let canceled = false;
-      let frame: number | undefined;
-      const settle = () => {
-        if (canceled) return;
-        if (deferNoAnimation && typeof requestAnimationFrame === "function") {
-          frame = requestAnimationFrame(() => {
-            if (!canceled) onEnd();
-          });
-        } else {
-          onEnd();
-        }
-      };
 
       const animations = element.getAnimations();
       if (animations.length === 0) {
-        settle();
+        onEnd();
       } else {
         Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
-          settle();
+          if (!canceled) onEnd();
         });
       }
 
       return () => {
         canceled = true;
-        if (frame !== undefined && typeof cancelAnimationFrame === "function") {
-          cancelAnimationFrame(frame);
-        }
       };
     },
   );
@@ -251,14 +212,9 @@ export function createExitAnimation(
     () => {},
   );
 
-  createAnimation(
-    ref,
-    isExiting,
-    () => {
-      setExitFinished((n) => n + 1);
-    },
-    true,
-  );
+  createAnimation(ref, isExiting, () => {
+    setExitFinished((n) => n + 1);
+  });
 
   return isExiting;
 }

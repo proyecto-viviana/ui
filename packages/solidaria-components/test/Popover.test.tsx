@@ -1,13 +1,17 @@
 /**
  * Tests for Popover component
  */
-import { describe, it, expect, afterEach } from "vite-plus/test";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
-import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria";
+import {
+  UNSAFE_PortalProvider,
+  I18nProvider,
+  createExitAnimation,
+} from "@proyecto-viviana/solidaria";
 import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
 import { Button } from "../src/Button";
 import { Dialog, DialogTrigger, Heading } from "../src/Dialog";
-import { createSignal, flush, onMount, onSettled } from "solid-js";
+import { createSignal, flush, onMount, onSettled, Show } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 function mockGetAnimations(impl: () => Animation[]): () => void {
@@ -1435,4 +1439,72 @@ describe("Popover", () => {
       expect(screen.getAllByRole("button", { name: "Rejeter" }).length).toBeGreaterThan(0);
     });
   });
+});
+
+describe("exit animation completion ownership", () => {
+  it.each(["none", "finished"] as const)(
+    "releases a closed owner without waiting for a frame after %s animations",
+    async (completion) => {
+      const [isOpen, setIsOpen] = createSignal(true);
+      let finish = () => {};
+      const finished = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+
+      function AnimatedOwner() {
+        const [element, setElement] = createSignal<HTMLDivElement>();
+        const isExiting = createExitAnimation(element, isOpen);
+        return (
+          <Show when={isOpen() || isExiting()}>
+            <div
+              ref={(node) => {
+                // Supply the browser animation completion contract to this
+                // owner without depending on JSDOM's optional animation API.
+                Object.defineProperty(node, "getAnimations", {
+                  configurable: true,
+                  value: () => (completion === "none" ? [] : [{ finished }]),
+                });
+                setElement(node);
+              }}
+              data-testid="animated-owner"
+            >
+              <input aria-label="Animated owner input" />
+            </div>
+          </Show>
+        );
+      }
+
+      render(() => <AnimatedOwner />);
+      flush();
+      const owner = screen.getByTestId("animated-owner");
+      const input = screen.getByRole<HTMLInputElement>("textbox", {
+        name: "Animated owner input",
+      });
+      input.value = "edited locally";
+      input.focus();
+      expect(input).toHaveFocus();
+
+      // Hold the next paint. Animation completion itself must release the
+      // closed owner; a later focus-restoration frame is a separate concern.
+      const nextFrame = vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation(() => 1);
+      try {
+        setIsOpen(false);
+        flush();
+        if (completion === "finished") {
+          expect(owner.isConnected).toBe(true);
+          expect(input).toHaveFocus();
+          expect(input.value).toBe("edited locally");
+          finish();
+          await Promise.allSettled([finished]);
+          await Promise.resolve();
+          flush();
+        }
+        expect(owner.isConnected).toBe(false);
+        expect(screen.queryByTestId("animated-owner")).not.toBeInTheDocument();
+      } finally {
+        nextFrame.mockRestore();
+        cleanup();
+      }
+    },
+  );
 });
