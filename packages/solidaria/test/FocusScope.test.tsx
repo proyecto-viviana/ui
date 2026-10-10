@@ -39,6 +39,7 @@ describe("FocusScope", () => {
     if (usingFakeTimers) {
       vi.runAllTimers();
     }
+    vi.restoreAllMocks();
     vi.useRealTimers();
     cleanup();
   });
@@ -47,6 +48,108 @@ describe("FocusScope", () => {
     usingFakeTimers = false;
     vi.useRealTimers();
   }
+
+  describe("deferred focus ownership regressions", () => {
+    it("does not let a parent containment frame refocus an active containing child", () => {
+      setInteractionModality("keyboard");
+      const [showChild, setShowChild] = createSignal(false);
+      render(() => (
+        <FocusScope contain>
+          <div>
+            <input data-testid="parent-frame-input" />
+            <Show when={showChild()}>
+              <FocusScope contain>
+                <input data-testid="child-frame-input" />
+              </FocusScope>
+            </Show>
+          </div>
+        </FocusScope>
+      ));
+      const parent = screen.getByTestId("parent-frame-input");
+      parent.focus();
+      vi.runAllTimers();
+      // Mount the child after the parent's listeners exist; the parent scope's
+      // sole top-level div stays mounted while the child registers its scope.
+      setShowChild(true);
+      flush();
+      const child = screen.getByTestId("child-frame-input");
+      child.focus();
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(child);
+
+      let nextId = 0;
+      const frames = new Map<number, FrameRequestCallback>();
+      const request = vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+        frames.set(++nextId, callback);
+        return nextId;
+      });
+      const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+        frames.delete(id);
+      });
+      const focus = vi.spyOn(child, "focus");
+      try {
+        child.blur();
+        expect(document.activeElement).toBe(document.body);
+        // The installed parent listener queues first, then its containing child.
+        // Execute individually to observe the otherwise transient focus steal.
+        expect(frames.size).toBe(2);
+        const [parentId, parentFrame] = frames.entries().next().value!;
+        frames.delete(parentId);
+        parentFrame(16);
+        expect(focus).not.toHaveBeenCalled();
+        expect(document.activeElement).toBe(document.body);
+        const [childId, childFrame] = frames.entries().next().value!;
+        frames.delete(childId);
+        childFrame(16);
+        expect(document.activeElement).toBe(child);
+        expect(focus).toHaveBeenCalledTimes(1);
+        expect(frames.size).toBe(0);
+      } finally {
+        focus.mockRestore();
+        cancel.mockRestore();
+        request.mockRestore();
+      }
+    });
+
+    it("restores lost-to-body focus only in the scheduled frame after instant removal", () => {
+      setInteractionModality("keyboard");
+      const [show, setShow] = createSignal(false);
+      render(() => (
+        <>
+          <button data-testid="deferred-restore-trigger">Open</button>
+          <Show when={show()}>
+            <FocusScope restoreFocus>
+              <input data-testid="deferred-restore-input" />
+            </FocusScope>
+          </Show>
+        </>
+      ));
+      const trigger = screen.getByTestId("deferred-restore-trigger");
+      trigger.focus();
+      setShow(true);
+      flush();
+      const input = screen.getByTestId("deferred-restore-input");
+      input.focus();
+      vi.runAllTimers();
+      const focus = vi.spyOn(trigger, "focus");
+      try {
+        input.blur();
+        expect(document.activeElement).toBe(document.body);
+        setShow(false);
+        flush();
+        expect(input.isConnected).toBe(false);
+        expect(focus).not.toHaveBeenCalled();
+        expect(document.activeElement).toBe(document.body);
+        vi.advanceTimersToNextTimer();
+        expect(document.activeElement).toBe(trigger);
+        expect(focus).toHaveBeenCalledTimes(1);
+        vi.runAllTimers();
+        expect(focus).toHaveBeenCalledTimes(1);
+      } finally {
+        focus.mockRestore();
+      }
+    });
+  });
 
   // ============================================
   // FOCUS CONTAINMENT

@@ -1030,6 +1030,8 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
             return;
           }
 
+          if (!shouldContainFocus(scopeElements)) return;
+
           if (doc.body.contains(target)) {
             focusedNode = target;
             focusSafely(target as HTMLElement);
@@ -1171,7 +1173,6 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
         restoreToParentScope();
       };
 
-      tryRestore();
       win.requestAnimationFrame(tryRestore);
     }
   });
