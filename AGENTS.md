@@ -48,3 +48,8 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
   that grant, with its files and its end condition, and lists no other seat.
   Work that writes nothing in this checkout runs beside it, as #544's
   `How this runs` says. The conductor alone integrates into `main`.
+- Heavy checks use the UI slot in the hub's
+  [runtime-slot rule](../AGENTS.md#heavy-runtime-slots). VisualMode main may use
+  its own slot concurrently; UI writers share one slot.
+- Owner exception, 2026-10-09: this local RC qualification goal uses direct
+  GPT-6.1 Sol medium workers instead of OS/herdr. One source writer still applies.
