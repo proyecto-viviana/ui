@@ -37,7 +37,6 @@ import { DialogTrigger, Dialog, AlertDialog } from "../src/dialog";
 import { PopoverTrigger, Popover } from "../src/popover";
 import { TooltipTrigger, Tooltip } from "../src/tooltip";
 import { ToastProvider, ToastRegion, addToast, globalToastQueue } from "../src/toast";
-import type { QueuedToast, ToastContent } from "../src/toast";
 
 // ── Navigation & Layout ─────────────────────────────────────────
 import { Breadcrumbs, BreadcrumbItem } from "../src/breadcrumbs";
@@ -72,10 +71,7 @@ import { Form } from "../src/form";
 // ═══════════════════════════════════════════════════════════════
 
 function clearGlobalToasts() {
-  const toasts = globalToastQueue.visibleToasts;
-  if (typeof toasts === "function") {
-    (toasts() as QueuedToast<ToastContent>[]).forEach((t) => globalToastQueue.close(t.key));
-  }
+  globalToastQueue.clear();
 }
 
 /**
@@ -710,7 +706,7 @@ describe("Regression: Toast", () => {
       </ToastProvider>
     ));
 
-    addToast({ title: "Saved successfully", type: "success" });
+    const key = addToast({ title: "Saved successfully", type: "success" });
 
     const region = screen.getByRole("region");
     expect(region).toBeInTheDocument();
@@ -719,7 +715,21 @@ describe("Regression: Toast", () => {
     expect(content).toHaveAttribute("role", "alert");
     expect(content).toHaveAttribute("aria-atomic", "true");
     expect(content).not.toHaveAttribute("aria-live");
-    expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
+    const toast = screen.getByRole("alertdialog");
+    expect(key).toMatch(/^\d+$/);
+    expect(toast).toHaveAttribute("data-key", key);
+    expect(toast.style.getPropertyValue("view-transition-name")).toBe(`toast-${key}`);
+
+    // The global queue keeps monotonic keys across tests. Preserve the actual
+    // key-to-transition relationship above, then canonicalize only this token.
+    const toastHtml = toast.outerHTML;
+    const snapshotHtml = container.innerHTML.replace(
+      toastHtml,
+      toastHtml
+        .replace(`data-key="${key}"`, 'data-key="0"')
+        .replace(`view-transition-name: toast-${key};`, "view-transition-name: toast-0;"),
+    );
+    expect(normalizeIds(snapshotHtml)).toMatchSnapshot();
   });
 });
 
