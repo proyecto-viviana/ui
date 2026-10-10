@@ -48,7 +48,6 @@ import {
   filterDOMProps,
   dataAttr,
   useIsHydrated,
-  evaluateRenderChildren,
 } from "./utils";
 import {
   DialogTriggerContext,
@@ -242,9 +241,12 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
     isExiting: combinedExiting(),
   }));
 
-  // Resolve render props - don't pass children, we'll render props.children directly
+  // Keep children lazy until insertion inside the overlay contexts.
   const renderProps = useRenderProps(
     {
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ModalOverlay",
@@ -278,39 +280,6 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
     }
   };
 
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
-
-    if (!isOpen() || local.isKeyboardDismissDisabled) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.isComposing && isTopMostModalInOverlay()) {
-        event.preventDefault();
-        event.stopPropagation();
-        close();
-      }
-    };
-
-    // Bubble phase, mirroring react-aria's `useOverlay` (its `onKeyDown` is an
-    // overlay-element prop, handled on bubble). Capture would preempt inner
-    // widgets that dismiss on Escape (a combobox/menu inside the dialog must
-    // consume Escape first) and would also fire before the event is recorded by
-    // capture-phase listeners, inverting the keydown/onOpenChange order.
-    document.addEventListener("keydown", handleKeyDown, false);
-    _s2Cleanups.push(() => {
-      document.removeEventListener("keydown", handleKeyDown, false);
-    });
-
-    return () => {
-      for (const c of _s2Cleanups) c();
-    };
-  });
-
-  // Resolve children - handle both static JSX and render functions
-  // IMPORTANT: We access props.children directly (not local.children) to preserve
-  // lazy evaluation inside context providers
-  const resolveChildren = () => evaluateRenderChildren(props.children, renderValues());
-
   return (
     <Show when={isHydrated() && (isOpen() || combinedExiting())}>
       <Portal mount={portalContainer()}>
@@ -325,7 +294,7 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
               data-exiting={dataAttr(combinedExiting())}
               onPointerDown={handleOverlayPointerDown}
             >
-              {resolveChildren()}
+              {renderProps.renderChildrenStable()}
             </div>
           </InternalModalContext>
         </OverlayTriggerStateContext>
@@ -522,8 +491,8 @@ function ModalContent(props: ModalProps): JSX.Element {
       }
     };
 
-    // Bubble phase — see the ModalOverlay handler above for why (react-aria
-    // `useOverlay` parity; inner-widget Escape precedence; event-order fidelity).
+    // ModalContent owns Escape, matching RAC's useModalOverlay modalProps.
+    // Bubble phase preserves inner-widget Escape precedence (useOverlay parity).
     document.addEventListener("keydown", handleKeyDown, false);
     _s2Cleanups.push(() => {
       document.removeEventListener("keydown", handleKeyDown, false);
