@@ -244,6 +244,18 @@
           "origin": "solidaria"
         },
         {
+          "name": "shouldFocusWrap",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether arrow keys wrap from the last navigable row to the first, and the reverse. Off unless a caller opts in. TagGroup opts in.",
+          "origin": "solidaria"
+        },
+        {
           "name": "getKey",
           "type": "(item: T) => Key",
           "required": false,

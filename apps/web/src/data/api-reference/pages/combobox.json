@@ -230,6 +230,13 @@
           "origin": "solidaria"
         },
         {
+          "name": "onChange",
+          "type": "(value: Key | null) => void",
+          "required": false,
+          "description": "Handler called when the value changes.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "onFocus",
           "type": "(e: FocusEvent) => void",
           "required": false,
@@ -240,7 +247,7 @@
           "name": "onSelectionChange",
           "type": "(key: Key | null) => void",
           "required": false,
-          "description": "Handler called when selection changes (single mode).",
+          "description": "Handler called when the selection changes.",
           "origin": "solidaria-components"
         },
         {
@@ -301,6 +308,13 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "value",
+          "type": "Key",
+          "required": false,
+          "description": "The current value (controlled). Single mode is `Key | null`. Multiple mode is `readonly Key[]`.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "onFocusChange",
           "type": "(isFocused: boolean) => void",
           "required": false,
@@ -309,27 +323,10 @@
         },
         {
           "name": "selectionMode",
-          "type": "\"single\" | \"multiple\"",
-          "values": [
-            "'single'",
-            "'multiple'"
-          ],
+          "type": "\"single\"",
           "required": false,
-          "description": "The selection mode for the combobox.",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "selectedKeys",
-          "type": "Iterable<Key>",
-          "required": false,
-          "description": "The currently selected keys (controlled, multiple mode).",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "defaultSelectedKeys",
-          "type": "Iterable<Key>",
-          "required": false,
-          "description": "The default selected keys (uncontrolled, multiple mode).",
+          "default": "'single'",
+          "description": "Whether single or multiple selection is enabled.",
           "origin": "solidaria-components"
         },
         {
@@ -405,6 +402,13 @@
           "type": "(isOpen: boolean, trigger?: MenuTriggerAction) => void",
           "required": false,
           "description": "Handler called when the open state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "Key",
+          "required": false,
+          "description": "The default value (uncontrolled).",
           "origin": "solidaria-components"
         },
         {
@@ -484,21 +488,14 @@
           "name": "selectedKey",
           "type": "Key",
           "required": false,
-          "description": "The currently selected key (controlled, single mode).",
+          "description": "The currently selected key (controlled).",
           "origin": "solidaria-components"
         },
         {
           "name": "defaultSelectedKey",
           "type": "Key",
           "required": false,
-          "description": "The default selected key (uncontrolled, single mode).",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "onSelectionChangeMultiple",
-          "type": "(keys: Set<Key>) => void",
-          "required": false,
-          "description": "Handler called when selection changes (multiple mode).",
+          "description": "The initial selected key (uncontrolled).",
           "origin": "solidaria-components"
         },
         {
@@ -565,7 +562,7 @@
         },
         {
           "name": "slots",
-          "type": "Record<string, Partial<ComboBoxProps<T>>>",
+          "type": "Record<string, Partial<ComboBoxProps<T, \"single\">>>",
           "required": false,
           "description": "Slot definitions provided through ComboBoxContext.",
           "origin": "solidaria-components"

@@ -238,6 +238,13 @@
           "origin": "solidaria"
         },
         {
+          "name": "onChange",
+          "type": "(value: SelectChangeValueType<M>) => void",
+          "required": false,
+          "description": "Handler called when the value changes.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "onFocus",
           "type": "(e: FocusEvent) => void",
           "required": false,
@@ -248,7 +255,7 @@
           "name": "onSelectionChange",
           "type": "(key: Key | null) => void",
           "required": false,
-          "description": "Handler called when selection changes.",
+          "description": "Handler called when the selected key changes.",
           "origin": "solidaria-components"
         },
         {
@@ -316,6 +323,13 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "value",
+          "type": "NonNullable<SelectValueType<M>>",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "onFocusChange",
           "type": "(isFocused: boolean) => void",
           "required": false,
@@ -324,27 +338,9 @@
         },
         {
           "name": "selectionMode",
-          "type": "\"single\" | \"multiple\"",
-          "values": [
-            "'single'",
-            "'multiple'"
-          ],
+          "type": "M",
           "required": false,
           "description": "Selection mode.",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "selectedKeys",
-          "type": "\"all\" | Iterable<Key>",
-          "required": false,
-          "description": "Currently selected keys (controlled, for multiple selection).",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "defaultSelectedKeys",
-          "type": "\"all\" | Iterable<Key>",
-          "required": false,
-          "description": "Default selected keys (uncontrolled, for multiple selection).",
           "origin": "solidaria-components"
         },
         {
@@ -352,6 +348,17 @@
           "type": "T[]",
           "required": false,
           "description": "The items to render in the select.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldCloseOnSelect",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu closes after a selection.",
           "origin": "solidaria-components"
         },
         {
@@ -435,6 +442,13 @@
           "origin": "solidaria"
         },
         {
+          "name": "defaultValue",
+          "type": "NonNullable<SelectValueType<M>>",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "isRequired",
           "type": "boolean",
           "values": [
@@ -495,13 +509,6 @@
           "default": "false",
           "description": "Whether the select can open when its collection is empty.",
           "origin": "solidaria"
-        },
-        {
-          "name": "onSelectionChangeKeys",
-          "type": "(keys: \"all\" | Set<Key>) => void",
-          "required": false,
-          "description": "Handler called when selected keys change.",
-          "origin": "solidaria-components"
         }
       ]
     },

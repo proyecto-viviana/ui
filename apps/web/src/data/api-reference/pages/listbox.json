@@ -302,6 +302,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "layout",
+          "type": "\"grid\" | \"stack\"",
+          "values": [
+            "'grid'",
+            "'stack'"
+          ],
+          "required": false,
+          "description": "Layout hint for styling parity.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "keyboardDelegate",
           "type": "KeyboardDelegate",
           "required": false,
@@ -337,17 +348,6 @@
           "default": "\"ltr\"",
           "description": "The text direction, used to resolve the horizontal navigation axis. In a horizontal listbox, RTL flips Left/Right (Right=previous, Left=next).",
           "origin": "solidaria"
-        },
-        {
-          "name": "layout",
-          "type": "\"grid\" | \"stack\"",
-          "values": [
-            "'grid'",
-            "'stack'"
-          ],
-          "required": false,
-          "description": "Layout hint for styling parity.",
-          "origin": "solidaria-components"
         },
         {
           "name": "hasMore",

@@ -36,6 +36,17 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "density",
+          "type": "\"compact\" | \"regular\"",
+          "values": [
+            "'compact'",
+            "'regular'"
+          ],
+          "required": false,
+          "description": "Row height. `compact` is the 24px layer-tree row and expand control. Omitted and `regular` stay the 40px row.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "loadingState",
           "type": "TreeLoadingState",
           "values": [
@@ -111,6 +122,27 @@
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy description helper.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onRename",
+          "type": "(key: Key, name: string) => void",
+          "required": false,
+          "description": "Commits an in-place label edit. Passing it enables F2 or a double press on the label. Enter commits, Escape cancels, and blur commits.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "detailExpandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys whose detail control is open. Child rows stay on expandedKeys. Omit it to keep the detail state inside the tree.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onDetailExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Called when the detail control toggles a key.",
           "origin": "viviana-ui"
         },
         {
@@ -387,6 +419,17 @@
           ],
           "required": false,
           "description": "Whether this item has children that may not be loaded yet.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hasDetail",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Shows the detail control. It toggles detailExpandedKeys only. Child rows stay on the tree expandedKeys control.",
           "origin": "viviana-ui"
         },
         {
@@ -949,6 +992,17 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "density",
+          "type": "\"compact\" | \"regular\"",
+          "values": [
+            "'compact'",
+            "'regular'"
+          ],
+          "required": false,
+          "description": "Row height. `compact` is the 24px layer-tree row and expand control. Omitted and `regular` stay the 40px row.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "loadingState",
           "type": "TreeLoadingState",
           "values": [
@@ -1024,6 +1078,27 @@
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy description helper.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onRename",
+          "type": "(key: Key, name: string) => void",
+          "required": false,
+          "description": "Commits an in-place label edit. Passing it enables F2 or a double press on the label. Enter commits, Escape cancels, and blur commits.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "detailExpandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys whose detail control is open. Child rows stay on expandedKeys. Omit it to keep the detail state inside the tree.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onDetailExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Called when the detail control toggles a key.",
           "origin": "viviana-ui"
         },
         {
@@ -1275,6 +1350,17 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "hasDetail",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Shows the detail control. It toggles detailExpandedKeys only. Child rows stay on the tree expandedKeys control.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "href",
           "type": "string",
           "required": false,
@@ -1517,5 +1603,54 @@
       ]
     }
   ],
-  "divergence": {}
+  "divergence": {
+    "TreeProps": [
+      {
+        "prop": "density",
+        "kind": "only-here"
+      },
+      {
+        "prop": "onRename",
+        "kind": "only-here"
+      },
+      {
+        "prop": "detailExpandedKeys",
+        "kind": "only-here"
+      },
+      {
+        "prop": "onDetailExpandedChange",
+        "kind": "only-here"
+      }
+    ],
+    "TreeItemProps": [
+      {
+        "prop": "hasDetail",
+        "kind": "only-here"
+      }
+    ],
+    "TreeViewProps": [
+      {
+        "prop": "density",
+        "kind": "only-here"
+      },
+      {
+        "prop": "onRename",
+        "kind": "only-here"
+      },
+      {
+        "prop": "detailExpandedKeys",
+        "kind": "only-here"
+      },
+      {
+        "prop": "onDetailExpandedChange",
+        "kind": "only-here"
+      }
+    ],
+    "TreeViewItemProps": [
+      {
+        "prop": "hasDetail",
+        "kind": "only-here"
+      }
+    ]
+  }
 }

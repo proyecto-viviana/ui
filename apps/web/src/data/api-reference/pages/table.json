@@ -520,7 +520,7 @@
           "name": "children",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableCellRenderProps) => JSX.Element)",
           "required": false,
-          "description": "The children of the cell.",
+          "description": "The children of the cell. For an argument-taking callback, read live getters in reactive JSX, e.g. `(state) => <span>{state.isFocused ? \"Focused\" : \"\"}</span>`. Unlike React callback rerenders, state changes do not rerun this callback to refresh destructured booleans. Destructuring outside reactive JSX snapshots values. This does not guarantee callback-once behavior across remounts or deliberate host-kind changes, and does not define header child behavior.",
           "origin": "solidaria-components"
         },
         {
@@ -806,7 +806,7 @@
           "name": "children",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableCellRenderProps) => JSX.Element)",
           "required": false,
-          "description": "The children of the cell.",
+          "description": "The children of the cell. For an argument-taking callback, read live getters in reactive JSX, e.g. `(state) => <span>{state.isFocused ? \"Focused\" : \"\"}</span>`. Unlike React callback rerenders, state changes do not rerun this callback to refresh destructured booleans. Destructuring outside reactive JSX snapshots values. This does not guarantee callback-once behavior across remounts or deliberate host-kind changes, and does not define header child behavior.",
           "origin": "solidaria-components"
         },
         {
@@ -1246,7 +1246,7 @@
           "name": "children",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableCellRenderProps) => JSX.Element)",
           "required": false,
-          "description": "The children of the cell.",
+          "description": "The children of the cell. For an argument-taking callback, read live getters in reactive JSX, e.g. `(state) => <span>{state.isFocused ? \"Focused\" : \"\"}</span>`. Unlike React callback rerenders, state changes do not rerun this callback to refresh destructured booleans. Destructuring outside reactive JSX snapshots values. This does not guarantee callback-once behavior across remounts or deliberate host-kind changes, and does not define header child behavior.",
           "origin": "solidaria-components"
         },
         {
