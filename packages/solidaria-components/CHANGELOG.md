@@ -1,5 +1,90 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.7.0-rc.1
+
+### Patch Changes
+
+- Deliver each SearchField clear-button activation once through its press handler, preserving input focus and disabled and read-only guards.
+- 6f5a421: Align ComboBox single and multiple selection with upstream value, defaultValue, and onChange, and submit one hidden form input per selected key.
+- 88bd0f7: Leave a readonly multiple ComboBox input unchanged, give onChange a key list that is separate from state, and carry the selection mode through the headless hook and component state instead of treating every ComboBox as single.
+- c247f66: Assign dialog trigger id declaratively on Button, ToggleButton, and Link, register trigger elements in solid-spectrum's ActionButton, ToggleButton, and LinkButton, and emit dev warning when Dialog lacks an accessible title.
+- 5c92a79: Deliver child Button presses to FileTrigger once while preserving live press callbacks, pending and disabled guards, and raw-child activation.
+
+  Honor native disabled behavior for pending Buttons that opt out of focus, including live focusability changes and explicit child disability.
+
+- 81c16b4: Route createFocusWithin through bubbling onFocusIn and onFocusOut events so descendant focus reaches the focus-within container matching React synthetic event bubbling parity, remove createOverlay's invented document-level focusin close listener, and preserve grouped ToggleButton item id semantics without leaking selection keys as DOM ids.
+- 836bfdb: Iterate static Breadcrumb children without recursive children snapshots to preserve reactive child labels across hydration.
+- 5a5b0c9: Retain href and link attributes on disabled Link and LinkButton span hosts so accessibility trees include /url destination matching React Aria and React Spectrum S2, while preserving dynamic toggling between disabled span and active anchor.
+- 0222514: Share one ListBox keyboard delegate between normal navigation and drop navigation, respecting locale, direction, layout, orientation, disabled keys, and caller-supplied delegates. Render the default styled ListBox empty state in a div wrapper.
+- 0e33778: Call Solid bound event tuples as handler(data, event) from menu, tabs, and combobox, and notify stacked submenu open changes from the latest callback after the initial sample.
+- 0222514: Track nested menu expansion with a root expanded-submenu stack: opening a sibling replaces deeper entries, closing a submenu removes its descendants, and closing the root clears the stack. Controlled and default-open SubmenuTrigger paths retain independent overlay state.
+- Align overlay close ownership and lifetime with React Aria: settle exit animation completion without an additional animation frame, restore Dialog trigger focus through its FocusScope, and handle Modal Escape dismissal once. Keep Select listbox content mounted for the owning Popover exit lifetime and allow pointer opening while retaining keyboard focus-visible behavior.
+- 7ea13b0: Report one Picker choice once. Scalar onChange and onSelectionChange share one changed-request decision, including a later retry while a controlled value stays refused. A listbox option click selects through press handling only, in single and multiple mode, and does not queue a second request.
+- 24b42f5: Align Select trigger state attributes and typeahead keyboard ordering with upstream React Aria: emit `data-pressed` while open on SelectTrigger, drop invented `data-open`, `data-disabled`, `data-focus-visible` from `createSelect`'s `triggerProps`, and respect `e.defaultPrevented` for typeahead space navigation.
+- 0222514: Preserve TableCell children and styled Card bodies across hover, press, and focus updates so interaction changes do not rebuild stateful child content. Keep interaction state live through the stable child/context getters.
+- 8a94026: Align RAC field slots and help-text describedby migration ([#56](https://github.com/proyecto-viviana/ui/issues/56), [#57](https://github.com/proyecto-viviana/ui/issues/57), [#58](https://github.com/proyecto-viviana/ui/issues/58)), support static sections in Picker/Select ([#43](https://github.com/proyecto-viviana/ui/issues/43)), fill RAC render-prop item states ([#209](https://github.com/proyecto-viviana/ui/issues/209)), and align Picker trigger state and focus lifecycle ([#584](https://github.com/proyecto-viviana/ui/issues/584)).
+- f5397dc: Provide group-level TextContext slots for description and errorMessage in RadioGroup without parallel WeakMap, preventing dangling aria-describedby references.
+- a6bf382: Read compiled element children once through shared helper evaluateRenderChildren across headless and styled components, preventing double-evaluation and hydration key drift under SSR.
+- 3c9b09b: Correct the shared event adapter to call canonical and legacy inverted tuple callbacks with an undefined receiver instead of binding the tuple, preserving data and the original event. Retain EventListenerObject method receivers and reuse the shared adapter for Tab event composition. This adapter contract differs from native Solid DOM dispatch, which binds the DOM node.
+- 8d69cd4: Apply SegmentedControlItem pressScale perspective transform to the inner content wrapper instead of the host radio button to preserve button geometry and focus during pointer hold, and use renderChildrenStable in ToggleButton to prevent child unmounting during press transitions.
+- 130b783: Accept a readonly multiple Select value in state and both hidden form adapters. Multiple state keeps that readonly list, onChange receives a separate mutable copy, and the public value and onChange callbacks keep their mode types.
+
+  Preserve an explicit controlled null value instead of falling back to internal selection state.
+
+- 0222514: Align Select single and multiple selection with value, defaultValue, and onChange, and forward the selection-mode generic through both styled Picker wrappers. Reset the hidden native select through captured state.defaultValue and state.setValue instead of selecting the first collection item.
+- 3c84eae: Render SelectBox slot styles at render time, stop snapshotting item children with children(), and keep mixed text children reactive across hydration.
+- 7b3f65e: Preserve reactive class and style getters across Slider components so SliderFill and SliderOutput update styling dynamically when isEmphasized, isDisabled, or maxValue change live after mount.
+- Restore native range inputs as the focusable, value-bearing Slider thumbs. Add the approved array and indexed state APIs, createSliderThumb hook, and indexed thumb name/form support while retaining scalar callbacks and styled Slider and RangeSlider value shapes. Share the styled Slider layout and interactions with RangeSlider, including controlled updates, labels, form reset and thumb identity.
+- 9c92f72: Split monolithic Color.tsx into dedicated modules matching upstream React Aria Components layout (ColorArea, ColorField, ColorPicker, ColorSlider, ColorSwatch, ColorSwatchPicker, ColorThumb, ColorWheel) while maintaining Color.tsx as a re-export barrel.
+- 36bf847: Preserve reactive Tab caller attributes and compose caller events before managed handlers. Resolve MenuItem popup attributes with defined caller values overriding submenu context and undefined restoring context. Align popup open state with the pinned raw string expanded semantics while preserving DOM boolean serialization.
+- 70533af: Forward zero-argument TableCell children without render props and track their signal reads through a reactive fragment. Preserve static children and argument-taking render callbacks.
+
+  Keep the shared TableRow chevron slot stable while forwarding live expansion button props, so the retained chevron updates its accessible label on expand and collapse.
+
+  Preserve Space and Enter defaults for nested text inputs in selectable items by checking the original keyboard target before the combined press handlers run. Keep row and plain-text descendant activation and virtual-focus behavior unchanged.
+
+- 368f45f: Document TableCell children authoring in Solid: read the stable state object's live getters inside reactive JSX, such as `(state) => <span>{state.isFocused ? "Focused" : ""}</span>`. Unlike React render callbacks, the cell child callback does not rerun on state changes to refresh destructured booleans; destructuring outside reactive expressions snapshots those values. Add preservation controls for live getter reads and stateful children on default and custom hosts. This documents the existing runtime behavior.
+- 0222514: Release Input and TextArea input-id registrations outside the disposing owner, and skip writes after the TextField owner is disposed. Removing only the control also clears its registration without a disposing-owner write.
+- cb3af65: Keep ToastRegion `aria-label` live after the region mounts, updating landmark registration and DOM attributes when props change.
+- 30123fa: Unify static collection registration between Menu and Select in CollectionBuilder and Collection primitives, sharing descriptor state management.
+- Updated dependencies:
+- Updated dependencies 47642e6:
+- Updated dependencies 02130c8:
+- Updated dependencies d2d0045:
+- Updated dependencies 59f7420:
+- Updated dependencies 6f5a421:
+- Updated dependencies 88bd0f7:
+- Updated dependencies 0222514:
+- Updated dependencies 0e5f671:
+- Updated dependencies 9ddc120:
+- Updated dependencies 81c16b4:
+- Updated dependencies 48af500:
+- Updated dependencies:
+- Updated dependencies 5a5b0c9:
+- Updated dependencies 0222514:
+- Updated dependencies 0e33778:
+- Updated dependencies 0222514:
+- Updated dependencies 182b57e:
+- Updated dependencies:
+- Updated dependencies 7ea13b0:
+- Updated dependencies 24b42f5:
+- Updated dependencies 8a94026:
+- Updated dependencies 6838edd:
+- Updated dependencies f5397dc:
+- Updated dependencies a6bf382:
+- Updated dependencies 130b783:
+- Updated dependencies 0222514:
+- Updated dependencies:
+- Updated dependencies 36bf847:
+- Updated dependencies 70533af:
+- Updated dependencies 4aa7c18:
+- Updated dependencies 30ef86f:
+- Updated dependencies cb3af65:
+- Updated dependencies dc990b1:
+- Updated dependencies 0d9323a:
+  - @proyecto-viviana/solid-stately@0.6.0-rc.1
+  - @proyecto-viviana/solidaria@0.6.0-rc.1
+
 ## 0.7.0-rc.0
 
 ### Minor Changes

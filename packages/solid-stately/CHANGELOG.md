@@ -1,5 +1,24 @@
 # @proyecto-viviana/solid-stately
 
+## 0.6.0-rc.1
+
+### Patch Changes
+
+- Allow createCalendarState to receive an outer props accessor and resolve current props throughout state derivation, navigation, validation and callbacks. Preserve object props support and the existing Calendar value and selection signatures. Keep inferred date subtypes usable in Calendar hooks by requiring only the state capabilities each hook consumes.
+- 02130c8: Align flags declaration layout with runtime output and enforce export target coherence checks.
+- d2d0045: Report equivalent ColorField commits once and restore committed text from the current accepted value. Preserve alpha and numeric channel changes, and avoid repeated channel notifications at clamped boundaries.
+- 59f7420: Commit form validation on blur in `createComboBoxState` to match upstream form state lifecycle.
+- 6f5a421: Align ComboBox single and multiple selection with upstream value, defaultValue, and onChange, and submit one hidden form input per selected key.
+- 88bd0f7: Leave a readonly multiple ComboBox input unchanged, give onChange a key list that is separate from state, and carry the selection mode through the headless hook and component state instead of treating every ComboBox as single.
+- 0222514: Track nested menu expansion with a root expanded-submenu stack: opening a sibling replaces deeper entries, closing a submenu removes its descendants, and closing the root clears the stack. Controlled and default-open SubmenuTrigger paths retain independent overlay state.
+- 7ea13b0: Report one Picker choice once. Scalar onChange and onSelectionChange share one changed-request decision, including a later retry while a controlled value stays refused. A listbox option click selects through press handling only, in single and multiple mode, and does not queue a second request.
+- 130b783: Accept a readonly multiple Select value in state and both hidden form adapters. Multiple state keeps that readonly list, onChange receives a separate mutable copy, and the public value and onChange callbacks keep their mode types.
+
+  Preserve an explicit controlled null value instead of falling back to internal selection state.
+
+- 0222514: Align Select single and multiple selection with value, defaultValue, and onChange, and forward the selection-mode generic through both styled Picker wrappers. Reset the hidden native select through captured state.defaultValue and state.setValue instead of selecting the first collection item.
+- Restore native range inputs as the focusable, value-bearing Slider thumbs. Add the approved array and indexed state APIs, createSliderThumb hook, and indexed thumb name/form support while retaining scalar callbacks and styled Slider and RangeSlider value shapes. Share the styled Slider layout and interactions with RangeSlider, including controlled updates, labels, form reset and thumb identity.
+
 ## 0.6.0-rc.0
 
 ### Minor Changes

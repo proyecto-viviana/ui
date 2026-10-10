@@ -1,5 +1,101 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.8.0-rc.1
+
+### Patch Changes
+
+- Keep ActionButton and Badge dynamic text children reactive through server rendering and hydration. Cache child accessors under their owning slot so mixed text updates preserve static siblings and live node identity.
+- ab96112: Provide raw prop size after form resolution to NotificationBadge instead of group size to align ActionButton with upstream S2.
+- d8b607f: Forward AlertDialog caller id, data attributes, and ARIA labeling metadata reactively while preserving its fixed alertdialog role.
+- ffca19c: ButtonGroup re-measures overflow when a child changes size in place, not only when children are added or relabelled.
+- 48af500: Honor the declared lowercase `tabindex` on standalone Cards, including live updates and removal, while preserving managed focus precedence and child identity.
+- 1b11206: Add components-no-fonts.css to load theme and component styles without font faces. Consumers can supply their own fonts; the existing components.css entry remains available.
+- c247f66: Assign dialog trigger id declaratively on Button, ToggleButton, and Link, register trigger elements in solid-spectrum's ActionButton, ToggleButton, and LinkButton, and emit dev warning when Dialog lacks an accessible title.
+- 8853e12: Resolve field prefix adornment once with `children()` memo under component owner to prevent duplicate instantiation across TextField, ComboBox, NumberField, and ColorField.
+- bc1dd87: Unregister removed ImageCoordinator images synchronously outside the disposing Solid owner so keyed row removal can reveal surviving loaded images without an owned-scope write error.
+
+  Update Image rendering when context visibility changes, including images that start hidden and later become visible.
+
+  Retain the native image and wrapper when a scalar source changes, keeping pending replacement images and loaded siblings behind the coordinator barrier. Ignore completion events from replaced, hidden or disposed images, and invalidate queued cached completion when its source or lifecycle changes.
+
+- 836bfdb: Iterate static Breadcrumb children without recursive children snapshots to preserve reactive child labels across hydration.
+- a18a0b6: Keep styled children reactive across hydration in ActionButton, ToggleButton, LinkButton, Badge, Radio, SegmentedControl, and TagGroup without children() snapshots.
+- 5a5b0c9: Retain href and link attributes on disabled Link and LinkButton span hosts so accessibility trees include /url destination matching React Aria and React Spectrum S2, while preserving dynamic toggling between disabled span and active anchor.
+- Keep linked Card server rendering pure by preserving its initial interaction context instead of writing signals during native link rendering. Retain client interaction updates and the separate selectable grid Card path. Keep deferred Card descendants in a stable owner scope so server and client hydration IDs agree.
+- 0222514: Share one ListBox keyboard delegate between normal navigation and drop navigation, respecting locale, direction, layout, orientation, disabled keys, and caller-supplied delegates. Render the default styled ListBox empty state in a div wrapper.
+- 0222514: Preserve TableCell children and styled Card bodies across hover, press, and focus updates so interaction changes do not rebuild stateful child content. Keep interaction state live through the stable child/context getters.
+- 3215003: Export the Adobe prose style macro from solid-spectrum style so generated prose CSS matches the pinned @react-spectrum/ai prose surface.
+- 8a94026: Align RAC field slots and help-text describedby migration ([#56](https://github.com/proyecto-viviana/ui/issues/56), [#57](https://github.com/proyecto-viviana/ui/issues/57), [#58](https://github.com/proyecto-viviana/ui/issues/58)), support static sections in Picker/Select ([#43](https://github.com/proyecto-viviana/ui/issues/43)), fill RAC render-prop item states ([#209](https://github.com/proyecto-viviana/ui/issues/209)), and align Picker trigger state and focus lifecycle ([#584](https://github.com/proyecto-viviana/ui/issues/584)).
+- f5397dc: Provide group-level TextContext slots for description and errorMessage in RadioGroup without parallel WeakMap, preventing dangling aria-describedby references.
+- a6bf382: Read compiled element children once through shared helper evaluateRenderChildren across headless and styled components, preventing double-evaluation and hydration key drift under SSR.
+- 414aff6: Paint disabled SegmentedControl selection indicator with gray-25 fill in default color scheme and apply GrayText only under forcedColors media query to match React Spectrum S2 styling.
+- 8d69cd4: Apply SegmentedControlItem pressScale perspective transform to the inner content wrapper instead of the host radio button to preserve button geometry and focus during pointer hold, and use renderChildrenStable in ToggleButton to prevent child unmounting during press transitions.
+- 0222514: Align Select single and multiple selection with value, defaultValue, and onChange, and forward the selection-mode generic through both styled Picker wrappers. Reset the hidden native select through captured state.defaultValue and state.setValue instead of selecting the first collection item.
+- 3c84eae: Render SelectBox slot styles at render time, stop snapshotting item children with children(), and keep mixed text children reactive across hydration.
+- e1e3d87: Verify live Skeleton `isLoading` updates on `createIcon` loading classes and inert state across JSX and hyperscript SVG icons.
+- 7b3f65e: Preserve reactive class and style getters across Slider components so SliderFill and SliderOutput update styling dynamically when isEmphasized, isDisabled, or maxValue change live after mount.
+- Restore native range inputs as the focusable, value-bearing Slider thumbs. Add the approved array and indexed state APIs, createSliderThumb hook, and indexed thumb name/form support while retaining scalar callbacks and styled Slider and RangeSlider value shapes. Share the styled Slider layout and interactions with RangeSlider, including controlled updates, labels, form reset and thumb identity.
+- 70533af: Forward zero-argument TableCell children without render props and track their signal reads through a reactive fragment. Preserve static children and argument-taking render callbacks.
+
+  Keep the shared TableRow chevron slot stable while forwarding live expansion button props, so the retained chevron updates its accessible label on expand and collapse.
+
+  Preserve Space and Enter defaults for nested text inputs in selectable items by checking the original keyboard target before the combined press handlers run. Keep row and plain-text descendant activation and virtual-focus behavior unchanged.
+
+- Keep Table body-cell focus rings aligned with the full native cell box by drawing the checkbox row divider on the row, matching Spectrum S2's divider placement. Preserve the existing highlight-selection divider suppression.
+- Allocate TagGroup's label relationship in its component owner so hydration can retain the original grid and rows while visible labels and external aria-labelledby references update.
+- 0222514: Register nested static TreeViewItem children as nested collection rows, with parent relationships and child expansion. Preserve the dynamic items path.
+- Updated dependencies:
+- Updated dependencies 47642e6:
+- Updated dependencies 02130c8:
+- Updated dependencies d2d0045:
+- Updated dependencies 59f7420:
+- Updated dependencies 6f5a421:
+- Updated dependencies 88bd0f7:
+- Updated dependencies 0222514:
+- Updated dependencies 0e5f671:
+- Updated dependencies c247f66:
+- Updated dependencies 9ddc120:
+- Updated dependencies 5c92a79:
+- Updated dependencies 81c16b4:
+- Updated dependencies 48af500:
+- Updated dependencies:
+- Updated dependencies 836bfdb:
+- Updated dependencies 5a5b0c9:
+- Updated dependencies 0222514:
+- Updated dependencies 0222514:
+- Updated dependencies 0e33778:
+- Updated dependencies 0222514:
+- Updated dependencies 182b57e:
+- Updated dependencies:
+- Updated dependencies 7ea13b0:
+- Updated dependencies 24b42f5:
+- Updated dependencies 0222514:
+- Updated dependencies 8a94026:
+- Updated dependencies 6838edd:
+- Updated dependencies f5397dc:
+- Updated dependencies a6bf382:
+- Updated dependencies 3c9b09b:
+- Updated dependencies 8d69cd4:
+- Updated dependencies 130b783:
+- Updated dependencies 0222514:
+- Updated dependencies 3c84eae:
+- Updated dependencies 7b3f65e:
+- Updated dependencies:
+- Updated dependencies 9c92f72:
+- Updated dependencies 36bf847:
+- Updated dependencies 70533af:
+- Updated dependencies 368f45f:
+- Updated dependencies 4aa7c18:
+- Updated dependencies 0222514:
+- Updated dependencies 30ef86f:
+- Updated dependencies cb3af65:
+- Updated dependencies dc990b1:
+- Updated dependencies 0d9323a:
+- Updated dependencies 30123fa:
+  - @proyecto-viviana/solid-stately@0.6.0-rc.1
+  - @proyecto-viviana/solidaria@0.6.0-rc.1
+  - @proyecto-viviana/solidaria-components@0.7.0-rc.1
+
 ## 0.8.0-rc.0
 
 ### Minor Changes

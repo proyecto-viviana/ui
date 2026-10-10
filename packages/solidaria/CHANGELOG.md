@@ -1,5 +1,62 @@
 # @proyecto-viviana/solidaria
 
+## 0.6.0-rc.1
+
+### Patch Changes
+
+- Allow createCalendarState to receive an outer props accessor and resolve current props throughout state derivation, navigation, validation and callbacks. Preserve object props support and the existing Calendar value and selection signatures. Keep inferred date subtypes usable in Calendar hooks by requiring only the state capabilities each hook consumes.
+- 47642e6: Expose checkboxGroupData descriptionId, errorMessageId, and attributes as reactive getters in createCheckboxGroup so group and child checkbox aria-describedby retarget dynamically when isInvalid changes live.
+- 88bd0f7: Leave a readonly multiple ComboBox input unchanged, give onChange a key list that is separate from state, and carry the selection mode through the headless hook and component state instead of treating every ComboBox as single.
+- 0222514: Route open ComboBox list navigation for Arrow, Home/End, and Page keys through the shared selectable collection and list keyboard delegate. Preserve disabled-key handling and native input-caret behavior, and read focus wrapping at event time.
+- 0e5f671: Restore a controlled checkbox or switch input when its owner refuses the change, so the native checked property matches toggle state.
+- 9ddc120: Use eventPathContains for interaction, selection, and datepicker ownership checks so actions remain in-target when child handlers replace target elements mid-bubble.
+- 81c16b4: Route createFocusWithin through bubbling onFocusIn and onFocusOut events so descendant focus reaches the focus-within container matching React synthetic event bubbling parity, remove createOverlay's invented document-level focusin close listener, and preserve grouped ToggleButton item id semantics without leaking selection keys as DOM ids.
+- 48af500: Keep focusable context attributes and event handlers live across disabled-state changes, preserving contextual tab order and own interaction handlers when initially disabled elements become enabled. Preserve the native event receiver for contextual-only handlers and existing chained-handler call semantics.
+- Respect the active containing scope when a queued focus frame runs, and restore focus after scope removal in the scheduled frame.
+- 5a5b0c9: Retain href and link attributes on disabled Link and LinkButton span hosts so accessibility trees include /url destination matching React Aria and React Spectrum S2, while preserving dynamic toggling between disabled span and active anchor.
+- 0222514: Route Menu keyboard and focus navigation through the shared selectable-list and list keyboard delegate, including arrows, Home/End, Page keys, and typeahead. Escape closes the menu without clearing selection.
+- 0e33778: Call Solid bound event tuples as handler(data, event) from menu, tabs, and combobox, and notify stacked submenu open changes from the latest callback after the initial sample.
+- 182b57e: Preserve the native event receiver when reading normalized focus-within event accessors, so descendant focus callbacks can read target, currentTarget, and relatedTarget in browsers.
+- Align overlay close ownership and lifetime with React Aria: settle exit animation completion without an additional animation frame, restore Dialog trigger focus through its FocusScope, and handle Modal Escape dismissal once. Keep Select listbox content mounted for the owning Popover exit lifetime and allow pointer opening while retaining keyboard focus-visible behavior.
+- 24b42f5: Align Select trigger state attributes and typeahead keyboard ordering with upstream React Aria: emit `data-pressed` while open on SelectTrigger, drop invented `data-open`, `data-disabled`, `data-focus-visible` from `createSelect`'s `triggerProps`, and respect `e.defaultPrevented` for typeahead space navigation.
+- 8a94026: Align RAC field slots and help-text describedby migration ([#56](https://github.com/proyecto-viviana/ui/issues/56), [#57](https://github.com/proyecto-viviana/ui/issues/57), [#58](https://github.com/proyecto-viviana/ui/issues/58)), support static sections in Picker/Select ([#43](https://github.com/proyecto-viviana/ui/issues/43)), fill RAC render-prop item states ([#209](https://github.com/proyecto-viviana/ui/issues/209)), and align Picker trigger state and focus lifecycle ([#584](https://github.com/proyecto-viviana/ui/issues/584)).
+- 6838edd: Return isDisabled as a reactive getter in createRadio so radio labels and styling update dynamically when isDisabled changes live.
+- f5397dc: Provide group-level TextContext slots for description and errorMessage in RadioGroup without parallel WeakMap, preventing dangling aria-describedby references.
+- a6bf382: Read compiled element children once through shared helper evaluateRenderChildren across headless and styled components, preventing double-evaluation and hydration key drift under SSR.
+- 130b783: Accept a readonly multiple Select value in state and both hidden form adapters. Multiple state keeps that readonly list, onChange receives a separate mutable copy, and the public value and onChange callbacks keep their mode types.
+
+  Preserve an explicit controlled null value instead of falling back to internal selection state.
+
+- 0222514: Align Select single and multiple selection with value, defaultValue, and onChange, and forward the selection-mode generic through both styled Picker wrappers. Reset the hidden native select through captured state.defaultValue and state.setValue instead of selecting the first collection item.
+- Restore native range inputs as the focusable, value-bearing Slider thumbs. Add the approved array and indexed state APIs, createSliderThumb hook, and indexed thumb name/form support while retaining scalar callbacks and styled Slider and RangeSlider value shapes. Share the styled Slider layout and interactions with RangeSlider, including controlled updates, labels, form reset and thumb identity.
+- 36bf847: Preserve reactive Tab caller attributes and compose caller events before managed handlers. Resolve MenuItem popup attributes with defined caller values overriding submenu context and undefined restoring context. Align popup open state with the pinned raw string expanded semantics while preserving DOM boolean serialization.
+- 70533af: Forward zero-argument TableCell children without render props and track their signal reads through a reactive fragment. Preserve static children and argument-taking render callbacks.
+
+  Keep the shared TableRow chevron slot stable while forwarding live expansion button props, so the retained chevron updates its accessible label on expand and collapse.
+
+  Preserve Space and Enter defaults for nested text inputs in selectable items by checking the original keyboard target before the combined press handlers run. Keep row and plain-text descendant activation and virtual-focus behavior unchanged.
+
+- 4aa7c18: Synchronize tabs roving tabindex attributes before keyboard focus shift to match layout effect timing.
+- 30ef86f: Support reactive options in createDateFormatter and track resolved options dynamically in createDateSegment so TimeField hour-segment aria-valuetext updates when hourCycle changes after mount.
+- cb3af65: Keep ToastRegion `aria-label` live after the region mounts, updating landmark registration and DOM attributes when props change.
+- dc990b1: Call ToggleButton onPress once per press, after onChange, including Shift-click and keyboard activation.
+- 0d9323a: Add optional TreeView inline label renaming with F2 or double press, Enter to commit, Escape to cancel, and blur to commit. Keep editing keys inside the field and preserve its caret during protective refocus.
+
+  Prevent selectable-item focus effects from subscribing to reactive reads made by synchronous native, custom, or virtual focus handlers. Controlled editor updates no longer trigger unintended row focus through those reads, preserving editor focus and immediate blur commits.
+
+- Updated dependencies:
+- Updated dependencies 02130c8:
+- Updated dependencies d2d0045:
+- Updated dependencies 59f7420:
+- Updated dependencies 6f5a421:
+- Updated dependencies 88bd0f7:
+- Updated dependencies 0222514:
+- Updated dependencies 7ea13b0:
+- Updated dependencies 130b783:
+- Updated dependencies 0222514:
+- Updated dependencies:
+  - @proyecto-viviana/solid-stately@0.6.0-rc.1
+
 ## 0.6.0-rc.0
 
 ### Minor Changes
