@@ -25,6 +25,7 @@ import {
 } from "../src/data/certified-suite-evidence";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
 import { gitPostcardProbe } from "./certified-postcard-git";
+import { readCertifiedLocalReceipt } from "./certified-local-receipt";
 import { formatCertifiedSummaryMarkdown, readCertifiedSummaryFile } from "./certified-summary";
 import {
   baselineSlugsAboveCeiling,
@@ -405,10 +406,28 @@ function currentHeadSha(): string | null {
   }
 }
 
-const certifiedSuiteProblems = validateCertifiedSuiteEvidence(
-  lastFullCertifiedSuiteRun,
-  certifiedObligations.expectedFixmes.length,
-);
+let localCertifiedReceipt: unknown;
+const localCertifiedReceiptProblems: string[] = [];
+if (lastFullCertifiedSuiteRun.localMergeReceipt != null) {
+  try {
+    localCertifiedReceipt = readCertifiedLocalReceipt(
+      repoRoot,
+      lastFullCertifiedSuiteRun.localMergeReceipt,
+    );
+  } catch (error) {
+    localCertifiedReceiptProblems.push(
+      error instanceof Error ? error.message : "local certified receipt unreadable",
+    );
+  }
+}
+const certifiedSuiteProblems = [
+  ...localCertifiedReceiptProblems,
+  ...validateCertifiedSuiteEvidence(
+    lastFullCertifiedSuiteRun,
+    certifiedObligations.expectedFixmes.length,
+    localCertifiedReceipt,
+  ),
+];
 const certifiedSuiteHead = currentHeadSha();
 const certifiedSuitePostcard = certifiedSuitePostcardCurrency(
   lastFullCertifiedSuiteRun,
@@ -702,9 +721,13 @@ console.log(
 console.log(
   `Certified expected fixmes: ${certifiedObligations.expectedFixmes.length}; deferred comments: ${certifiedObligations.deferredComments.length}`,
 );
+const postcardProvenance =
+  lastFullCertifiedSuiteRun.localMergeReceipt != null
+    ? `local merge receipt=${lastFullCertifiedSuiteRun.localMergeReceipt.path} sha256=${lastFullCertifiedSuiteRun.localMergeReceipt.sha256}`
+    : `run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId}`;
 const postcardLine = certifiedSuitePostcardCurrent
-  ? `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`
-  : `STALE certified-suite postcard (${certifiedSuitePostcardReason}; ticket #574). Do not treat these counts as live. Postcard revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}. Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`;
+  ? `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} ${postcardProvenance} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`
+  : `STALE certified-suite postcard (${certifiedSuitePostcardReason}; ticket #574). Do not treat these counts as live. Postcard revision=${lastFullCertifiedSuiteRun.revision} ${postcardProvenance} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}. Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`;
 console.log(postcardLine);
 if (lastHeadCertifiedSubsetRun == null) {
   console.log(

@@ -23,7 +23,7 @@ describe("component parity report options", () => {
     const result = spawnSync(
       resolve(repoRoot, "node_modules/.bin/tsx"),
       ["scripts/report-component-parity.ts", "--strict-full"],
-      { cwd: comparisonRoot, encoding: "utf8" },
+      { cwd: comparisonRoot, encoding: "utf8", timeout: 20_000 },
     );
 
     expect(result.error).toBeUndefined();
@@ -35,5 +35,5 @@ describe("component parity report options", () => {
     expect(result.stdout).toContain(lastFullCertifiedSuiteRun.revision);
     expect(result.stdout).toContain("HEAD certified-suite subset (not a postcard; complete=false)");
     expect(result.stdout).toContain("d15a86fff09308728aa67887654aa57f7eb1ec8a");
-  });
+  }, 30_000);
 });

@@ -139,36 +139,142 @@ describe("acceptance inventory", () => {
     expect(summary.invalid).toBe(0);
   });
 
-  it("names the four certified knownDivergence fixmes", () => {
+  it("requires zero current certified knownDivergence fixmes", () => {
     const { expectedFixmes } = inventoryCertifiedObligations(
       resolve(comparisonRoot, "e2e/certified"),
     );
     const keys = expectedFixmes.map((item) => `${item.spec}::${item.caseId}`).sort();
 
-    expect(keys).toEqual(
-      [
-        "breadcrumbs.certified.spec.ts::overflow",
-        "rangeslider.certified.spec.ts::default",
-        "slider.certified.spec.ts::default",
-        "tableview.certified.spec.ts::sorted",
-      ].sort(),
-    );
+    expect(keys).toEqual([]);
   });
 
-  it("holds the recorded full-suite counts against the registered fixmes", () => {
+  it("preserves historical postcard counts and rejects them as current inventory", () => {
+    const historical = {
+      revision: "08793320540f06c7bdbfb229bbd3cb161b2ba1f5",
+      runId: 37176592599,
+      jobId: 111362935087,
+      completedAt: "2026-10-04T04:36:40Z",
+      total: 2181,
+      passed: 2175,
+      failed: 0,
+      skipped: 4,
+      waived: 2,
+    };
     const { expectedFixmes } = inventoryCertifiedObligations(
       resolve(comparisonRoot, "e2e/certified"),
     );
 
+    expect(validateCertifiedSuiteEvidence(historical, 4)).toEqual([]);
+    expect(expectedFixmes).toHaveLength(0);
+    expect(validateCertifiedSuiteEvidence(historical, expectedFixmes.length)).toContain(
+      "skipped=4 does not match 0 registered known divergences",
+    );
     expect(
-      validateCertifiedSuiteEvidence(lastFullCertifiedSuiteRun, expectedFixmes.length),
-    ).toEqual([]);
+      validateCertifiedSuiteEvidence({ ...historical, passed: historical.passed - 1 }, 4),
+    ).toContain("passed, failed, and skipped counts must add up to total");
+  });
+
+  it("requires truthful complete portable local provenance and rejects mixed or partial records", () => {
+    const revision = "a".repeat(40);
+    const completedAt = "2026-10-09T00:00:00.000Z";
+    const local = {
+      revision,
+      completedAt,
+      total: 8,
+      passed: 8,
+      failed: 0,
+      skipped: 0,
+      localMergeReceipt: {
+        path: ".agents/synthetic-certified-test.json",
+        sha256: "b".repeat(64),
+      },
+    };
+    // Synthetic schema fixture; it is not a recorded browser qualification.
+    const totals = { passed: 8, failed: 0, skipped: 0, waived: 0, flaky: 0 };
+    const receipt = {
+      revision,
+      completedAt,
+      totals,
+      merge: {
+        script: "apps/comparison/scripts/merge-certified-reports.ts",
+        expectedShards: 8,
+        actualProcessExitCode: 0,
+        timedOut: false,
+        ownedClosureEstablished: true,
+        allBoundInputsConserved: true,
+        completedWithinGrant: true,
+        remainingOwnedProcesses: [],
+        receiptSha256: "c".repeat(64),
+        summarySha256: "d".repeat(64),
+      },
+      shards: Array.from({ length: 8 }, (_, index) => ({
+        shard: index + 1,
+        totalShards: 8,
+        revision,
+        scope: "e2e/certified",
+        workers: 2,
+        actualProcessExitCode: 0,
+        rawPlaywrightExitCode: 0,
+        originalWaiverAwareGateExitCode: 0,
+        timedOut: false,
+        ownedClosureEstablished: true,
+        allBoundInputsConserved: true,
+        completedWithinGrant: true,
+        remainingOwnedProcesses: [],
+        runStatus: "passed",
+        closedReturnSha256: "e".repeat(64),
+        summarySha256: "f".repeat(64),
+        totals: { ...totals, passed: 1 },
+      })),
+    };
+    expect(validateCertifiedSuiteEvidence(local, 0, receipt)).toEqual([]);
+    Reflect.set(local, "runId", 1);
+    expect(validateCertifiedSuiteEvidence(local, 0, receipt)).toContain(
+      "local merge provenance must not include GitHub run/job IDs",
+    );
+    Reflect.deleteProperty(local, "runId");
     expect(
       validateCertifiedSuiteEvidence(
-        { ...lastFullCertifiedSuiteRun, passed: lastFullCertifiedSuiteRun.passed - 1 },
-        expectedFixmes.length,
+        {
+          ...local,
+          localMergeReceipt: { ...local.localMergeReceipt, sha256: "0".repeat(64) },
+        },
+        0,
+        receipt,
       ),
-    ).toContain("passed, failed, and skipped counts must add up to total");
+    ).toContain(
+      "local provenance requires a portable .agents JSON receipt and non-placeholder SHA256",
+    );
+    for (const path of [".agents/%2e%2e%2foutside.json", ".agents/nested/receipt.json"]) {
+      expect(
+        validateCertifiedSuiteEvidence(
+          { ...local, localMergeReceipt: { ...local.localMergeReceipt, path } },
+          0,
+          receipt,
+        ),
+      ).toContain(
+        "local provenance requires a portable .agents JSON receipt and non-placeholder SHA256",
+      );
+    }
+    expect(validateCertifiedSuiteEvidence(local, 0)).not.toEqual([]);
+    expect(
+      validateCertifiedSuiteEvidence(local, 0, { ...receipt, shards: receipt.shards.slice(0, 7) }),
+    ).not.toEqual([]);
+    expect(
+      validateCertifiedSuiteEvidence(local, 0, {
+        ...receipt,
+        shards: receipt.shards.map((shard) => ({ ...shard, shard: 1 })),
+      }),
+    ).not.toEqual([]);
+    expect(
+      validateCertifiedSuiteEvidence(local, 0, { ...receipt, totals: { ...totals, skipped: 1 } }),
+    ).not.toEqual([]);
+    expect(
+      validateCertifiedSuiteEvidence(local, 0, {
+        ...receipt,
+        merge: { ...receipt.merge, actualProcessExitCode: 1 },
+      }),
+    ).not.toEqual([]);
   });
 
   it("holds the postcard current only through ancestry plus unchanged covered paths", () => {

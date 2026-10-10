@@ -46,6 +46,7 @@ import { readCertifiedListing } from "../../../../scripts/check-certified-case-f
 
 const here = dirname(fileURLToPath(import.meta.url));
 const now = new Date("2026-09-02T12:00:00.000Z");
+const fixtureRelease = "0.8.0-rc.0";
 
 function failure(overrides: Partial<CertifiedFailure> = {}): CertifiedFailure {
   return {
@@ -62,7 +63,7 @@ function waiver(overrides: Partial<CertifiedWaiver> = {}): CertifiedWaiver {
     pattern:
       "^e2e/certified/combobox\\.certified\\.spec\\.ts D3 pixel diff — ComboBox › default · light$",
     ticket: 240,
-    release: "0.8.0-rc.0",
+    release: fixtureRelease,
     ticketStatus: "in-progress",
     reason: "the fixture's own row; what a user sees goes here",
     ...overrides,
@@ -402,6 +403,7 @@ describe("certified waivers", () => {
       waivers: [waiver()],
       failures: [failure()],
       now,
+      currentRelease: fixtureRelease,
     });
 
     expect(evaluation.unwaived).toEqual([]);
@@ -420,6 +422,7 @@ describe("certified waivers", () => {
       waivers: [waiver()],
       failures: [failure(), unmatched],
       now,
+      currentRelease: fixtureRelease,
     });
 
     expect(evaluation.unwaived).toEqual([unmatched]);
@@ -540,6 +543,7 @@ describe("certified waivers", () => {
         waivers: [waiver({ ticketStatus: status })],
         failures: [failure()],
         now,
+        currentRelease: fixtureRelease,
       });
       expect(evaluation.problems).toEqual([
         expect.objectContaining({
@@ -560,6 +564,7 @@ describe("certified waivers", () => {
         waivers: [waiver({ ticketStatus: status })],
         failures: [failure()],
         now,
+        currentRelease: fixtureRelease,
       });
       expect({ status, problems: evaluation.problems, waived: evaluation.waived.length }).toEqual({
         status,
@@ -871,9 +876,17 @@ describe("merged certified summary waiver counts", () => {
 
     it("reads the current release version from manifest", () => {
       const root = repoRootFromComparison(comparisonRootFrom(import.meta.url));
-      const release = readCurrentRelease(root);
-      expect(parseSemver(release)).not.toBeNull();
-      expect(release).toBe("0.8.0-rc.0");
+      const manifest = JSON.parse(
+        readFileSync(join(root, "packages/viviana-ui/package.json"), "utf8"),
+      );
+      vi.stubEnv("VIVIANA_RELEASE_VERSION", "");
+      try {
+        const release = readCurrentRelease(root);
+        expect(parseSemver(release)).not.toBeNull();
+        expect(release).toBe(manifest.version);
+      } finally {
+        vi.unstubAllEnvs();
+      }
     });
   });
 });

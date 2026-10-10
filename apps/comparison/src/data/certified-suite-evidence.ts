@@ -1,14 +1,15 @@
-export interface CertifiedSuiteEvidence {
+export type CertifiedSuiteEvidence = {
   revision: string;
-  runId: number;
-  jobId: number;
   completedAt: string;
   total: number;
   passed: number;
   failed: number;
   skipped: number;
   waived?: number;
-}
+} & (
+  | { runId: number; jobId: number; localMergeReceipt?: never }
+  | { runId?: never; jobId?: never; localMergeReceipt: { path: string; sha256: string } }
+);
 
 /**
  * Postcard from the last complete certified suite run that was recorded against
@@ -136,6 +137,7 @@ export function certifiedSuitePostcardCurrency(
 export function validateCertifiedSuiteEvidence(
   evidence: CertifiedSuiteEvidence,
   expectedSkipped: number,
+  localReceipt?: unknown,
 ): string[] {
   const problems: string[] = [];
 
@@ -158,6 +160,111 @@ export function validateCertifiedSuiteEvidence(
     problems.push(
       `skipped=${evidence.skipped} does not match ${expectedSkipped} registered known divergences`,
     );
+  }
+
+  if (evidence.localMergeReceipt != null) {
+    const local = evidence.localMergeReceipt;
+    if (evidence.runId != null || evidence.jobId != null) {
+      problems.push("local merge provenance must not include GitHub run/job IDs");
+    }
+    const hash = (value: unknown): value is string =>
+      typeof value === "string" && /^[0-9a-f]{64}$/.test(value) && !/^0{64}$/.test(value);
+    const record = (value: unknown): value is Record<string, unknown> =>
+      value != null && typeof value === "object" && !Array.isArray(value);
+    if (!/^\.agents\/[A-Za-z0-9][A-Za-z0-9._-]*\.json$/.test(local.path) || !hash(local.sha256)) {
+      problems.push(
+        "local provenance requires a portable .agents JSON receipt and non-placeholder SHA256",
+      );
+    }
+    if (
+      !record(localReceipt) ||
+      localReceipt.revision !== evidence.revision ||
+      localReceipt.completedAt !== evidence.completedAt ||
+      !record(localReceipt.merge) ||
+      !Array.isArray(localReceipt.shards) ||
+      localReceipt.shards.length !== 8
+    ) {
+      problems.push("local provenance requires the complete recorded eight-shard merge");
+    } else {
+      const merge = localReceipt.merge;
+      if (
+        merge.script !== "apps/comparison/scripts/merge-certified-reports.ts" ||
+        merge.expectedShards !== 8 ||
+        merge.actualProcessExitCode !== 0 ||
+        merge.timedOut !== false ||
+        merge.ownedClosureEstablished !== true ||
+        merge.allBoundInputsConserved !== true ||
+        merge.completedWithinGrant !== true ||
+        !hash(merge.receiptSha256) ||
+        !hash(merge.summarySha256) ||
+        !Array.isArray(merge.remainingOwnedProcesses) ||
+        merge.remainingOwnedProcesses.length !== 0
+      ) {
+        problems.push(
+          "local merge must bind the original closed conserved successful merge and summary",
+        );
+      }
+      const totals = localReceipt.totals;
+      if (
+        !record(totals) ||
+        totals.passed !== evidence.passed ||
+        totals.failed !== evidence.failed ||
+        totals.skipped !== evidence.skipped ||
+        totals.waived !== (evidence.waived ?? 0) ||
+        totals.failed !== 0 ||
+        totals.skipped !== 0 ||
+        totals.waived !== 0 ||
+        totals.flaky !== 0
+      ) {
+        problems.push("local postcard must match the merged zero-failure/skip/waiver/flaky result");
+      }
+      let passed = 0;
+      const identities = new Set<number>();
+      for (const shard of localReceipt.shards) {
+        if (
+          !record(shard) ||
+          typeof shard.shard !== "number" ||
+          !Number.isInteger(shard.shard) ||
+          shard.shard < 1 ||
+          shard.shard > 8 ||
+          identities.has(shard.shard) ||
+          shard.totalShards !== 8 ||
+          shard.revision !== evidence.revision ||
+          shard.scope !== "e2e/certified" ||
+          shard.workers !== 2 ||
+          shard.actualProcessExitCode !== 0 ||
+          shard.rawPlaywrightExitCode !== 0 ||
+          shard.originalWaiverAwareGateExitCode !== 0 ||
+          shard.timedOut !== false ||
+          shard.ownedClosureEstablished !== true ||
+          shard.allBoundInputsConserved !== true ||
+          shard.completedWithinGrant !== true ||
+          !Array.isArray(shard.remainingOwnedProcesses) ||
+          shard.remainingOwnedProcesses.length !== 0 ||
+          shard.runStatus !== "passed" ||
+          !hash(shard.closedReturnSha256) ||
+          !hash(shard.summarySha256) ||
+          !record(shard.totals) ||
+          typeof shard.totals.passed !== "number" ||
+          !Number.isSafeInteger(shard.totals.passed) ||
+          shard.totals.passed < 0 ||
+          shard.totals.failed !== 0 ||
+          shard.totals.skipped !== 0 ||
+          shard.totals.waived !== 0 ||
+          shard.totals.flaky !== 0
+        ) {
+          problems.push(
+            "local shard identities must be all eight original closed conserved zero-debt results",
+          );
+          continue;
+        }
+        identities.add(shard.shard);
+        passed += shard.totals.passed;
+      }
+      if (identities.size !== 8 || passed !== evidence.passed) {
+        problems.push("local full shard coverage/counts do not match the postcard");
+      }
+    }
   }
 
   return problems;
