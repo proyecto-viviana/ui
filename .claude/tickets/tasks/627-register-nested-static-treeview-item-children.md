@@ -97,3 +97,25 @@ callback, editor removal, and no restored row focus. That path stays readonly
 in this dispatch. Any repair requires separate admission after cause isolation;
 possible owners are the UI Tree rename handler or the TextField/focus chain.
 No runtime repair or Changeset is included here.
+
+## Current local Tree owning return — 2026-10-09
+
+The defaultValue repair now passes all six unchanged owner files and 131/131
+cases, including uninterrupted editor selection. It initializes TextField through
+its existing live uncontrolled state and removes the redundant controlled signal
+loop; no assertion, timing compensation or selection restoration was added.
+Original scoped format and lint also pass. Each actual return has exit 0,
+no timeout, owned processes closed and bound inputs conserved:
+
+- Owning: `/tmp/ui-tree-rename-selection-direct-proof-20261009/01-tree-selection-candidate-full-unit-owners.return.json`, SHA256 `1e2120bb6a13c75f8380f1ebcb364bc359e4b1c9adee90650ea9c7f34649ef1c`.
+- Format: `/tmp/ui-tree-rename-selection-direct-proof-20261009/02-tree-source-format-check.return.json`, SHA256 `219aaaa0bf2afd93a3052ff47146d4166a021c4eb4b687a20a32b84bd0f55c4c`.
+- Lint: `/tmp/ui-tree-rename-selection-direct-proof-20261009/03-tree-source-lint.return.json`, SHA256 `5705ecccec69cfce0e43c7f4ff0a832b37b848ac2e1f9ee03a3de65589869dc3`.
+
+The prior full six-owner run remains historical: 130 passed and one failed out
+of 131, with uninterrupted selection expected `[2, 4, "backward"]` and actual
+`[7, 7, "none"]`. Actual exit 1, no timeout, owned closure and conserved inputs:
+`/tmp/ui-tree-dnd-direct-proof-20261009/01-tree-candidate-full-unit-owners.return.json`,
+SHA256 `5e5a96fd7214878fc592aefae93d4ea752d75f554aaa6b2644763dc6010edb81`.
+The wrapper callback is not established as the cause of that failure. The full
+build, fresh whole Tree SSR/hydration and final browser qualification remain
+pending; this local result does not close the ticket or replace earlier history.
