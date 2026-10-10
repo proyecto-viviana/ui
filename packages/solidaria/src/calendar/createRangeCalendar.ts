@@ -98,7 +98,9 @@ export interface RangeCalendarAria {
 /**
  * Provides the behavior and accessibility implementation for a range calendar component.
  */
-export function createRangeCalendar<T extends RangeCalendarState>(
+export function createRangeCalendar<
+  T extends Omit<RangeCalendarState, "setValue"> & { setValue: (value: null) => void },
+>(
   props: MaybeAccessor<AriaRangeCalendarProps>,
   state: T,
   ref?: Accessor<Element | null>,

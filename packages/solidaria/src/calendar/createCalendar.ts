@@ -25,7 +25,11 @@ import { createLabels } from "../label/createLabels";
 import type { AriaLabelingProps, DOMProps } from "../label/createLabel";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
-import type { CalendarState } from "@proyecto-viviana/solid-stately";
+import type {
+  CalendarState,
+  CalendarSelectionMode,
+  DateValue,
+} from "@proyecto-viviana/solid-stately";
 import {
   announceSelectedDateChange,
   announceVisibleRangeChange,
@@ -87,10 +91,9 @@ export interface CalendarAria {
 /**
  * Provides the behavior and accessibility implementation for a calendar component.
  */
-export function createCalendar<T extends CalendarState>(
-  props: MaybeAccessor<AriaCalendarProps>,
-  state: T,
-): CalendarAria {
+export function createCalendar<
+  T extends Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">,
+>(props: MaybeAccessor<AriaCalendarProps>, state: T): CalendarAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
   const titleId = createId();

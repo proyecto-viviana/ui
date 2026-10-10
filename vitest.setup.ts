@@ -225,12 +225,14 @@ class FakeIntersectionObserver implements IntersectionObserver {
 
   readonly root: Element | Document | null = null;
   readonly rootMargin: string = "0px";
+  readonly scrollMargin: string = "0px";
   readonly thresholds: ReadonlyArray<number> = [0];
 
   constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
     this.callback = callback;
     if (options?.root) this.root = options.root;
     if (options?.rootMargin) this.rootMargin = options.rootMargin;
+    if (options?.scrollMargin) this.scrollMargin = options.scrollMargin;
     if (options?.threshold) {
       this.thresholds = Array.isArray(options.threshold) ? options.threshold : [options.threshold];
     }

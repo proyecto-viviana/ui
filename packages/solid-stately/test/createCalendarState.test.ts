@@ -10,6 +10,7 @@ import { flush, createRoot } from "solid-js";
 import { createCalendarState } from "../src/calendar/createCalendarState";
 import {
   CalendarDate,
+  type DateValue,
   today,
   getLocalTimeZone,
   createCalendar as createIntlCalendar,
@@ -18,6 +19,203 @@ import {
 describe("createCalendarState", () => {
   const timeZone = getLocalTimeZone();
   const flushEffects = () => Promise.resolve();
+
+  describe("props bag accessor compatibility", () => {
+    it("keeps one controlled state across date to null without falling back to defaultValue", () => {
+      createRoot((dispose) => {
+        const controlledDate = new CalendarDate(2024, 6, 15);
+        const [controlled, setControlled] = createSignal<CalendarDate | null>(controlledDate);
+        const onChange = vi.fn((value: CalendarDate | null) => {
+          expect(value).not.toBeUndefined();
+        });
+        const state = createCalendarState<CalendarDate>(() => ({
+          value: controlled(),
+          defaultValue: new CalendarDate(2024, 2, 1),
+          onChange,
+        }));
+
+        flush();
+        expect(state.value()).toEqual(controlledDate);
+        expect(state.focusedDate()).toEqual(controlledDate);
+        expect(onChange).not.toHaveBeenCalled();
+
+        state.setValue(null);
+        flush();
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith(null);
+        expect(state.value()).toEqual(controlledDate);
+
+        setControlled(null);
+        flush();
+        expect(state.value()).toBeNull();
+        expect(onChange).toHaveBeenCalledTimes(1);
+
+        // Existing Object.is(null, null) no-op must survive outer-bag migration.
+        state.setValue(null);
+        flush();
+        expect(state.value()).toBeNull();
+        expect(onChange).toHaveBeenCalledTimes(1);
+        dispose();
+      });
+    });
+
+    it("updates bounds, locale, visible months and controlled focus on the same state", async () => {
+      const [minValue, setMinValue] = createSignal(new CalendarDate(2024, 6, 1));
+      const [maxValue, setMaxValue] = createSignal(new CalendarDate(2024, 8, 31));
+      const [locale, setLocale] = createSignal("en-US");
+      const [visibleMonths, setVisibleMonths] = createSignal(1);
+      const [focusedValue, setFocusedValue] = createSignal(new CalendarDate(2024, 6, 15));
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      const [isReadOnly, setIsReadOnly] = createSignal(false);
+      const onFocusChange = vi.fn();
+      const onChange = vi.fn();
+      let dispose!: () => void;
+      const state = createRoot((disposeRoot) => {
+        dispose = disposeRoot;
+        return createCalendarState<CalendarDate>(() => ({
+          minValue: minValue(),
+          maxValue: maxValue(),
+          locale: locale(),
+          visibleMonths: visibleMonths(),
+          focusedValue: focusedValue(),
+          isDisabled: isDisabled(),
+          isReadOnly: isReadOnly(),
+          onFocusChange,
+          onChange,
+        }));
+      });
+
+      flush();
+      expect(state.visibleMonths).toBe(1);
+      expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 6, 30));
+      expect(state.title()).toContain("June");
+      expect(state.isCellDisabled(new CalendarDate(2024, 7, 15))).toBe(true);
+
+      setMinValue(new CalendarDate(2024, 6, 20));
+      setMaxValue(new CalendarDate(2024, 7, 20));
+      setLocale("de-DE");
+      setVisibleMonths(2);
+      setFocusedValue(new CalendarDate(2024, 6, 25));
+      await flushEffects();
+      flush();
+      expect(state.minValue()).toEqual(new CalendarDate(2024, 6, 20));
+      expect(state.maxValue()).toEqual(new CalendarDate(2024, 7, 20));
+      expect(state.locale()).toBe("de-DE");
+      expect(state.title()).toContain("Juni");
+      expect(state.visibleMonths).toBe(2);
+      expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 6, 1));
+      expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 7, 31));
+      expect(state.focusedDate()).toEqual(new CalendarDate(2024, 6, 25));
+      expect(state.isCellDisabled(new CalendarDate(2024, 6, 15))).toBe(true);
+      expect(state.isCellDisabled(new CalendarDate(2024, 7, 15))).toBe(false);
+      expect(state.isCellDisabled(new CalendarDate(2024, 7, 25))).toBe(true);
+      expect(onFocusChange).not.toHaveBeenCalled();
+
+      setIsDisabled(true);
+      flush();
+      expect(state.isDisabled()).toBe(true);
+      expect(state.isCellDisabled(new CalendarDate(2024, 7, 15))).toBe(true);
+      state.setValue(new CalendarDate(2024, 7, 15));
+      expect(onChange).not.toHaveBeenCalled();
+
+      setIsDisabled(false);
+      setIsReadOnly(true);
+      flush();
+      expect(state.isDisabled()).toBe(false);
+      expect(state.isReadOnly()).toBe(true);
+      state.setValue(new CalendarDate(2024, 7, 15));
+      expect(onChange).not.toHaveBeenCalled();
+      dispose();
+    });
+
+    it("keeps real function fields as callbacks and reads replacements from the bag", () => {
+      createRoot((dispose) => {
+        const [replaced, setReplaced] = createSignal(false);
+        const date = new CalendarDate(2024, 6, 15);
+        const makeCallbacks = () => ({
+          createCalendar: vi.fn((identifier: Parameters<typeof createIntlCalendar>[0]) => {
+            expect(identifier).toBe("gregory");
+            return createIntlCalendar(identifier);
+          }),
+          isDateUnavailable: vi.fn((value: DateValue) => {
+            expect(value).toBeDefined();
+            return false;
+          }),
+          isDateDisabled: vi.fn((value: DateValue) => {
+            expect(value).toBeDefined();
+            return false;
+          }),
+          onChange: vi.fn((value: CalendarDate | null) => {
+            expect(value).not.toBeUndefined();
+          }),
+          onFocusChange: vi.fn((value: CalendarDate) => {
+            expect(value).toBeDefined();
+          }),
+        });
+        const initial = makeCallbacks();
+        const replacement = makeCallbacks();
+        const state = createCalendarState<CalendarDate>(() => ({
+          defaultFocusedValue: date,
+          locale: "en-US",
+          ...(replaced() ? replacement : initial),
+        }));
+
+        flush();
+        expect(initial.createCalendar).toHaveBeenCalledWith("gregory");
+        expect(initial.onChange).not.toHaveBeenCalled();
+        expect(initial.onFocusChange).not.toHaveBeenCalled();
+        expect(state.isCellUnavailable(date)).toBe(false);
+        expect(initial.isDateUnavailable).toHaveBeenCalledWith(date);
+
+        setReplaced(true);
+        flush();
+        expect(replacement.onChange).not.toHaveBeenCalled();
+        expect(replacement.onFocusChange).not.toHaveBeenCalled();
+        expect(state.isCellUnavailable(date)).toBe(false);
+        expect(replacement.isDateUnavailable).toHaveBeenCalledWith(date);
+        expect(state.isCellDisabled(date)).toBe(false);
+        expect(replacement.isDateDisabled).toHaveBeenCalledWith(date);
+        expect(replacement.createCalendar).toHaveBeenCalledWith("gregory");
+
+        state.setValue(date);
+        flush();
+        expect(replacement.onChange).toHaveBeenCalledTimes(1);
+        expect(replacement.onChange).toHaveBeenCalledWith(date);
+        expect(initial.onChange).not.toHaveBeenCalled();
+        const nextFocus = date.add({ days: 1 });
+        state.setFocusedDate(nextFocus);
+        flush();
+        expect(replacement.onFocusChange).toHaveBeenCalledTimes(1);
+        expect(replacement.onFocusChange).toHaveBeenCalledWith(nextFocus);
+        state.setFocusedDate(state.focusedDate());
+        flush();
+        expect(replacement.onFocusChange).toHaveBeenCalledTimes(1);
+        expect(initial.onFocusChange).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("retains legacy field accessors on an object alongside existing getter coverage", () => {
+      createRoot((dispose) => {
+        const [value, setValue] = createSignal<CalendarDate | null>(new CalendarDate(2024, 6, 15));
+        const [locale, setLocale] = createSignal("en-US");
+        const [visibleMonths, setVisibleMonths] = createSignal(1);
+        const state = createCalendarState<CalendarDate>({ value, locale, visibleMonths });
+
+        flush();
+        expect(state.value()).toEqual(new CalendarDate(2024, 6, 15));
+        expect(state.visibleMonths).toBe(1);
+        setValue(null);
+        setLocale("de-DE");
+        setVisibleMonths(2);
+        flush();
+        expect(state.value()).toBeNull();
+        expect(state.locale()).toBe("de-DE");
+        expect(state.visibleMonths).toBe(2);
+        dispose();
+      });
+    });
+  });
 
   describe("basic state management", () => {
     it("should return null by default", () => {
@@ -344,7 +542,7 @@ describe("createCalendarState", () => {
     it("clears to an empty array when set to null", () => {
       createRoot((dispose) => {
         const d1 = new CalendarDate(2024, 6, 10);
-        const state = createCalendarState<CalendarDate, "multiple">({
+        const state = createCalendarState<CalendarDate, "single" | "multiple">({
           selectionMode: "multiple",
           defaultValue: [d1],
         });

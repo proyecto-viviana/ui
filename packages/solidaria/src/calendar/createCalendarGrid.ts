@@ -25,7 +25,13 @@ import { createId } from "../ssr";
 import { createLabels } from "../label/createLabels";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { useLocale } from "../i18n";
-import type { CalendarState, CalendarDate } from "@proyecto-viviana/solid-stately";
+import type {
+  CalendarState,
+  RangeCalendarState,
+  CalendarDate,
+  CalendarSelectionMode,
+  DateValue,
+} from "@proyecto-viviana/solid-stately";
 import { formatVisibleRangeDescription, getCalendarHookData } from "./utils";
 
 export interface AriaCalendarGridProps {
@@ -49,7 +55,11 @@ export interface CalendarGridAria {
 /**
  * Provides the behavior and accessibility implementation for a calendar grid.
  */
-export function createCalendarGrid<T extends CalendarState>(
+export function createCalendarGrid<
+  T extends
+    | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+    | Omit<RangeCalendarState, "setValue">,
+>(
   props: MaybeAccessor<AriaCalendarGridProps>,
   state: T,
   _ref?: () => HTMLElement | null,

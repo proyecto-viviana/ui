@@ -42,7 +42,7 @@ import {
   toCalendarDate as intlToCalendarDate,
   minDate,
 } from "@internationalized/date";
-import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
+import { access, createInternalSignal, propsAccessor, readNow, type MaybeAccessor } from "../utils";
 
 export type ValidationState = "valid" | "invalid";
 export type CalendarPageBehavior = "single" | "visible";
@@ -208,21 +208,28 @@ export interface CalendarState<
 export function createCalendarState<
   T extends DateValue = CalendarDate,
   M extends CalendarSelectionMode = "single",
->(props: CalendarStateProps<T, M> = {}): CalendarState<T, M> {
+>(props: MaybeAccessor<CalendarStateProps<T, M>> = {}): CalendarState<T, M> {
+  const getProps = propsAccessor(props);
   const timeZone = getLocalTimeZone();
-  const locale = createMemo(() => access(props.locale) ?? "en-US");
-  const minValueState = createMemo(() => access(props.minValue) ?? null);
-  const maxValueState = createMemo(() => access(props.maxValue) ?? null);
+  const locale = createMemo(() => access(getProps().locale) ?? "en-US");
+  const minValueState = createMemo(() => access(getProps().minValue) ?? null);
+  const maxValueState = createMemo(() => access(getProps().maxValue) ?? null);
   const selectionMode = createMemo<CalendarSelectionMode>(
-    () => access(props.selectionMode) ?? "single",
+    () => access(getProps().selectionMode) ?? "single",
   );
   const resolvedOptions = createMemo(() => new DateFormatter(locale()).resolvedOptions());
   const calendar = createMemo(() =>
-    (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
+    (getProps().createCalendar ?? intlCreateCalendar)(
+      resolvedOptions().calendar as CalendarIdentifier,
+    ),
   );
-  const visibleMonths = createMemo(() => Math.max(1, Number(access(props.visibleMonths) ?? 1)));
-  const firstDayOfWeekName = (): CalendarDayOfWeek | undefined =>
-    props.firstDayOfWeek == null ? undefined : dayOfWeekNames[props.firstDayOfWeek];
+  const visibleMonths = createMemo(() =>
+    Math.max(1, Number(access(getProps().visibleMonths) ?? 1)),
+  );
+  const firstDayOfWeekName = (): CalendarDayOfWeek | undefined => {
+    const firstDayOfWeek = getProps().firstDayOfWeek;
+    return firstDayOfWeek == null ? undefined : dayOfWeekNames[firstDayOfWeek];
+  };
 
   const toDisplayCalendarDate = (date: DateValue): CalendarDate =>
     intlToCalendar(toCalendarDate(date), calendar());
@@ -230,7 +237,7 @@ export function createCalendarState<
   const selectionAlignmentOffset = (): number => {
     // Mirrors @react-stately/calendar useCalendarState, where selectionAlignment
     // defaults to "center" (alignCenter) when not provided.
-    switch (props.selectionAlignment) {
+    switch (getProps().selectionAlignment) {
       case "start":
         return 0;
       case "end":
@@ -259,8 +266,8 @@ export function createCalendarState<
     aligned: CalendarDate,
     months: number,
   ): CalendarDate => {
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const minValue = access(getProps().minValue);
+    const maxValue = access(getProps().maxValue);
     let constrained = aligned;
 
     if (minValue && date.compare(toDisplayCalendarDate(minValue)) >= 0) {
@@ -297,8 +304,8 @@ export function createCalendarState<
   };
 
   const constrainDate = (date: CalendarDate): CalendarDate => {
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const minValue = access(getProps().minValue);
+    const maxValue = access(getProps().maxValue);
 
     let constrained = date;
 
@@ -314,25 +321,25 @@ export function createCalendarState<
 
   // Determine the initially focused date
   const getInitialFocusedDate = (): CalendarDate => {
-    const controlledFocused = access(props.focusedValue);
+    const controlledFocused = access(getProps().focusedValue);
     if (controlledFocused) {
       return toDisplayCalendarDate(controlledFocused);
     }
-    if (props.defaultFocusedValue) {
-      return toDisplayCalendarDate(props.defaultFocusedValue);
+    const defaultFocusedValue = getProps().defaultFocusedValue;
+    if (defaultFocusedValue) {
+      return toDisplayCalendarDate(defaultFocusedValue);
     }
     // A controlled null is a cleared selection. Pin useControlledState treats
     // `value !== undefined` as controlled, so null must not fall through to defaultValue.
-    const controlledValue = access(props.value);
+    const controlledValue = access(getProps().value);
     if (controlledValue !== undefined) {
       const controlledFirst = Array.isArray(controlledValue) ? controlledValue[0] : controlledValue;
       if (controlledFirst) {
         return toDisplayCalendarDate(controlledFirst);
       }
     } else {
-      const defaultFirst = Array.isArray(props.defaultValue)
-        ? props.defaultValue[0]
-        : props.defaultValue;
+      const defaultValue = getProps().defaultValue;
+      const defaultFirst = Array.isArray(defaultValue) ? defaultValue[0] : defaultValue;
       if (defaultFirst) {
         return toDisplayCalendarDate(defaultFirst);
       }
@@ -343,7 +350,7 @@ export function createCalendarState<
   // State signals
   const initialFocusedDate = constrainDate(getInitialFocusedDate());
   const [internalValue, setInternalValue] = createInternalSignal<T | T[] | null>(
-    (props.defaultValue as T | T[] | null) ?? null,
+    (getProps().defaultValue as T | T[] | null) ?? null,
   );
   const [focusedDate, setFocusedDateInternal] =
     createInternalSignal<CalendarDate>(initialFocusedDate);
@@ -353,12 +360,12 @@ export function createCalendarState<
   // Init from autoFocus, mirroring @react-stately useCalendarState
   // (`useState(props.autoFocus || false)`). Without autoFocus the calendar
   // mounts unfocused and never steals DOM focus.
-  const [isFocused, setFocused] = createInternalSignal(props.autoFocus ?? false);
+  const [isFocused, setFocused] = createInternalSignal(getProps().autoFocus ?? false);
   const [isPaginating, setIsPaginating] = createInternalSignal(false);
 
   // Controlled vs uncontrolled value
   const sourceValue = createMemo<T | T[] | null>(() => {
-    const controlled = access(props.value);
+    const controlled = access(getProps().value);
     return controlled !== undefined ? (controlled as T | T[] | null) : internalValue();
   });
   const value = createMemo<T | T[] | null>(() => {
@@ -370,23 +377,23 @@ export function createCalendarState<
   });
 
   // Derived states
-  const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
-  const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
-  const validationState = createMemo(() => access(props.validationState));
+  const isDisabled = createMemo(() => access(getProps().isDisabled) ?? false);
+  const isReadOnly = createMemo(() => access(getProps().isReadOnly) ?? false);
+  const validationState = createMemo(() => access(getProps().validationState));
   // A value is invalid when the caller says so, validationState is invalid,
   // or a selected date is unavailable or outside min/max. Mirrors useCalendarState.
   const isInvalidSelection = createMemo(() => {
     const current = value();
     if (current == null) return false;
     const dates = Array.isArray(current) ? current : [current];
-    const min = access(props.minValue);
-    const max = access(props.maxValue);
+    const min = access(getProps().minValue);
+    const max = access(getProps().maxValue);
     const minCal = min != null ? toDisplayCalendarDate(min) : null;
     const maxCal = max != null ? toDisplayCalendarDate(max) : null;
     return dates.some((date) => {
       const cal = toDisplayCalendarDate(date);
       return (
-        Boolean(props.isDateUnavailable?.(cal)) ||
+        Boolean(getProps().isDateUnavailable?.(cal)) ||
         (minCal != null && cal.compare(minCal) < 0) ||
         (maxCal != null && cal.compare(maxCal) > 0)
       );
@@ -394,7 +401,9 @@ export function createCalendarState<
   });
   const isValueInvalid = createMemo(
     () =>
-      Boolean(access(props.isInvalid)) || validationState() === "invalid" || isInvalidSelection(),
+      Boolean(access(getProps().isInvalid)) ||
+      validationState() === "invalid" ||
+      isInvalidSelection(),
   );
 
   // Visible range based on the paged range start. Function (not memo) so
@@ -424,7 +433,7 @@ export function createCalendarState<
 
   createEffect(
     () => {
-      const controlledFocused = access(props.focusedValue);
+      const controlledFocused = access(getProps().focusedValue);
       if (!controlledFocused) return null;
       return {
         nextFocusedDate: constrainDate(toDisplayCalendarDate(controlledFocused)),
@@ -448,7 +457,7 @@ export function createCalendarState<
 
   createEffect(
     () => {
-      const controlledFocused = access(props.focusedValue);
+      const controlledFocused = access(getProps().focusedValue);
       if (controlledFocused) return null;
       const currentFocusedDate = focusedDate();
       const nextFocusedDate = constrainDate(currentFocusedDate);
@@ -469,7 +478,7 @@ export function createCalendarState<
       if (!data) return;
       syncVisibleRangeForFocusedDate(data.nextFocusedDate, data.range, data.months);
       setFocusedDateInternal(data.nextFocusedDate);
-      props.onFocusChange?.(data.nextFocusedDate);
+      getProps().onFocusChange?.(data.nextFocusedDate);
     },
   );
 
@@ -523,12 +532,12 @@ export function createCalendarState<
   // selectable when isDateUnavailable is set. Mirrors useCalendarState.normalizeValue.
   const normalizeValue = (newValue: CalendarDate): T | null => {
     const constrained = constrainDate(newValue);
-    const minBound = access(props.minValue);
+    const minBound = access(getProps().minValue);
     const lowerBound =
       minBound != null
         ? toDisplayCalendarDate(minBound)
         : (minDate(constrained, visibleRange().start) ?? constrained);
-    const prev = previousAvailableDate(constrained, lowerBound, props.isDateUnavailable);
+    const prev = previousAvailableDate(constrained, lowerBound, getProps().isDateUnavailable);
     if (!prev) {
       return null;
     }
@@ -559,13 +568,13 @@ export function createCalendarState<
       nextValue = localValue;
     }
 
-    const controlled = access(props.value);
+    const controlled = access(getProps().value);
     if (controlled === undefined) {
       setInternalValue(() => nextValue);
     }
 
-    if (!Object.is(oldValue, nextValue) && props.onChange) {
-      props.onChange(nextValue as CalendarValueType<T | null, M>);
+    if (!Object.is(oldValue, nextValue)) {
+      getProps().onChange?.(nextValue as CalendarValueType<T | null, M>);
     }
   };
 
@@ -579,7 +588,7 @@ export function createCalendarState<
 
     syncVisibleRangeForFocusedDate(constrained, visibleRange(), visibleMonths());
     setFocusedDateInternal(constrained);
-    props.onFocusChange?.(constrained);
+    getProps().onFocusChange?.(constrained);
   };
 
   // Check if a date is selected
@@ -604,16 +613,16 @@ export function createCalendarState<
 
   // Check if a date is unavailable
   const isCellUnavailable = (date: DateValue): boolean => {
-    return props.isDateUnavailable?.(date) ?? false;
+    return getProps().isDateUnavailable?.(date) ?? false;
   };
 
   // Check if a date is disabled
   const isCellDisabled = (date: DateValue): boolean => {
     if (isDisabled()) return true;
-    if (props.isDateDisabled?.(date)) return true;
+    if (getProps().isDateDisabled?.(date)) return true;
 
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const minValue = access(getProps().minValue);
+    const maxValue = access(getProps().maxValue);
     const calDate = toDisplayCalendarDate(date);
 
     // Dates outside the visible range are disabled, mirroring
@@ -669,25 +678,25 @@ export function createCalendarState<
   // Navigation methods
   const focusPreviousPage = () => {
     setIsPaginating(true);
-    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths();
+    const pageMonths = getProps().pageBehavior === "single" ? 1 : visibleMonths();
     const currentFocused = focusedDate();
     const nextFocusedDate = constrainDate(currentFocused.subtract({ months: pageMonths }));
     const slidStart = startOfMonth(visibleRangeStart().subtract({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
     setVisibleRangeStart(constrainVisibleRangeStart(currentFocused, slidStart, pageMonths));
-    props.onFocusChange?.(nextFocusedDate);
+    getProps().onFocusChange?.(nextFocusedDate);
     setIsPaginating(false);
   };
 
   const focusNextPage = () => {
     setIsPaginating(true);
-    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths();
+    const pageMonths = getProps().pageBehavior === "single" ? 1 : visibleMonths();
     const currentFocused = focusedDate();
     const nextFocusedDate = constrainDate(currentFocused.add({ months: pageMonths }));
     const slidStart = startOfMonth(visibleRangeStart().add({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
     setVisibleRangeStart(constrainVisibleRangeStart(currentFocused, slidStart, pageMonths));
-    props.onFocusChange?.(nextFocusedDate);
+    getProps().onFocusChange?.(nextFocusedDate);
     setIsPaginating(false);
   };
 
@@ -743,7 +752,7 @@ export function createCalendarState<
     if (isReadOnly() || isDisabled()) return;
 
     if (selectionMode() === "multiple") {
-      const current = access(props.value) !== undefined ? value() : readNow(internalValue);
+      const current = access(getProps().value) !== undefined ? value() : readNow(internalValue);
       const base: CalendarDate[] = Array.isArray(current)
         ? current.map((v) => toDisplayCalendarDate(v))
         : current != null

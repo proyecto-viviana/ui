@@ -574,7 +574,7 @@ describe("Calendar", () => {
       calendarProps?: Partial<CalendarProps<CalendarDate, "multiple">>;
     }) {
       return (
-        <Calendar
+        <Calendar<CalendarDate, "multiple">
           aria-label="Test Calendar"
           selectionMode="multiple"
           defaultFocusedValue={new CalendarDate(2024, 6, 15)}

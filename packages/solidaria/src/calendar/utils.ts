@@ -20,7 +20,12 @@ import {
   startOfMonth,
 } from "@internationalized/date";
 import { createEffect, onCleanup, untrack, type Accessor } from "solid-js";
-import type { CalendarState, RangeCalendarState } from "@proyecto-viviana/solid-stately";
+import type {
+  CalendarState,
+  RangeCalendarState,
+  CalendarSelectionMode,
+  DateValue,
+} from "@proyecto-viviana/solid-stately";
 import { announce } from "../live-announcer";
 import { formatCalendarLabel } from "./intl";
 
@@ -33,17 +38,25 @@ export interface CalendarHookData {
   ariaLabelledBy?: string;
 }
 
-const hookData = new WeakMap<CalendarState | RangeCalendarState, CalendarHookData>();
+const hookData = new WeakMap<
+  | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+  | Omit<RangeCalendarState, "setValue">,
+  CalendarHookData
+>();
 
 export function setCalendarHookData(
-  state: CalendarState | RangeCalendarState,
+  state:
+    | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+    | Omit<RangeCalendarState, "setValue">,
   data: CalendarHookData,
 ): void {
   hookData.set(state, data);
 }
 
 export function getCalendarHookData(
-  state: CalendarState | RangeCalendarState,
+  state:
+    | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+    | Omit<RangeCalendarState, "setValue">,
 ): CalendarHookData | undefined {
   return hookData.get(state);
 }
@@ -134,7 +147,11 @@ export function formatVisibleRangeTitle(
   return dateFormatter.formatRange(startDate.toDate(timeZone), endDate.toDate(timeZone));
 }
 
-export function formatSelectedDateDescription(state: CalendarState | RangeCalendarState): string {
+export function formatSelectedDateDescription(
+  state:
+    | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+    | Omit<RangeCalendarState, "setValue">,
+): string {
   const locale = state.locale();
   const timeZone = state.timeZone;
   let start: CalendarDate | undefined;
@@ -262,7 +279,9 @@ const visibleRangeAnnouncers = new WeakSet<object>();
  * not announce the range it already shows.
  */
 export function announceVisibleRangeChange(
-  state: CalendarState | RangeCalendarState,
+  state:
+    | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+    | Omit<RangeCalendarState, "setValue">,
   visibleRangeDescription: Accessor<string>,
 ): void {
   if (visibleRangeAnnouncers.has(state)) {
@@ -296,7 +315,9 @@ const selectedDateAnnouncers = new WeakSet<object>();
  * (an in-progress range, or nothing selected) is not announced.
  */
 export function announceSelectedDateChange(
-  state: CalendarState | RangeCalendarState,
+  state:
+    | Omit<CalendarState<DateValue, CalendarSelectionMode>, "setValue">
+    | Omit<RangeCalendarState, "setValue">,
   selectedDateDescription: Accessor<string>,
 ): void {
   if (selectedDateAnnouncers.has(state)) {
