@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createRoot, createSignal } from "solid-js";
+import { flush, createRoot, createSignal } from "solid-js";
 import { createDisclosureState, createDisclosureGroupState } from "@proyecto-viviana/solid-stately";
 import { firePointerClick } from "@proyecto-viviana/solidaria-test-utils";
 import { createDisclosure, createDisclosureGroup } from "../src/disclosure";
@@ -130,6 +130,7 @@ describe("createDisclosure", () => {
 
     await waitFor(() => expect(panel).toHaveAttribute("hidden", "until-found"));
     panel.dispatchEvent(new Event("beforematch"));
+    flush();
 
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     await waitFor(() => {

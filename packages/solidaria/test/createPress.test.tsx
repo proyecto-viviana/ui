@@ -442,12 +442,15 @@ describe("createPress", () => {
       );
 
       target.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      flush();
       expect(snapshots).toEqual([{ connected: false, contained: false, inPath: true, calls: 0 }]);
       expect(sequence).toEqual(["replace", "pressstart", "change:true"]);
       expect(parent).toHaveAttribute("data-pressed", "true");
 
       replacement.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+      flush();
       replacement.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+      flush();
       vi.runAllTimers();
       expect(sequence).toEqual([
         "replace",
@@ -492,11 +495,14 @@ describe("createPress", () => {
       const target = screen.getByTestId("test-element");
       const unrelated = screen.getByTestId("unrelated");
       target.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      flush();
       expect(target).toHaveAttribute("data-pressed", "true");
       expect(target.contains(unrelated)).toBe(false);
       unrelated.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+      flush();
       // A later physical click must not revive the canceled interaction.
       target.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+      flush();
       vi.runAllTimers();
       expect(onPressEnd).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({ type: "pressend", pointerType: "mouse", target }),
@@ -2885,6 +2891,7 @@ describe("createPress", () => {
       const remove = vi.spyOn(document, "removeEventListener");
       try {
         el.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+        flush();
         const listeners = add.mock.calls.filter(
           ([type]) => type === "pointerup" || type === "pointercancel",
         );
@@ -2895,9 +2902,11 @@ describe("createPress", () => {
           expect(remove).toHaveBeenCalledWith(...listener);
         }
         document.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+        flush();
         document.dispatchEvent(
           pointerEvent("pointercancel", { pointerId: 1, pointerType: "mouse" }),
         );
+        flush();
         vi.runAllTimers();
         expect(onPress.mock.calls.map(([event]) => event.type)).toEqual(["pressstart"]);
         expect(onPressChange.mock.calls).toEqual([[true]]);

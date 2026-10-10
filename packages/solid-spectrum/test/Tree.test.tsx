@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { createSignal } from "solid-js";
+import { flush, createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -750,6 +750,7 @@ describe("TreeView (solid-spectrum)", () => {
   it("opens an item ActionMenu from a dispatched click", async () => {
     const trigger = renderActionMenuTree();
     trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, detail: 0 }));
+    flush();
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(await screen.findByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
   });

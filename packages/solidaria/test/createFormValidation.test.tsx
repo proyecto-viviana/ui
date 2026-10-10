@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { flush, createRoot, createSignal } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
   createFormValidation,
@@ -154,6 +154,7 @@ describe("createFormValidation", () => {
       input.dispatchEvent(event);
 
       expect(event.defaultPrevented).toBe(true);
+      flush();
       expect(validationState.displayValidation().isInvalid).toBe(true);
       expect(validationState.displayValidation().validationErrors).toEqual(["Required"]);
     });

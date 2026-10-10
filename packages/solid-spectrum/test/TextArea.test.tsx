@@ -105,6 +105,7 @@ describe("TextArea (solid-spectrum)", () => {
       const textarea = screen.getByRole("textbox");
 
       textarea.focus();
+      flush();
 
       expect(container.querySelector("[data-focused='true']")).toBeInTheDocument();
     });

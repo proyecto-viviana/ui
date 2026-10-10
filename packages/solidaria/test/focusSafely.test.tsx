@@ -6,7 +6,9 @@
  * keyboard/pointer focus is synchronous.
  */
 
-import { describe, it, expect, afterEach } from "vite-plus/test";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
+import { cleanup, fireEvent, render } from "@solidjs/testing-library";
+import { createEffect, createSignal, flush } from "solid-js";
 import { focusSafely } from "../src/utils/focus";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
 
@@ -99,5 +101,107 @@ describe("focusSafely", () => {
     await nextFrame();
 
     expect(document.activeElement).toBe(document.body);
+  });
+});
+
+describe("focusSafely native test event boundaries", () => {
+  afterEach(() => {
+    cleanup();
+    setInteractionModality("keyboard");
+  });
+
+  async function withoutEffectFlushWarning(run: () => void): Promise<void> {
+    // Spies call through: diagnostics remain visible and are asserted, never muted.
+    const warn = vi.spyOn(console, "warn");
+    const error = vi.spyOn(console, "error");
+    try {
+      run();
+      await Promise.resolve();
+      const messages = [...warn.mock.calls, ...error.mock.calls].flat().map(String);
+      expect(messages.some((message) => message.includes("FLUSH_IN_EFFECT_CALLBACK"))).toBe(false);
+    } finally {
+      warn.mockRestore();
+      error.mockRestore();
+    }
+  }
+
+  it("retains the native input and its value when an effect applies focus", async () => {
+    await withoutEffectFlushWarning(() => {
+      setInteractionModality("keyboard");
+      const [requested, setRequested] = createSignal(false);
+      function Fixture() {
+        const [focused, setFocused] = createSignal(false);
+        let input: HTMLInputElement | undefined;
+        createEffect(requested, (shouldFocus) => {
+          if (shouldFocus && input) focusSafely(input);
+        });
+        return (
+          <input
+            aria-label="Effect focus target"
+            ref={(element) => {
+              input = element;
+            }}
+            data-focused={focused() ? "true" : "false"}
+            onFocus={() => setFocused(true)}
+          />
+        );
+      }
+      const { container } = render(() => <Fixture />);
+      const input = container.querySelector("input");
+      if (!input) throw new Error("Missing effect focus target");
+      input.value = "retained local value";
+      setRequested(true);
+      flush();
+      expect(document.activeElement).toBe(input);
+      expect(input.isConnected).toBe(true);
+      expect(container.querySelector("input")).toBe(input);
+      expect(input.value).toBe("retained local value");
+      expect(input).toHaveAttribute("data-focused", "true");
+    });
+  });
+
+  it("preserves cancellation and drains reactive focus at the outer fireEvent boundary", async () => {
+    await withoutEffectFlushWarning(() => {
+      setInteractionModality("keyboard");
+      function Fixture() {
+        const [requested, setRequested] = createSignal(false);
+        const [focused, setFocused] = createSignal(false);
+        let input: HTMLInputElement | undefined;
+        createEffect(requested, (shouldFocus) => {
+          if (shouldFocus && input) focusSafely(input);
+        });
+        return (
+          <>
+            <button
+              onClick={(event) => {
+                event.preventDefault();
+                setRequested(true);
+              }}
+            >
+              Focus target
+            </button>
+            <input
+              aria-label="Event focus target"
+              ref={(element) => {
+                input = element;
+              }}
+              data-focused={focused() ? "true" : "false"}
+              onFocus={() => setFocused(true)}
+            />
+          </>
+        );
+      }
+      const { container } = render(() => <Fixture />);
+      const input = container.querySelector("input");
+      const button = container.querySelector("button");
+      if (!input || !button) throw new Error("Missing event focus fixture");
+      input.value = "retained event value";
+      expect(fireEvent.click(button, { detail: 1 })).toBe(false);
+      expect(document.activeElement).toBe(input);
+      expect(input.isConnected).toBe(true);
+      expect(container.querySelector("input")).toBe(input);
+      expect(input.value).toBe("retained event value");
+      expect(input).toHaveAttribute("data-focused", "true");
+    });
   });
 });

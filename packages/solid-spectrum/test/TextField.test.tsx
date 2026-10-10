@@ -1,3 +1,4 @@
+import { flush } from "solid-js";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { TextField } from "../src/textfield";
@@ -99,6 +100,7 @@ describe("TextField", () => {
       const field = container.firstElementChild as HTMLElement;
 
       input.focus();
+      flush();
       expect(field).toHaveAttribute("data-focused", "true");
     });
   });
@@ -217,6 +219,7 @@ describe("TextField", () => {
       const field = container.firstElementChild as HTMLElement;
 
       input.focus();
+      flush();
       expect(field).toHaveAttribute("data-focused", "true");
     });
 
@@ -232,6 +235,7 @@ describe("TextField", () => {
       const field = container.firstElementChild as HTMLElement;
 
       input.focus();
+      flush();
       expect(field).toHaveAttribute("data-focused", "true");
 
       fireEvent.blur(input);

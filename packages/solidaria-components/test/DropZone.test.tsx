@@ -1,6 +1,7 @@
 /**
  * Tests for solidaria-components DropZone
  */
+import { flush } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -106,17 +107,20 @@ describe("DropZone", () => {
     const dataTransfer = createDataTransferStub();
 
     dispatchDragEvent(zone, "dragenter", dataTransfer, 4, 8);
+    flush();
     expect(onDropEnter).toHaveBeenCalledWith(
       expect.objectContaining({ type: "dropenter", x: 4, y: 8 }),
     );
     expect(zone).toHaveAttribute("data-drop-target");
 
     dispatchDragEvent(zone, "dragover", dataTransfer, 12, 16);
+    flush();
     expect(onDropMove).toHaveBeenCalledWith(
       expect.objectContaining({ type: "dropmove", x: 12, y: 16 }),
     );
 
     dispatchDragEvent(zone, "dragleave", dataTransfer, 20, 24);
+    flush();
     expect(onDropExit).toHaveBeenCalledWith(
       expect.objectContaining({ type: "dropexit", x: 20, y: 24 }),
     );

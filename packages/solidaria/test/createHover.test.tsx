@@ -166,28 +166,37 @@ describe("createHover", () => {
 
         if (mode === "pointer") {
           el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch" }));
+          flush();
         } else {
           el.dispatchEvent(new Event("touchstart", { bubbles: true }));
+          flush();
           el.dispatchEvent(new Event("touchend", { bubbles: true }));
+          flush();
         }
         // Consume the fallback's per-instance flag so it cannot mask an early
         // expiry of global suppression in the subsequent 499 ms assertion.
         enterMouse();
+        flush();
         leaveMouse();
+        flush();
         expect(events).toEqual([]);
         expect(el.textContent).toBe("test");
 
         vi.advanceTimersByTime(499);
         enterMouse();
+        flush();
         leaveMouse();
+        flush();
         expect(events).toEqual([]);
         expect(el.textContent).toBe("test");
 
         vi.advanceTimersByTime(1);
         enterMouse();
+        flush();
         expect(events).toEqual([{ type: "hoverstart", target: el, pointerType: "mouse" }, true]);
         expect(el.textContent).toBe("test-hovered");
         leaveMouse();
+        flush();
         expect(events).toEqual([
           { type: "hoverstart", target: el, pointerType: "mouse" },
           true,
@@ -226,15 +235,19 @@ describe("createHover", () => {
       ));
       const el = screen.getByTestId("test-element");
       el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      flush();
       el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(events).toEqual([]);
       expect(el.textContent).toBe("test");
 
       setIsDisabled(false);
       flush();
       el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(el.textContent).toBe("test-hovered");
       el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(events).toEqual([
         { type: "hoverstart", target: el, pointerType: "mouse" },
         true,
@@ -267,20 +280,25 @@ describe("createHover", () => {
         false,
       ];
       el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(events).toEqual(cycle);
       expect(el.textContent).toBe("test");
       el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      flush();
       document.body.dispatchEvent(
         new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
       );
+      flush();
       expect(events).toEqual(cycle);
 
       disableOnStart = false;
       setIsDisabled(false);
       flush();
       el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(el.textContent).toBe("test-hovered");
       el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(events).toEqual([...cycle, ...cycle]);
       expect(el.textContent).toBe("test");
     });
@@ -311,6 +329,7 @@ describe("createHover", () => {
           relatedTarget: document.body,
         }),
       );
+      flush();
       const start = [{ type: "hoverstart", target: owner, pointerType: "mouse" }, true];
       expect(events).toEqual(start);
       first.dispatchEvent(
@@ -320,6 +339,7 @@ describe("createHover", () => {
           relatedTarget: second,
         }),
       );
+      flush();
       expect(events).toEqual(start);
       expect(owner).toHaveAttribute("data-hovered", "true");
       second.dispatchEvent(
@@ -329,6 +349,7 @@ describe("createHover", () => {
           relatedTarget: first,
         }),
       );
+      flush();
       expect(events).toEqual(start);
       second.dispatchEvent(
         new PointerEvent("pointerout", {
@@ -337,6 +358,7 @@ describe("createHover", () => {
           relatedTarget: document.body,
         }),
       );
+      flush();
       expect(events).toEqual([
         ...start,
         { type: "hoverend", target: owner, pointerType: "mouse" },
@@ -402,11 +424,14 @@ describe("createHover", () => {
         expect(remove.mock.calls).not.toContainEqual(registration);
         const el = second.container.querySelector('[data-testid="test-element"]')!;
         document.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
+        flush();
         el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        flush();
         expect(onHoverStart).not.toHaveBeenCalled();
         expect(el.textContent).toBe("test");
         vi.runAllTimers();
         el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        flush();
         expect(onHoverStart).toHaveBeenCalledExactlyOnceWith({
           type: "hoverstart",
           target: el,
@@ -715,16 +740,19 @@ describe("createHover", () => {
 
       const el = screen.getByTestId("test");
       el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      flush();
       expect(el).toHaveAttribute("data-hovered", "true");
 
       const button = screen.getByRole("button");
       button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      flush();
       expect(screen.queryByRole("button")).toBeNull();
 
       // Pointerover on a new target should end hover
       document.body.dispatchEvent(
         new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
       );
+      flush();
       expect(el).not.toHaveAttribute("data-hovered");
 
       expect(events).toEqual([

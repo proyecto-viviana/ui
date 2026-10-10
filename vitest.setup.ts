@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { vi, afterEach } from "vite-plus/test";
-import { cleanup } from "@solidjs/testing-library";
+import { cleanup, configure } from "@solidjs/testing-library";
 import { flush } from "solid-js";
 import { cleanupHydrationRoots } from "./packages/solidaria/test-utils/hydrate";
 
@@ -34,22 +34,30 @@ console.info = (...args: unknown[]) => {
   originalInfo(...args);
 };
 
+let pendingEventFlush = false;
 function flushAfter(fn: () => void): void {
   fn();
-  try {
+  if (pendingEventFlush) return;
+  pendingEventFlush = true;
+  queueMicrotask(() => {
+    pendingEventFlush = false;
     flush();
-  } catch {
-    // Solid 2 forbids flush() inside createTrackedEffect / onSettled / effect
-    // apply. Defer the drain so writes from synthetic events still land.
-    queueMicrotask(() => {
-      try {
-        flush();
-      } catch {
-        /* nested forbidden scope; the running flush will continue */
-      }
-    });
-  }
+  });
 }
+
+let testEventDepth = 0;
+configure({
+  eventWrapper(callback) {
+    testEventDepth++;
+    try {
+      const result = callback();
+      if (testEventDepth === 1) flush();
+      return result;
+    } finally {
+      testEventDepth--;
+    }
+  },
+});
 
 const originalDispatchEvent = EventTarget.prototype.dispatchEvent;
 EventTarget.prototype.dispatchEvent = function (event: Event): boolean {

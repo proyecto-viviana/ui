@@ -321,6 +321,7 @@ describe("TokenField", () => {
     invalid.setData(MIME, "{not-json");
     invalid.setData("text/plain", "plain");
     dispatchInput(input, "insertFromPaste", { dataTransfer: invalid, data: "ignored" });
+    flush();
     expect(latest.toString()).toBe("plain");
     expect(input.querySelector("[data-react-aria-token]")).toBeNull();
 
@@ -331,7 +332,9 @@ describe("TokenField", () => {
     const paste = new Event("paste", { bubbles: true });
     Object.defineProperty(paste, "clipboardData", { value: valid });
     input.dispatchEvent(paste);
+    flush();
     dispatchInput(input, "insertFromPaste", { data: "chip" });
+    flush();
     expect(
       latest.segments.some((segment) => segment.type === "token" && segment.text === "chip"),
     ).toBe(true);

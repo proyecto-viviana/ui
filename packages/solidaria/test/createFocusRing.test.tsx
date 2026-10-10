@@ -97,9 +97,11 @@ describe("createFocusRing", () => {
       expect(el.dataset.focused).toBe("false");
 
       el.focus();
+      flush();
       expect(el.dataset.focused).toBe("true");
 
       el.blur();
+      flush();
       expect(el.dataset.focused).toBe("false");
     });
 
@@ -150,6 +152,7 @@ describe("createFocusRing", () => {
 
       const el = screen.getByTestId("example");
       el.focus();
+      flush();
       expect(el.dataset.focusVisible).toBe("true");
     });
 
@@ -159,6 +162,7 @@ describe("createFocusRing", () => {
 
       const el = screen.getByTestId("example");
       el.focus();
+      flush();
       expect(el.dataset.focused).toBe("true");
       expect(el.dataset.focusVisible).toBe("false");
     });
@@ -185,6 +189,7 @@ describe("createFocusRing", () => {
       const el = screen.getByTestId("example");
       fireEvent.keyDown(document.body, { key: "Tab" });
       el.focus();
+      flush();
 
       expect(el.dataset.focusVisible).toBe("true");
     });
@@ -205,6 +210,7 @@ describe("createFocusRing", () => {
       const el = screen.getByTestId("example");
       fireEvent.keyDown(document.body, { key: "Tab" });
       el.focus();
+      flush();
       expect(el.dataset.focusVisible).toBe("true");
 
       fireEvent.pointerMove(document.body, { pointerType: "mouse" });
@@ -217,13 +223,16 @@ describe("createFocusRing", () => {
       const el = screen.getByTestId("example");
       fireEvent.keyDown(document.body, { key: "Tab" });
       el.focus();
+      flush();
       expect(el.dataset.focusVisible).toBe("true");
 
       el.blur();
+      flush();
       expect(el.dataset.focusVisible).toBe("false");
 
       fireEvent.pointerMove(document.body, { pointerType: "mouse" });
       el.focus();
+      flush();
       expect(el.dataset.focusVisible).toBe("false");
     });
 
@@ -234,9 +243,11 @@ describe("createFocusRing", () => {
 
       // Focus via any method should update isFocused
       el.focus();
+      flush();
       expect(el.dataset.focused).toBe("true");
 
       el.blur();
+      flush();
       expect(el.dataset.focused).toBe("false");
     });
   });
@@ -269,9 +280,11 @@ describe("createFocusRing", () => {
 
       // Text inputs should track focus state
       input.focus();
+      flush();
       expect(input.dataset.focused).toBe("true");
 
       input.blur();
+      flush();
       expect(input.dataset.focused).toBe("false");
     });
 
@@ -365,10 +378,12 @@ describe("createFocusRing", () => {
       const second = screen.getByTestId("second");
 
       first.focus();
+      flush();
       expect(first.dataset.focused).toBe("true");
       expect(second.dataset.focused).toBe("false");
 
       second.focus();
+      flush();
       // When second gets focus, first loses it
       expect(first.dataset.focused).toBe("false");
       expect(second.dataset.focused).toBe("true");
@@ -390,6 +405,7 @@ describe("createFocusRing", () => {
       expect(el.dataset.focusVisible).toBe("false");
 
       el.focus();
+      flush();
 
       expect(el.dataset.focused).toBe("true");
       expect(el.dataset.focusVisible).toBe("true");
@@ -419,6 +435,7 @@ describe("createFocusRing", () => {
 
       // Element should be focusable and respond to focus events
       el.focus();
+      flush();
       expect(el.dataset.focused).toBe("true");
     });
   });
@@ -491,7 +508,9 @@ describe("createFocusRing", () => {
       const el = screen.getByTestId("example");
 
       el.focus();
+      flush();
       el.focus(); // Double focus
+      flush();
 
       expect(el.dataset.focused).toBe("true");
     });

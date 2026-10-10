@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
-import { createSignal } from "solid-js";
+import { flush, createSignal } from "solid-js";
 import type { Color } from "@proyecto-viviana/solid-stately";
 import { ColorField } from "../src/ColorField";
 
@@ -158,6 +158,7 @@ describe("ColorField", () => {
     // Keyboard focus onto input (simulating Tab navigation)
     fireEvent.keyDown(document.body, { key: "Tab" });
     input.focus();
+    flush();
     expect(group).toHaveAttribute("data-focused", "true");
     expect(group).toHaveAttribute("data-focus-visible", "true");
 
