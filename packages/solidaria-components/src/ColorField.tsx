@@ -15,12 +15,8 @@
 import { createContext, createMemo, createSignal, untrack, useContext, Show } from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import {
-  createColorField,
-  createFocusRing,
-  createHover,
-  type AriaColorFieldOptions,
-} from "@proyecto-viviana/solidaria";
+import { createColorField, type AriaColorFieldOptions } from "@proyecto-viviana/solidaria/color";
+import { createFocusRing, createHover } from "@proyecto-viviana/solidaria/interactions";
 import {
   createColorFieldState,
   VALID_VALIDITY_STATE,

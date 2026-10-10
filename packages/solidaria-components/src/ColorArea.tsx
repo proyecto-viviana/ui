@@ -14,13 +14,9 @@
 
 import { createContext, createMemo, useContext, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import {
-  createColorArea,
-  createFocusRing,
-  createHover,
-  mergeProps,
-  type AriaColorAreaOptions,
-} from "@proyecto-viviana/solidaria";
+import { createColorArea, type AriaColorAreaOptions } from "@proyecto-viviana/solidaria/color";
+import { createFocusRing, createHover } from "@proyecto-viviana/solidaria/interactions";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   createColorAreaState,
   type Color,

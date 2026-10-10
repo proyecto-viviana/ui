@@ -14,7 +14,7 @@
 
 import { createContext, createMemo, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { createColorSwatch } from "@proyecto-viviana/solidaria";
+import { createColorSwatch } from "@proyecto-viviana/solidaria/color";
 import { type Color } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,

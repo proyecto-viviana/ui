@@ -15,14 +15,10 @@
 
 import { createContext, createEffect, createMemo, createSignal, flush, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import {
-  createListBox,
-  createOption,
-  createFocusRing,
-  mergeProps,
-  useLocale,
-  createStringFormatter,
-} from "@proyecto-viviana/solidaria";
+import { createListBox, createOption } from "@proyecto-viviana/solidaria/listbox";
+import { createFocusRing } from "@proyecto-viviana/solidaria/interactions";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
+import { useLocale, createStringFormatter } from "@proyecto-viviana/solidaria/i18n";
 import {
   createListState,
   normalizeColor,

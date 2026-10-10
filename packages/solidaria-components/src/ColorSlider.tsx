@@ -14,14 +14,10 @@
 
 import { createContext, createEffect, createMemo, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import {
-  createColorSlider,
-  createFocusRing,
-  createHover,
-  mergeProps,
-  useLocale,
-  type AriaColorSliderOptions,
-} from "@proyecto-viviana/solidaria";
+import { createColorSlider, type AriaColorSliderOptions } from "@proyecto-viviana/solidaria/color";
+import { createFocusRing, createHover } from "@proyecto-viviana/solidaria/interactions";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
+import { useLocale } from "@proyecto-viviana/solidaria/i18n";
 import {
   createColorSliderState,
   type Color,

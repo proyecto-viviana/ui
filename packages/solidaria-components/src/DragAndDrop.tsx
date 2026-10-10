@@ -29,7 +29,7 @@ import type {
   Key,
 } from "@proyecto-viviana/solid-stately";
 import type { DragAndDropHooks } from "./useDragAndDrop";
-import { createDragSession } from "@proyecto-viviana/solidaria";
+import { createDragSession } from "@proyecto-viviana/solidaria/dnd";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,

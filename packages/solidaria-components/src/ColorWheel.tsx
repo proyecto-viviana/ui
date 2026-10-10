@@ -14,13 +14,9 @@
 
 import { createContext, createMemo, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import {
-  createColorWheel,
-  createFocusRing,
-  createHover,
-  mergeProps,
-  type AriaColorWheelOptions,
-} from "@proyecto-viviana/solidaria";
+import { createColorWheel, type AriaColorWheelOptions } from "@proyecto-viviana/solidaria/color";
+import { createFocusRing, createHover } from "@proyecto-viviana/solidaria/interactions";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   createColorWheelState,
   type Color,
