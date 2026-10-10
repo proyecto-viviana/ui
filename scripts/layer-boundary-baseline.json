@@ -7,9 +7,9 @@
     "ui": "packages/viviana-ui/src"
   },
   "counts": {
-    "shared": 664,
-    "identical": 580,
-    "diverged": 84
+    "shared": 665,
+    "identical": 582,
+    "diverged": 83
   },
   "identical": [
     "Accordion.ts",
@@ -578,6 +578,8 @@
     "progress/progress-circle-animation.ts",
     "s2-internal/page.macro.ts",
     "shared-element/index.tsx",
+    "slider/RangeSlider.tsx",
+    "slider/index.tsx",
     "story-utils/generatePowerset.ts",
     "story-utils/index.ts",
     "style/runtime.ts",
@@ -653,8 +655,7 @@
     "selectboxgroup/index.tsx",
     "separator/index.tsx",
     "skeleton/index.tsx",
-    "slider/RangeSlider.tsx",
-    "slider/index.tsx",
+    "slider/shared.tsx",
     "statuslight/index.tsx",
     "steplist/index.tsx",
     "story-utils/ErrorBoundary.tsx",
@@ -688,7 +689,8 @@
     "skeleton/index.tsx": "Register re-skin, f9116a92: the grey gradient sweep becomes a dithered pseudo-element shimmer behind an 8px Bayer mask, with reduced motion gated by media query rather than at runtime so SSR and hydration agree. useLoadingAnimation stays exported for Image and Icon.",
     "style/index.ts": "Register decision, fa98aadf: \"orange\" leaves the status union because the register has no orange - amber carries warning and yellow is create. A narrowing of a public type, deliberate and owner-decided.",
     "textfield/s2-textarea-styles.ts": "Register re-theme, c66f938a: the placeholder ink becomes --terminal-dim so a textarea reads as a well. One style() value.",
-    "view/index.tsx": "Register extension, a01c40dd: three added lines re-exporting SceneBackdrop and its props type. Additive; View is byte-identical to S2's."
+    "view/index.tsx": "Register extension, a01c40dd: three added lines re-exporting SceneBackdrop and its props type. Additive; View is byte-identical to S2's.",
+    "slider/shared.tsx": "Slider consolidation, local RC qualification #74/#76: moves the existing register divergence from slider/index.tsx and slider/RangeSlider.tsx at 3298de6ac337c3fddb7e2db584b4819f58789eca into the shared rendering body. Every current twin difference already exists in that commit's scalar adapter: fieldValue readout role/import, text-secondary label ink, 1px edge-glass thumb rim, square pasteboard trough/accent-900 fill, direct filledTrack class evaluation, and Show/span contextual help instead of Spectrum FieldContextualHelp. Existing S2 macro math and native lower-spine behavior are preserved; public adapters are now byte-identical. No new register styling or reasonExempt row."
   },
   "reasonExempt": [
     "actionbar/index.tsx",
@@ -744,8 +746,6 @@
     "select/index.tsx",
     "selectboxgroup/index.tsx",
     "separator/index.tsx",
-    "slider/RangeSlider.tsx",
-    "slider/index.tsx",
     "statuslight/index.tsx",
     "steplist/index.tsx",
     "story-utils/ErrorBoundary.tsx",
