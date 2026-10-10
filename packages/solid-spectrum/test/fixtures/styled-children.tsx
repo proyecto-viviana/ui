@@ -81,3 +81,33 @@ export function SelectBoxFixture(props: { count: () => number }): JSX.Element {
     </Provider>
   );
 }
+
+// Private paired fixture: live ARIA props without replacing the collection owner.
+export function TagGroupLabelFixture(props: {
+  label: () => string | undefined;
+  labelledBy: () => string;
+  onEvent: () => void;
+}): JSX.Element {
+  const items = [
+    { id: "label-one", name: "First tag" },
+    { id: "label-two", name: "Second tag" },
+  ];
+  return (
+    <Provider background="base" colorScheme="dark">
+      <span id="taggroup-label-a">External A</span>
+      <span id="taggroup-label-b">External B</span>
+      <span id="taggroup-label-c">External C</span>
+      <TagGroup
+        items={items}
+        label={props.label()}
+        aria-labelledby={props.labelledBy()}
+        selectionMode="multiple"
+        onSelectionChange={props.onEvent}
+        onRemove={props.onEvent}
+        onAction={props.onEvent}
+      >
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>
+    </Provider>
+  );
+}

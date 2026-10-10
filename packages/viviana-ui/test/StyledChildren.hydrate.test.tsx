@@ -7,7 +7,7 @@
  */
 import { createSignal, flush } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { afterEach, describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
@@ -19,6 +19,7 @@ import {
   RadioFixture,
   SegmentedControlFixture,
   TagGroupFixture,
+  TagGroupLabelFixture,
   SelectBoxFixture,
 } from "./fixtures/styled-children";
 
@@ -31,6 +32,7 @@ async function hydrateAndFlip(
   selector: string,
   Fixture: (props: { count: () => number }) => JSX.Element,
 ): Promise<{
+  container: HTMLElement;
   before?: string;
   after?: string;
   serverElement: Element | null;
@@ -50,7 +52,7 @@ async function hydrateAndFlip(
   flush();
   const afterElement = container.querySelector(selector);
   const after = afterElement?.textContent?.trim();
-  return { before, after, serverElement, afterElement };
+  return { container, before, after, serverElement, afterElement };
 }
 
 describe("Styled children hydration reactivity (@proyecto-viviana/ui)", () => {
@@ -125,6 +127,10 @@ describe("Styled children hydration reactivity (@proyecto-viviana/ui)", () => {
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");
     expect(r.afterElement).toBe(r.serverElement);
+    const grid = r.container.querySelector('[role="grid"]');
+    expect(grid).not.toBeNull();
+    expect(grid).toHaveAttribute("aria-label", "Tags");
+    expect(grid).not.toHaveAttribute("aria-labelledby");
   });
 
   it("SelectBox re-binds fine-grained text without recreating host", async () => {
@@ -136,5 +142,82 @@ describe("Styled children hydration reactivity (@proyecto-viviana/ui)", () => {
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");
     expect(r.afterElement).toBe(r.serverElement);
+  });
+  it("TagGroup keeps live label precedence and original grid/rows after hydration", async () => {
+    const [label, setLabel] = createSignal<string | undefined>(undefined);
+    const [labelledBy, setLabelledBy] = createSignal("taggroup-label-a");
+    const onEvent = vi.fn();
+    let serverGrid: Element | null = null;
+    let serverRows: Element[] = [];
+    const container = await hydrateOverSsr(
+      readSsr("vui-taggroup-live-label-ssr.html"),
+      () => <TagGroupLabelFixture label={label} labelledBy={labelledBy} onEvent={onEvent} />,
+      {
+        beforeHydrate(container) {
+          serverGrid = container.querySelector('[role="grid"]');
+          serverRows = Array.from(container.querySelectorAll('[role="row"]'));
+          expect(serverGrid).not.toBeNull();
+          expect(serverGrid).toHaveAttribute("aria-labelledby", "taggroup-label-a");
+          expect(serverRows).toHaveLength(2);
+        },
+      },
+    );
+    const grid = container.querySelector('[role="grid"]');
+    expect(grid).not.toBeNull();
+    const assertRetained = () => {
+      expect(container.querySelector('[role="grid"]')).toBe(serverGrid);
+      const rows = container.querySelectorAll('[role="row"]');
+      expect(rows).toHaveLength(serverRows.length);
+      serverRows.forEach((row, index) => expect(rows[index]).toBe(row));
+      expect(onEvent).not.toHaveBeenCalled();
+    };
+    const assertExternal = (id: string, name: string) => {
+      expect(grid).toHaveAttribute("aria-labelledby", id);
+      expect(grid).toHaveAccessibleName(name);
+      assertRetained();
+    };
+    assertExternal("taggroup-label-a", "External A");
+    setLabelledBy("taggroup-label-b");
+    flush();
+    assertExternal("taggroup-label-b", "External B");
+
+    setLabel("Visible topics");
+    flush();
+    const visibleLabel = Array.from(container.querySelectorAll("span")).find(
+      (element) => element.textContent === "Visible topics",
+    );
+    expect(visibleLabel).toBeDefined();
+    const generatedId = visibleLabel?.id;
+    expect(generatedId).toBeTruthy();
+    expect(generatedId).not.toBe("taggroup-label-b");
+    expect(grid).toHaveAttribute("aria-labelledby", generatedId);
+    expect(grid).toHaveAccessibleName("Visible topics");
+    assertRetained();
+
+    setLabelledBy("taggroup-label-c");
+    flush();
+    expect(grid).toHaveAttribute("aria-labelledby", generatedId);
+    expect(grid).toHaveAccessibleName("Visible topics");
+    assertRetained();
+    setLabel("");
+    flush();
+    assertExternal("taggroup-label-c", "External C");
+    setLabel(undefined);
+    flush();
+    assertExternal("taggroup-label-c", "External C");
+
+    setLabel("Visible topics again");
+    flush();
+    const restoredLabel = Array.from(container.querySelectorAll("span")).find(
+      (element) => element.textContent === "Visible topics again",
+    );
+    expect(restoredLabel).toBeDefined();
+    expect(restoredLabel).toHaveAttribute("id", generatedId);
+    expect(grid).toHaveAttribute("aria-labelledby", generatedId);
+    expect(grid).toHaveAccessibleName("Visible topics again");
+    assertRetained();
+    setLabel(undefined);
+    flush();
+    assertExternal("taggroup-label-c", "External C");
   });
 });

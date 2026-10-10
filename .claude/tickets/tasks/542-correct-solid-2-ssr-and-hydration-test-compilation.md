@@ -306,3 +306,105 @@ assertions; it does not close #542's remaining SSR/hydration requirements.
 The 24 inherited type diagnostics, #557 native accessor debt and separate
 #632 Escape-focus qualification remain pending. The sandbox-limited ecosystem
 audit remains a failed audit, rather than a release verdict.
+
+## TagGroup hydration source admission — 2026-10-09
+
+Current main `3298de6ac337c3fddb7e2db584b4819f58789eca` reports forbidden-owner
+allocation diagnostics in three styled TagGroup hydration contexts. Admit a
+bounded source repair and paired owning evidence under this task and #531.
+The conductor remains the sole tracked writer and committer in eligible UI
+main; direct medium Sol workers prepare and review private proposals only.
+
+The temporary OS/herdr exception and autonomous UI release instruction were
+verified against original user-role records, not a relayed assertion. The safe
+verification receipt is `/tmp/ui-direct-fallback-owner-verification-20261009.json`:
+owner fallback approval at 2026-10-08T23:39:55.001Z and cross-lane instruction
+at 2026-10-09T07:25:26.643Z. Bound this assignment to the current RC repair;
+preserve one writer, independent review and all existing proof requirements.
+
+Exactly nine implementation paths are admitted:
+
+- `packages/viviana-ui/src/tag-group/index.tsx`
+- `packages/solid-spectrum/src/tag-group/index.tsx`
+- `packages/viviana-ui/test/StyledChildren.hydrate.test.tsx`
+- `packages/solid-spectrum/test/StyledChildren.hydrate.test.tsx`
+- `packages/viviana-ui/test/TagGroup.hydrate.test.tsx`
+- `packages/viviana-ui/test/fixtures/styled-children.tsx`
+- `packages/solid-spectrum/test/fixtures/styled-children.tsx`
+- `packages/viviana-ui/test/StyledChildren.ssr.test.tsx`
+- `packages/solid-spectrum/test/StyledChildren.ssr.test.tsx`
+
+Also admit this ticket, a two-styled-package Changeset at
+`.changeset/taggroup-hydration-owner.md`, and generated status/roadmap views
+through normal tooling. No additional writer seat is granted. Preserve visible
+label truthiness and precedence, live external `aria-labelledby` fallback,
+`aria-label`-only behavior, original grid/row identity, callbacks and disposal.
+Hoist the existing conditional into one component-owned memo; do not change
+headless behavior, public API, dependencies, tokens, styles, compiler or config.
+
+Private candidate and independent admission review:
+`/tmp/ui-taggroup-hydration-causal-proposal-v2-20261009/` and
+`/tmp/ui-taggroup-admission-independent-review-20261009.md`. Their static review
+establishes no runtime result. Run OLD owning source with the complete new tests
+through fresh SSR then hydration; repeat with candidate source and identical
+tests, refreshing all matching SSR bytes because memo allocation changes owner
+IDs. Preserve a failing original no-label control and all existing assertions.
+The live-label case additionally guards original nodes and zero callbacks
+through each label/fallback transition. Follow focused proof with complete
+fresh SSR/hydration, affected ordinary behavior, relevant static/docs checks
+and independent final review. This admission closes no task or release gate.
+
+### TagGroup first causal runtime attempt — 2026-10-09
+
+Executed the admitted focused OLD-source pair with the retained candidate tests,
+one installed worker and the normal SSR/hydration configurations. OLD SSR
+completed exit 0: three files, six selected tests passed. The 14 unselected tests
+were filtered by `-t TagGroup`; this is not a full-suite result. All six matched
+HTML artifacts were freshly generated and archived under
+`/tmp/ui-taggroup-owning-proof-20261009/old/`.
+
+The immediately paired OLD hydration command emitted only the runner header and
+hit its 120-second deadline. Its owned process group received TERM, the
+foreground command returned -15, and no owned group remained. No assertion
+result or stack established the cause. The candidate pair was not executed after
+that unclassified timeout. All nine admitted source/test/fixture hashes were
+verified restored, and the foreground tool session 62175 completed exit 1.
+
+Raw logs: `/tmp/ui-taggroup-owning-proof-20261009/old-ssr.log` and
+`old-hydrate.log`. Actual terminal/return and grant continuity:
+`/tmp/ui-taggroup-runtime-return-v2-20261009.json` (SHA-256
+`1c42322f5b6e2b9e1886a359d2454529675457a66066ebf009248d57d4ea8de0`).
+The run began under Root's explicit next-runtime delegation after its prior
+actual return; the subsequent fresh Root v2 grant was acknowledged during the
+same exact run. No second command launch or repeat occurred for that grant.
+
+Next: independently fresh candidate SSR then identical candidate hydration
+under a new bounded slot. A completed candidate pair is required before a repair
+verdict; the OLD timeout alone does not establish product causality. Full SSR,
+full hydration, retained ordinary behavior, builds and this ticket's original
+acceptance remain outstanding.
+
+### TagGroup candidate paired checkpoint — 2026-10-09
+
+Executed the candidate-only identical focused pair under the fresh coordinator
+grant after its actual predecessor return. Fresh SSR passed all six selected
+cases in three files; the immediately paired hydration passed the same six
+selected cases in three files. Both commands exited 0. Each command filtered
+14 unrelated cases with the retained `-t TagGroup` selector; those are not
+certification skips or full-suite acceptance. No config, assertion or timing
+budget was changed.
+
+All six fresh matching HTML files are archived under
+`/tmp/ui-taggroup-candidate-pair-proof-20261009/ssr/`. Both owned process groups
+closed, all nine candidate hashes were conserved, and foreground tool session
+35852 was reaped with exit 0. Actual return:
+`/tmp/ui-taggroup-candidate-pair-return-20261009.json`, SHA-256
+`1545ed6970d848526433496c92d59e74c68a27726d00024adfcb269fd96ee40e`.
+Raw logs are `candidate-ssr.log` and `candidate-hydrate.log` in that proof
+directory. The receipt binds the source/test hashes and all fresh output hashes.
+
+This establishes the candidate's focused paired success, including retained
+identity and live label/fallback assertions. The earlier OLD hydrate timeout
+remains unclassified and is not an assertion-based causal RED. Preserve it
+separately. Full fresh SSR/hydration, affected ordinary suites, static/docs/build
+qualification and original task acceptance remain outstanding.

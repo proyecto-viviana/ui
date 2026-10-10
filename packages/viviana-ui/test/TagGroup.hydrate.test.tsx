@@ -35,6 +35,10 @@ describe("TagGroup hydrates over SSR markup", () => {
         },
       },
     );
+    const grid = container.querySelector('[role="grid"]');
+    expect(grid).not.toBeNull();
+    expect(grid).toHaveAttribute("aria-label", "Frameworks");
+    expect(grid).not.toHaveAttribute("aria-labelledby");
     const hydratedNodes = container.querySelectorAll(selector);
     expect(hydratedNodes).toHaveLength(serverNodes.length);
     serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
@@ -54,6 +58,10 @@ describe("TagGroup hydrates over SSR markup", () => {
         },
       },
     );
+    const grid = container.querySelector('[role="grid"]');
+    expect(grid).not.toBeNull();
+    expect(grid).toHaveAttribute("aria-label", "Frameworks");
+    expect(grid).not.toHaveAttribute("aria-labelledby");
     const hydratedNodes = container.querySelectorAll(selector);
     expect(hydratedNodes).toHaveLength(serverNodes.length);
     serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));

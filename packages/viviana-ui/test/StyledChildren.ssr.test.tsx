@@ -17,6 +17,7 @@ import {
   RadioFixture,
   SegmentedControlFixture,
   TagGroupFixture,
+  TagGroupLabelFixture,
   SelectBoxFixture,
 } from "./fixtures/styled-children";
 
@@ -70,5 +71,18 @@ describe("Styled components SSR with reactive children (@proyecto-viviana/ui)", 
     const html = renderToString(() => <SelectBoxFixture count={() => 0} />);
     expect(html).toMatch(/count:[\s\S]*0/);
     writeFileSync(resolve(outDir, "vui-selectbox-finegrained-ssr.html"), html, "utf8");
+  });
+  it("renders TagGroup external label for the live-label hydration pair", () => {
+    const html = renderToString(() => (
+      <TagGroupLabelFixture
+        label={() => undefined}
+        labelledBy={() => "taggroup-label-a"}
+        onEvent={() => undefined}
+      />
+    ));
+    expect(html).toContain('aria-labelledby="taggroup-label-a"');
+    expect(html).toContain("First tag");
+    expect(html).toContain("Second tag");
+    writeFileSync(resolve(outDir, "vui-taggroup-live-label-ssr.html"), html, "utf8");
   });
 });

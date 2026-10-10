@@ -651,6 +651,8 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
   const labelId = createUniqueId();
   const descriptionId = createUniqueId();
   const errorId = createUniqueId();
+  // Allocate once in the component owner; prop getters only read this memo.
+  const labelledBy = createMemo(() => (local.label ? labelId : local["aria-labelledby"]));
   const size = () => normalizeSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -767,7 +769,7 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
             disabledKeys={local.disabledKeys}
             isDisabled={local.isDisabled}
             aria-label={local["aria-label"]}
-            aria-labelledby={local.label ? labelId : local["aria-labelledby"]}
+            aria-labelledby={labelledBy()}
             aria-describedby={describedBy()}
             class={(renderProps) =>
               resolveStyleClass(tagListStyle, {
