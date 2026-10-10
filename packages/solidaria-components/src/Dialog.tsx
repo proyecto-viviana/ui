@@ -33,11 +33,10 @@ import { isServer, type JSX } from "@solidjs/web";
 import {
   createDialog,
   createOverlayTrigger,
-  focusSafely,
   useIsHidden,
   type AriaDialogProps,
 } from "@proyecto-viviana/solidaria";
-import { createMenuTriggerState, type MenuTriggerState } from "@proyecto-viviana/solid-stately";
+import { createMenuTriggerState } from "@proyecto-viviana/solid-stately";
 import {
   DialogTriggerContext,
   OverlayTriggerStateContext,
@@ -130,48 +129,6 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   (triggerAria.triggerProps as Record<string, unknown>).id = triggerId;
   (triggerAria.overlayProps as Record<string, unknown>)["aria-labelledby"] = triggerId;
 
-  const restoreFocusToTrigger = () => {
-    const trigger = triggerRef();
-    if (!trigger?.isConnected) return;
-
-    const win = trigger.ownerDocument.defaultView ?? window;
-    win.requestAnimationFrame(() => {
-      win.requestAnimationFrame(() => {
-        if (trigger.isConnected && !state.isOpen()) {
-          focusSafely(trigger);
-        }
-      });
-    });
-  };
-
-  const stateWithFocusRestore: MenuTriggerState = {
-    isOpen: state.isOpen,
-    focusStrategy: state.focusStrategy,
-    setFocusStrategy: state.setFocusStrategy,
-    setOpen: (isOpen) => {
-      state.setOpen(isOpen);
-      if (!isOpen) {
-        restoreFocusToTrigger();
-      }
-    },
-    open: (strategy = null) => {
-      state.open(strategy);
-    },
-    close: () => {
-      state.close();
-      restoreFocusToTrigger();
-    },
-    toggle: (strategy = null) => {
-      const wasOpen = state.isOpen();
-      state.toggle(strategy);
-      if (wasOpen) {
-        restoreFocusToTrigger();
-      }
-    },
-    point: state.point,
-    setPoint: state.setPoint,
-  };
-
   const setTriggerRef = (el: HTMLElement | null) => {
     if (!el) return;
     // First registrant wins. Replacing a not-yet-connected trigger lets a later
@@ -184,7 +141,7 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
 
   // Context value - memoized to avoid unnecessary re-renders
   const contextValue = createMemo(() => ({
-    state: stateWithFocusRestore,
+    state: state,
     triggerRef,
     setTriggerRef,
     triggerId,
@@ -194,13 +151,13 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
 
   const popoverContextValue = createMemo<PopoverTriggerContextValue>(() => ({
     state: {
-      isOpen: () => stateWithFocusRestore.isOpen(),
-      open: () => stateWithFocusRestore.open(),
-      close: () => stateWithFocusRestore.close(),
-      toggle: () => stateWithFocusRestore.toggle(),
-      setOpen: (next: boolean) => stateWithFocusRestore.setOpen(next),
-      point: () => stateWithFocusRestore.point?.() ?? null,
-      setPoint: (next: { x: number; y: number }) => stateWithFocusRestore.setPoint?.(next),
+      isOpen: () => state.isOpen(),
+      open: () => state.open(),
+      close: () => state.close(),
+      toggle: () => state.toggle(),
+      setOpen: (next: boolean) => state.setOpen(next),
+      point: () => state.point?.() ?? null,
+      setPoint: (next: { x: number; y: number }) => state.setPoint?.(next),
     },
     triggerRef,
     setTriggerRef,
@@ -212,16 +169,16 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
 
   const overlayStateContextValue: ContextOverlayTriggerState = {
     get isOpen() {
-      return stateWithFocusRestore.isOpen();
+      return state.isOpen();
     },
-    open: () => stateWithFocusRestore.open(),
-    close: () => stateWithFocusRestore.close(),
-    toggle: () => stateWithFocusRestore.toggle(),
-    setOpen: (next: boolean) => stateWithFocusRestore.setOpen(next),
+    open: () => state.open(),
+    close: () => state.close(),
+    toggle: () => state.toggle(),
+    setOpen: (next: boolean) => state.setOpen(next),
     get point() {
-      return stateWithFocusRestore.point?.() ?? null;
+      return state.point?.() ?? null;
     },
-    setPoint: (next: { x: number; y: number }) => stateWithFocusRestore.setPoint?.(next),
+    setPoint: (next: { x: number; y: number }) => state.setPoint?.(next),
   };
 
   // If within a collection (e.g. Tabs), render nothing. Matches RAC DialogTrigger
@@ -236,7 +193,7 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   // inside the dialog shares this trigger. RAC DialogTrigger does the same.
   return (
     <OverlayTriggerStateContext value={overlayStateContextValue}>
-      <RootMenuTriggerStateContext value={stateWithFocusRestore}>
+      <RootMenuTriggerStateContext value={state}>
         <PopoverTriggerContext value={popoverContextValue()}>
           <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>
         </PopoverTriggerContext>
@@ -366,11 +323,12 @@ export function Dialog(props: DialogProps): JSX.Element {
       {(() => {
         // Heading registers while it is created. SSR writes aria-labelledby
         // before it inserts children, so resolve this tree before the section
-        // and read the memo from the attribute: a later child update re-runs
-        // the label. The memo keeps that read live, where a body snapshot would not.
+        // and resolve the descendants from the attribute to keep labeling live.
+        // Keep the Provider owner separate from descendant resolution: updating
+        // nested accessors must not recreate it or its nested trigger state.
         const rendered = createMemo(() => {
           hasHeading = false;
-          return children(() => (
+          return (
             <Provider
               values={
                 [
@@ -404,15 +362,21 @@ export function Dialog(props: DialogProps): JSX.Element {
                     ButtonContext,
                     { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } },
                   ],
+                  // Overlay actions must not register as the surrounding trigger.
+                  // Mirrors react-aria Overlay's ClearPressResponder boundary;
+                  // a nested trigger supplies its own contexts below this boundary.
+                  [DialogTriggerContext, null],
+                  [PopoverTriggerContext, null],
                 ] as Array<[Context<unknown>, unknown]>
               }
             >
               {renderProps.renderChildren()}
             </Provider>
-          ))();
+          );
         });
+        const resolved = children(rendered);
         const labelledBy = () => {
-          rendered();
+          resolved();
           return ariaLabelledBy();
         };
         return (

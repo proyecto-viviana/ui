@@ -566,6 +566,70 @@ describe("DialogTrigger", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(onOpenChange).toHaveBeenCalledTimes(2);
   });
+
+  it("isolates dialog actions while preserving a nested dialog trigger", async () => {
+    const outerChange = vi.fn();
+    const innerChange = vi.fn();
+    const [count, setCount] = createSignal(0);
+    render(() => (
+      <DialogTrigger defaultOpen onOpenChange={outerChange}>
+        <Modal>
+          <Dialog aria-label="Outer">
+            {({ close }) => (
+              <>
+                Count: {count()}
+                <DialogTrigger onOpenChange={innerChange}>
+                  <Button>Open inner</Button>
+                  <ModalOverlay>
+                    <Modal>
+                      <Dialog>
+                        {({ close: closeInner }) => (
+                          <Button onPress={closeInner}>Close inner</Button>
+                        )}
+                      </Dialog>
+                    </Modal>
+                  </ModalOverlay>
+                </DialogTrigger>
+                <Button onPress={close}>Close outer</Button>
+              </>
+            )}
+          </Dialog>
+        </Modal>
+      </DialogTrigger>
+    ));
+
+    const outer = screen.getByRole("dialog", { name: "Outer" });
+    const innerTrigger = within(outer).getByRole("button", { name: "Open inner" });
+    await user.click(innerTrigger);
+    vi.runAllTimers();
+    const inner = screen.getByRole("dialog", { name: "Open inner" });
+    expect(inner).toHaveAttribute("aria-labelledby", innerTrigger.id);
+    expect(innerTrigger).toHaveAttribute("aria-controls", inner.id);
+    expect(innerChange.mock.calls).toEqual([[true]]);
+    expect(outerChange).not.toHaveBeenCalled();
+
+    setCount(1);
+    flush();
+    expect(outer).toHaveTextContent("Count: 1");
+    expect(document.getElementById(outer.id)).toBe(outer);
+    expect(screen.getByRole("dialog", { name: "Open inner" })).toBe(inner);
+    expect(document.getElementById(innerTrigger.id)).toBe(innerTrigger);
+    expect(innerTrigger).toHaveAttribute("aria-expanded", "true");
+    expect(innerChange.mock.calls).toEqual([[true]]);
+    expect(outerChange).not.toHaveBeenCalled();
+
+    await user.click(within(inner).getByRole("button", { name: "Close inner" }));
+    vi.runAllTimers();
+    expect(inner).not.toBeInTheDocument();
+    expect(outer).toBeInTheDocument();
+    expect(innerChange.mock.calls).toEqual([[true], [false]]);
+    expect(outerChange).not.toHaveBeenCalled();
+
+    await user.click(within(outer).getByRole("button", { name: "Close outer" }));
+    vi.runAllTimers();
+    expect(outer).not.toBeInTheDocument();
+    expect(outerChange.mock.calls).toEqual([[false]]);
+  });
 });
 
 describe("Modal", () => {
@@ -879,6 +943,63 @@ describe("Dialog a11y focus & ARIA integrity", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(openBtn).toHaveFocus();
   });
+
+  it.each([false, true])(
+    "keeps closing-dialog focus until exit finishes and respects deliberate external focus (%s)",
+    async (moveFocusOutside) => {
+      const [isExiting, setIsExiting] = createSignal(false);
+      const onOpenChange = vi.fn((open: boolean) => {
+        if (!open) setIsExiting(true);
+      });
+      render(() => (
+        <>
+          <button>Outside destination</button>
+          <DialogTrigger onOpenChange={onOpenChange}>
+            <Button>Open retained dialog</Button>
+            <Modal isExiting={isExiting()}>
+              <Dialog aria-label="Retained closing dialog">
+                <Heading>Title</Heading>
+              </Dialog>
+            </Modal>
+          </DialogTrigger>
+        </>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Open retained dialog" });
+      trigger.focus();
+      await user.click(trigger);
+      vi.runAllTimers();
+      await Promise.resolve();
+      flush();
+      const dialog = screen.getByRole("dialog", { name: "Retained closing dialog" });
+      dialog.focus();
+      expect(dialog).toHaveFocus();
+      onOpenChange.mockClear();
+      const triggerFocus = vi.spyOn(trigger, "focus");
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      flush();
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(dialog.isConnected).toBe(true);
+      vi.advanceTimersByTime(100);
+      flush();
+      expect(dialog).toHaveFocus();
+      expect(triggerFocus).not.toHaveBeenCalled();
+      const keyUp = vi.fn();
+      dialog.addEventListener("keyup", keyUp);
+      fireEvent.keyUp(document.activeElement!, { key: "Escape" });
+      expect(keyUp).toHaveBeenCalledTimes(1);
+
+      const outside = screen.getByRole("button", { name: "Outside destination" });
+      if (moveFocusOutside) outside.focus();
+      setIsExiting(false);
+      flush();
+      vi.runAllTimers();
+      expect(dialog.isConnected).toBe(false);
+      expect(moveFocusOutside ? outside : trigger).toHaveFocus();
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it("ARIA ID integrity: dialog aria-labelledby resolves", () => {
     render(() => (
