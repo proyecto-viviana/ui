@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { scrollLocatorIntoView } from "../comparison-page";
 import { scenarioThemes, type DriverScenario } from "../drivers/scenario";
 import { forEachScenarioPanel } from "../drivers/walk";
 
@@ -28,6 +29,12 @@ export function registerSliderNativeTargetProof(
             for (let index = 0; index < count; index++) {
               const input = inputs.nth(index);
               await expect(input).not.toHaveAttribute("aria-hidden", "true");
+              // Each painted thumb may be clipped by the panel's scroll container.
+              const paintedArea = input
+                .locator("../..")
+                .locator(":scope > div:not(:has(input)) > div");
+              await expect(paintedArea).toHaveCount(1);
+              await scrollLocatorIntoView(paintedArea);
               const measurement = await input.evaluate((node) => {
                 const native = node as HTMLInputElement;
                 // Pinned S2 nests the native input in VisuallyHidden, then the thumb
