@@ -71,6 +71,11 @@ history:
       at: 2026-09-24,
       note: "re-pinned lastFullCertifiedSuiteRun in apps/comparison/src/data/certified-suite-evidence.ts to full certified run 35935084790 (job 107434383600 at 5750b7fb65851ac336eab9d48a15c789e81aac5d; 2168 passed, 0 failed, 4 skipped, 5 waived, total 2177). Added support for waived count in CertifiedSuiteEvidence and validateCertifiedSuiteEvidence. vp run comparison:report:parity:strict now exits 0 with 0 blocking gaps outside the frozen baseline.",
     }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
+    }
 ---
 
 ## Scope
@@ -209,3 +214,21 @@ recording. Shape 2 is the one that serves it most directly.
 Logged as a rules-and-harness challenge under #552 as well: a gate whose pass
 condition has no witness is the class, and "can a commit exist that passes
 this?" is the question that would have caught it at review.
+
+## Local certified-receipt support continuation — 2026-10-10
+
+The current owner continuation adds a repository-internal local receipt adapter and owning tests, with corresponding postcard/report/schema support. The adapter accepts only a flat portable `.agents` JSON path and authenticates its bytes against a non-placeholder SHA256. The local evidence contract requires the complete eight-shard set, original closed and conserved results, and zero failed, skipped, waived or flaky debt before it can support the strict report. Related fixtures and the case-floor skip ceiling follow the live RC1 zero-debt objective.
+
+This support is an implementation proposal for recording fresh local evidence; the fresh final eight-shard run and strict merged result are not yet complete. No new current postcard or receipt acceptance is asserted. The historical postcard remains historical, and neither adapter code nor focused tests establishes its currency. Final local artifacts, exact candidate binding, strict report and the required remote certification evidence remain #547's release obligations. This continuation claims no task closure or publication.
+
+## Actual certified-receipt closure continuation — 2026-10-11
+
+The dated 2026-10-10 continuation above is retained verbatim as superseded preparation history; its incomplete-run statements describe that earlier checkpoint. The actual current proof follows.
+
+Shape 1 remains the decision: ancestry plus unchanged covered paths, with the postcard itself excluded so the commit recording a genuine run can pass. The repository-internal local adapter authenticates a flat portable `.agents` JSON receipt by SHA256 and requires all eight original closed, conserved shards with zero failed, skipped, waived or flaky debt. Historical postcard entries remain historical.
+
+On actual evidence commit `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58`, the original `vp run comparison:report:parity:strict` exited 0. Root accepted the complete raw log and conserved physical closure in [the exact-E strict review](../../../output/qualification-evidence/ui-rangeslider-viewport-repaired-after-e-strict-parity-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json). This proves the strict frozen baseline; full acceptance parity remains 0/78.
+
+The original real-Git currency controls and acceptance-schema tests also passed at that same E: two complete files, 36 tests, exit 0, accepted in [Root's explicit control review](../../../output/qualification-evidence/ui-574-explicit-postcard-negative-control-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json), SHA256 `00af8e1dd364ea918a0e52b43bd345ccce1e99d7e4fd4aeaa5427a29745ecbda`. They prove that a commit recording a postcard can pass, while a later covered-source commit and the ten runner/config/oracle changes fail currency. Dirty, staged and untracked covered paths, off-history revisions and missing shallow-clone history also fail closed. This is the original owning test proof, not a whole strict-report invocation on a mutated clone.
+
+The verified historical state is retained. The later actual exact-E hosted and publication/registry obligations are now proved by #547's published-release continuation and flat release proof. These proofs retain the distinction between strict certified-baseline currency and complete API parity (0/78); the explicit 36 owning controls remain the witness for this ticket.
