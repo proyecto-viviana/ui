@@ -4,7 +4,7 @@ type: task
 title: "Publish the Solid 2 release candidate to the `rc` dist-tag"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -60,6 +60,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "Preparatory notes/policy slice implemented: ten deduplicated patch notes and the S/A/C Select controlled-null amendment (23 note/package entries); protected notes and consumed #114 unchanged. Release policy now describes direct guarded publication after explicit conductor versioning. Workflow changes are comments and publish-step name only; executable lines are equal to base. All 16 admitted paths are changed, including generator-only status/roadmap. Local metadata/status and docs checks pass; scoped fmt checks 16 files. Scoped lint selects no supported Markdown/YAML files and is not a code-lint proof. Standard docs:generate was blocked by sandbox tsx IPC EPERM; pinned Node --import tsx ran the same generator successfully. No compiler run: prose/metadata scope requires none; historical diagnostics are superseded, and no current-candidate green is claimed. No runtime tests, old-source control, new prose tests, provider guards, versioning, builds or publication run. Raw receipts, note/package map, diff, file/evidence manifests and seal are under /tmp/ui-547-notes-*; handoff /tmp/ui-547-notes-worker-result-2026-10-08.md. Worker stops editing after sealing for independent conductor review and exact-generation owned-stop. Next RC publication and final-candidate certification remain outstanding.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -734,3 +739,11 @@ Return SHA256: `8aeea7779dca91fbeeb828c1a97574299073101efa0899691839362647f1b374
 All bound inputs conserved and owned processes closed. Complete readiness and
 all remaining release gates still require fresh qualification. Versioning was
 already executed and was not repeated; no commit, push or publication is claimed.
+
+## Actual RC1 publication and installed consumers — 2026-10-11
+
+Actual E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` passed Release Readiness, Certification Gates and Site Gate on that exact SHA; automatic Release `38146924038` then published the five `rc` versions: @proyecto-viviana/solid-stately@0.6.0-rc.1; @proyecto-viviana/solidaria@0.6.0-rc.1; @proyecto-viviana/solidaria-components@0.7.0-rc.1; @proyecto-viviana/solid-spectrum@0.8.0-rc.1; @proyecto-viviana/ui@0.8.0-rc.1. Original capture verified unchanged `latest` (0.5.1 / 0.4.3 / 0.5.1 / 0.6.4 / 0.6.3), no `next`, and unchanged Kumo/Geist publication state. Registry consumer cryptographically verified 96 signatures and 55 attestations. Separate genuine LOCAL12 at source C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1` and REGISTRY12 at published E passed all original Table/Card cases for both skins, including retained native nodes, caret/focus/state and Card-menu lifetime. Native proofs do not remove the retained workaround or claim full port parity.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+This actual RC1 record supersedes pending-publication prose for this release; earlier RC0 and failed qualification records stay historical. Versioning already ran and must never repeat. The flat release proof `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json` belongs solely to the #547 owner transaction, which must remain LAST; later ticket-only F is documentation/evidence closure, not a replacement publication revision. Separate #74 color D8 and #625 rename-browser proof remain open. Final generated views, ticket-shape/docs checks, normal F push and hub audit/report remain Root's final integration steps, remaining integration work.

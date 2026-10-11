@@ -1,0 +1,235 @@
+{
+  "schema": "ui-rc1-published-release-evidence-v1",
+  "ownerTicket": 547,
+  "sourceQualificationRevision": "d8b57f49d2ee93453f4ac4120e1543a4245a55c1",
+  "publishedRevision": "a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58",
+  "actualReleaseRunId": 38146924038,
+  "versions": [
+    {
+      "name": "@proyecto-viviana/solid-stately",
+      "version": "0.6.0-rc.1",
+      "integrity": "sha512-97vzTCGdYP3XBZrXSWsF7NB3dKC8MPSJPFvLVnKxOXIwjuh5zMmCX0RZwABEA6Xv5Hd/0Tvgw8z0l5DpggZf5w==",
+      "tarballSha256": "ceccf329e7a92344e6f922e22c0b62f1066f9c042459000ea08944f9d97d41e6",
+      "manifestSha256": "d43be564ddf4b55e7f517321391566274e3520613c47493a11d15fb8be64fa6f"
+    },
+    {
+      "name": "@proyecto-viviana/solidaria",
+      "version": "0.6.0-rc.1",
+      "integrity": "sha512-GVj5jUnQUPHvf78+OdoDU49tKRGBei9ZKJ0lxx0qoOVrM15A72Yx9LDMSNUYJIX748fen9y4GBsF4a35EzEejw==",
+      "tarballSha256": "f6362c42fe048d217029092195ba8de86b08f4a84ec2d3c4b3f742de46529114",
+      "manifestSha256": "4131d8565f20863cca502b08b8b2a79d0a288d9e95687084bc99d447587a3173"
+    },
+    {
+      "name": "@proyecto-viviana/solidaria-components",
+      "version": "0.7.0-rc.1",
+      "integrity": "sha512-gU8IH29JfYeYK/qWYC03+zrpkV23B9fDziVAn06kyRLHqt+vkEyLioR6ziq81P7cEqVyl0mnk+4Xh4OPuwme7w==",
+      "tarballSha256": "5d1a2f2557da851a279dbd421ca44178834585f5ffc3c7a618a22e061819cced",
+      "manifestSha256": "93e12079ee1fd87132a71d0ea08e12d50b3bc54e3f6c3b3b610fdcf10b29316d"
+    },
+    {
+      "name": "@proyecto-viviana/solid-spectrum",
+      "version": "0.8.0-rc.1",
+      "integrity": "sha512-Hg69s90gYlhlWzlg++dki3eOhg9588t8w7SWLK+DBRYvWaUEOl6QfSuZUKcEyb4/9Nm0nT+S8KlOCBSKJj7Z7w==",
+      "tarballSha256": "1b33c9cdb6238eeae46e91e0525000c02f21bf9988088084597d9cb4ac20721b",
+      "manifestSha256": "820c3f59167ef2d0e15a91dea94d1325f2eb6e95dcf438b906c6d151985a2bf7"
+    },
+    {
+      "name": "@proyecto-viviana/ui",
+      "version": "0.8.0-rc.1",
+      "integrity": "sha512-okVKB51WNV280WTO7QN4MgZyru7tE8QuXT3gNWHDDfUsWI1uc78PalUNnds13cTBAjE7aLEP/SgzCHpLprxs6w==",
+      "tarballSha256": "ca52587fb6908b44943e7e3dfb9b78939b5bebd257905c5d6a2161e49f64db6f",
+      "manifestSha256": "94c7d29b19905cdbf6ac5c6feccd3d8e27d1c4770015d32783d0f288bf15515f"
+    }
+  ],
+  "distTagPolicy": {
+    "tag": "rc",
+    "latestUnchanged": true,
+    "nextCreated": false,
+    "kumoGeistUnchanged": true
+  },
+  "registryCrypto": {
+    "verifiedSignatures": 96,
+    "verifiedAttestations": 55
+  },
+  "independentNativeCases": {
+    "local": 12,
+    "registry": 12
+  },
+  "versioningAlreadyRanNeverRepeat": true,
+  "proofRefs": {
+    "publishedCheckpoint": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-owner-autonomous-release-registry-native-accepted-checkpoint-20261011T1452.json",
+      "sha256": "5a02923ba4109e81b11087f85b01957b5c7f98c0774387ac3f61152bcd4901d1",
+      "bytes": 3203
+    },
+    "qualificationSeal": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-rangeslider-viewport-repaired-full-qualification-proof-20261011/QUALIFIED-CPRIME-SEAL.json",
+      "sha256": "30f8e4bd845d3d9faded6c160265b67099e718cbeb83a26ff2466525c7026eff",
+      "bytes": 2627254
+    },
+    "wholeQualificationReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-rangeslider-viewport-repaired-full-qualification-proof-20261011/ROOT-FULL-QUALIFICATION-REVIEW.json",
+      "sha256": "a3e3e2e907c199de7ecc81efe4ab684a0b72c494174c9a76c1d701d188fa9dcc",
+      "bytes": 6528
+    },
+    "eightMergeReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-rangeslider-viewport-repaired-eight-certified-runtime-proof-20261011/ROOT-CLOSED-STAGE-10-REVIEW.json",
+      "sha256": "0920dce34f821261a2adbc71bb68541a2c204c8b1898edd95c17363652837358",
+      "bytes": 1070
+    },
+    "afterEStrictReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-rangeslider-viewport-repaired-after-e-strict-parity-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json",
+      "sha256": "5c5e77340e920a64a81220daf87d98385b7a558afb798ab3f2adf4bbf13387c2",
+      "bytes": 1035
+    },
+    "postcard36ControlReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-574-explicit-postcard-negative-control-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json",
+      "sha256": "00af8e1dd364ea918a0e52b43bd345ccce1e99d7e4fd4aeaa5427a29745ecbda",
+      "bytes": 1222
+    },
+    "publicationReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json",
+      "sha256": "98f7b51e71eb599a2d8e5dd920a4b8395519f403e144588dc046294185f5503d",
+      "bytes": 1892
+    },
+    "publishedVersionRecord": {
+      "path": "/home/emoporemilio/.cache/ui-registry-qualification-20261010/viviana-ui-packs-chain/published-version-record.json",
+      "sha256": "512404492749192a81dde01311b6bfdf1575e6bb286405be9448d8c0cf249313",
+      "bytes": 10146
+    },
+    "registryLinkageReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/private-proposals/ui-postpublication-four-stage-registry-reference-20261010/registry-e-a2ccaf10-linkage-20261011/ROOT-LINKAGE-REVIEW.json",
+      "sha256": "8920bc24f4ca2a026851d6851e91c949b8d90faf1d4d4b0bf5dd4f7cc05bb885",
+      "bytes": 1534
+    },
+    "localNativeReview": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json",
+      "sha256": "2bc978f185cc873057b635a88564b00bada5a79a22af33f954ac093eca1d7218",
+      "bytes": 1137
+    },
+    "localNativeReturn": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/02-local-installed-native630.return.json",
+      "sha256": "e34efe1649e8e77f6c52a4595c82c7bb1bbe1d2b6137b73974458b23f15ec819",
+      "bytes": 13608765
+    },
+    "registryStage1Review": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json",
+      "sha256": "c4434e3c220b00d64396ed4d7c52ccd391551d3a36cc648360bc916660ea2af3",
+      "bytes": 1287
+    },
+    "registryStage1Return": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/01-registry-capture.return.json",
+      "sha256": "cb7abff23fe54f98030bd58ecd0bb5b4ee84e97619e052e96f09560d9bc73a80",
+      "bytes": 2372554
+    },
+    "registryStage2Review": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json",
+      "sha256": "7dce484e5c0209c168399408d27ecfeec5b1dd3a0b1d7b803dfefaa3c014a4e1",
+      "bytes": 1178
+    },
+    "registryStage2Return": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/02-registry-consumer.return.json",
+      "sha256": "c3eb98cbac85a65eb9701f1813510e8d12355c54a2a406305c4c85231b54af87",
+      "bytes": 2377851
+    },
+    "registryStage3Review": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-03-REVIEW.json",
+      "sha256": "2fdf02b404bc1fc6dec68d3d91effad21f8621f74b4338d5fcee8adcbc4ffce3",
+      "bytes": 1660
+    },
+    "registryStage3Return": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/03-registry-materialize-native630.return.json",
+      "sha256": "2dc83dbe65c8da3f6942c752660a3c3a543dc2e87e362021cf08804b5850d5de",
+      "bytes": 13560060
+    },
+    "registryStage3Artifact-acceptance-binding.json": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/private-proposals/ui-installed-native630-esm-entry-successor-proposal-20261010/materialized-published-registry-e-a2ccaf10-20261011/acceptance-binding.json",
+      "sha256": "20c488fc0192ed8e658b46532fc6ce97e29b3d0bf47e74ccf23d07871bb122ba",
+      "bytes": 2699
+    },
+    "registryStage3Artifact-offline-inputs.json": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/private-proposals/ui-installed-native630-esm-entry-successor-proposal-20261010/materialized-published-registry-e-a2ccaf10-20261011/offline-inputs.json",
+      "sha256": "d98e6fc30fc8800fe22968b99f9bc92ee241fa17bef0623294dccba8eb02e8d1",
+      "bytes": 766
+    },
+    "registryStage4Review": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-04-REVIEW.json",
+      "sha256": "a861dc0bc8341b75b221435ac24c80d15baf53c183be9efa0237681590ee3214",
+      "bytes": 3357
+    },
+    "registryStage4Return": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/04-registry-installed-native630.return.json",
+      "sha256": "9fb9c15011a7fa766b5b98de9826c9653a5f1896c7b0a4c0e81ead44f17dfd78",
+      "bytes": 13561981
+    },
+    "registryStage4Artifact-acceptance-result.json": {
+      "path": "/home/emoporemilio/.cache/ui-registry-qualification-20261010/viviana-ui-consume-smoke/native630-published-registry-e-a2ccaf10-20261011/acceptance-result.json",
+      "sha256": "44f219fc970cb49fe56d35fa106e658d582ca29cd209823bf30eb163d95ec349",
+      "bytes": 5555
+    },
+    "registryStage4Artifact-results.json": {
+      "path": "/home/emoporemilio/.cache/ui-registry-qualification-20261010/viviana-ui-consume-smoke/native630-published-registry-e-a2ccaf10-20261011/results.json",
+      "sha256": "40c048add2f3dd039953ebbf06ecb73a5592db713057427f44467831e9fcb6f3",
+      "bytes": 170801
+    },
+    "hostedRuns": [
+      {
+        "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/worker-observation-20261011T142224/run-38145690348.json",
+        "sha256": "780b1161f60fc0b503c2b198a6200fa8898284c0ccd839b9261d48847227fd6d",
+        "bytes": 12672
+      },
+      {
+        "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/worker-observation-20261011T142224/run-38145690444.json",
+        "sha256": "b2a10717ec171e19a314f6801745ee7cc4435b069314a70457a3039b00d07c33",
+        "bytes": 12668
+      },
+      {
+        "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/worker-observation-20261011T142911/run-38145690342.json",
+        "sha256": "c029b8c43f2eaaf4a9a6f492076cc14ba9f4fb26e5ecbc28ccb2ddf3c145f2ce",
+        "bytes": 12652
+      },
+      {
+        "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/worker-observation-20261011T143358/run-38146924038.json",
+        "sha256": "fff4808510337aebfb40d6ab1d2034235a0d596e5290cf04b999b9e01afcdb86",
+        "bytes": 12606
+      }
+    ],
+    "publicationLog": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/worker-observation-20261011T143358/release-job-114492131563.full.log",
+      "sha256": "16298b8cfec6eda875cd1139f5f19f409f210a8279ff609aa7115e24e8d2b543",
+      "bytes": 774897
+    },
+    "localNativeReturnRaw": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/02-local-installed-native630.raw.log",
+      "sha256": "20a6e26b6787db2b4f7fa73b61c08204651adbc4f7d954d166c9ba282dde06f1",
+      "bytes": 2545
+    },
+    "registryStage1ReturnRaw": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/01-registry-capture.raw.log",
+      "sha256": "7fad3f3d20da499fb7b1d9ce3d4fe7aa390948837c779e4640651048c6ebfe6c",
+      "bytes": 204
+    },
+    "registryStage2ReturnRaw": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/02-registry-consumer.raw.log",
+      "sha256": "7cd65fcd4e596467e95deff5d0b381a4f1350b95b3eeaef142a62284adf00c40",
+      "bytes": 5378
+    },
+    "registryStage3ReturnRaw": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/03-registry-materialize-native630.raw.log",
+      "sha256": "2086a0ea659768b1a3ddb14f2462b6365e068ce478e4d06eac446f6362254b11",
+      "bytes": 525
+    },
+    "registryStage4ReturnRaw": {
+      "path": "/home/emoporemilio/projects/viviana-hub/ui/output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/04-registry-installed-native630.raw.log",
+      "sha256": "cc415a97833103aed57692c6df43c5bdfc47ea578031d716bd52d968e5a78aae",
+      "bytes": 2582
+    }
+  },
+  "limits": [
+    "Not an F qualification manifest or grant; Root must independently review and admit exact ticket/proof deltas.",
+    "Historical OLD controls are not recreated by new greens; #74 color D8 and #625 rename-browser work remain separate.",
+    "Certified strict baseline does not establish complete API acceptance parity."
+  ],
+  "status": "ROOT_ACCEPTED_ACTUAL_RC1_PUBLICATION_AND_INDEPENDENT_CONSUMERS",
+  "operator": "/root"
+}
