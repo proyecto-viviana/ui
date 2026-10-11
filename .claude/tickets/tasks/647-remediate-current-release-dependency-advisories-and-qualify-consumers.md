@@ -4,7 +4,7 @@ type: task
 title: "Remediate current release dependency advisories and qualify consumers"
 created: 2026-10-09
 parent: 32
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "bounded existing-dependency update and five-consumer compatibility plan prepared; installation, lockfile changes, security audit and consumer probes remain unexecuted",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -111,3 +116,11 @@ The approved source preparation at
 workspace patch and the lockfile produced by the admitted install match the
 actual qualified return recorded above. All ten bounded stages passed; full
 build, app and release qualification remain pending.
+
+## Actual published-E qualification continuation — 2026-10-11
+
+The accepted historical ten-stage dependency continuation includes the five formatter-pool, editor-parse, PostCSS-map, Astro-TOML and Astro-Sharp compatibility probes. Preserve their original workspace/lock identity linkage and audit allowances. Current Q26 supplies security, dependency ceilings, peers and builds; Q23/Q24 supply fresh local tarball/consumer qualification. Native12 does not replay those five probes. The actual exact-E hosted and cryptographically verified published-registry continuation below supplies those additional release requirements.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+Root accepts this bounded ticket closure against its original Done when. Earlier historical limits and separate exclusions remain.
