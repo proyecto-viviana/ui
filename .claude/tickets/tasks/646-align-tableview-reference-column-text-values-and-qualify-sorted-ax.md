@@ -4,7 +4,7 @@ type: task
 title: "Align TableView reference column text values and qualify sorted AX"
 created: 2026-10-09
 parent: 531
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "conductor admitted bounded reference-fixture equivalence and unchanged AX qualification; private one-line source proposal reviewed, owning positive tests in preparation, no source patch or runtime applied",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -432,3 +437,11 @@ temporary Table architecture and #490 remain open.
 The accepted continuation extends the original fixture-only scope to the matching styled Table sources and the table-cell containing-block patch note. Both twins move the checkbox row divider from the cell's bottom border to an inset row shadow, preserving the full cell box used by its focus ring. Existing highlight-mode selection suppression and forced-color behavior remain aligned with pinned S2.
 
 The recorded original whole-five-owner browser controls support this delta: Table withdrawal exposed the unchanged focus-ring geometry failure; exact restoration passed all 30 cases, including eight certified cases, without skipped, waived or flaky results. The later restored Breadcrumb/Table whole-owner return also passed 30/30. These are scoped causal/browser returns already recorded above, not aggregate readiness, fresh eight-shard qualification, installed native630, publication or ticket closure. The separate temporary Table architecture and #490 remain open.
+
+## Actual published-E qualification continuation — 2026-10-11
+
+Final Q13 whole Breadcrumb/Table owners passed 30/30 and fresh B8 retains the sorted AX/description and original Table interaction cases. Preserve the accepted original fixture OLD/restoration and matching containing-block focus-ring controls as historical evidence. This does not close the separate temporary Table architecture, #490 or unproved live-announcement parity.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+Root accepts this bounded ticket closure against its original Done when. Earlier historical limits and separate exclusions remain.
