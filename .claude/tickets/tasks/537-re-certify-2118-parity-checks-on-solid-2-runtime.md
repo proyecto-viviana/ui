@@ -4,7 +4,7 @@ type: task
 title: "Re-certify the live parity suite on Solid 2 runtime"
 created: 2026-09-13
 parent: 531
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "admitted bounded ActionButton/Badge accessor-child repair and owning tests under the verified temporary direct-worker fallback; conductor remains sole checkout writer. Source/test review is complete, runtime RED/GREEN and original full certification acceptance remain unexecuted",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -133,3 +138,11 @@ complete raw log SHA256
 ## Actual local continuation returns — 2026-10-09
 
 Actual ActionButton/Badge four-file withdrawal/restoration now returnedOLD18PASS/8named causal FAIL (exit1), then restored candidate26PASS/0FAIL (exit0). Both owned invocations closed and six production candidate paths plus four owning test paths were conserved/restored. The failures exercise memo string children and preserved literal/Text/mixed, memo Icon/Text, and getter-array closure hyperscript child structure in both styled packages. Receipt: /tmp/ui-actionbadge-owning-withdraw-restore-v2-runtime-return-20261009.json; exact logs under /tmp/ui-actionbadge-owning-withdraw-restore-v2-proof-20261009/whole-four-files-{withdrawn-old,restored-candidate}.raw.log. This replaces current UNRUN wording for those specific four-file controls only. Full SSR/hydration, native browser certification and the complete parity gate remain pending; existing frozen historical rows stay unchanged.
+
+## Actual published-E qualification continuation — 2026-10-11
+
+Root inventory reconciliation `output/qualification-evidence/private-proposals/ui-rc1-remaining-execution-plan-20261011/ROOT-537-INVENTORY-RECONCILIATION-20261011.json`, SHA256 `37f79f4cda08c8ee94733b6d41f82dd408e40b0c353b7662790b18c94d7f738c`, accounts for 2267→2297: Slider and RangeSlider each add five native-tab-cycle cases, five native-control census cases and five painted native-thumb cases; no registered cases are removed. The five variants are default, size-s, size-l, size-xl and thumb-precise. Q3 supplies the original accessibility qualification. Earlier ActionButton/Badge controls remain historical; fresh full-family certification supplies no missing historical-control receipt.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+Root accepts this bounded ticket closure against its original Done when. Earlier historical limits and separate exclusions remain.
