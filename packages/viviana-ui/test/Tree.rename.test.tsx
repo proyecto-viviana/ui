@@ -198,6 +198,9 @@ describe("TreeView onRename", () => {
     ] as const) {
       input.value = name;
       input.setSelectionRange(start, end, "backward");
+      const selectionAtSet = [input.selectionStart, input.selectionEnd, input.selectionDirection];
+      expect(selectionAtSet.slice(0, 2)).toEqual([start, end]);
+      if (start !== end) expect(selectionAtSet[2]).toBe("backward");
       input.dispatchEvent(new InputEvent("input", { bubbles: true }));
       for (const settled of [false, true]) {
         if (settled) await tick();
@@ -205,11 +208,9 @@ describe("TreeView onRename", () => {
         expect(item.querySelector("[data-tree-rename] input")).toBe(input);
         expect(document.activeElement).toBe(input);
         expect(input.value).toBe(name);
-        expect([input.selectionStart, input.selectionEnd, input.selectionDirection]).toEqual([
-          start,
-          end,
-          "backward",
-        ]);
+        expect([input.selectionStart, input.selectionEnd, input.selectionDirection]).toEqual(
+          selectionAtSet,
+        );
         expect(calls).toEqual([]);
       }
     }

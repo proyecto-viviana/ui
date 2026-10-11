@@ -139,11 +139,18 @@ test("original input retains uninterrupted edits, backward selection and single 
     ["Renamed again", 5, 5],
   ] as const) {
     await input(page).fill(name);
-    await input(page).evaluate(
-      (element, range) =>
-        (element as HTMLInputElement).setSelectionRange(range[0], range[1], "backward"),
+    const selectionAtSet = await input(page).evaluate(
+      (element, range) => {
+        const input = element as HTMLInputElement;
+        input.setSelectionRange(range[0], range[1], "backward");
+        return [input.selectionStart, input.selectionEnd, input.selectionDirection];
+      },
       [start, end],
     );
+    expect(selectionAtSet.slice(0, 2)).toEqual([start, end]);
+    // Focused Chromium normalizes a collapsed backward caret to forward.
+    // Preserve the native result across lifecycle work; ranges retain backward direction.
+    if (start !== end) expect(selectionAtSet[2]).toBe("backward");
     for (const afterFrame of [false, true]) {
       if (afterFrame) await settled(page);
       expect(
@@ -164,7 +171,7 @@ test("original input retains uninterrupted edits, backward selection and single 
         current: true,
         focused: true,
         value: name,
-        selection: [start, end, "backward"],
+        selection: selectionAtSet,
       });
       expect(await calls(page)).toEqual([]);
     }
