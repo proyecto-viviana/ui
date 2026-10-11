@@ -151,6 +151,94 @@ describe("FocusScope", () => {
     });
   });
 
+  describe("sibling replacement restoration targets", () => {
+    for (const replacementFirst of [false, true]) {
+      it(`rebases a surviving replacement restore target (${replacementFirst ? "replacement first" : "old first"} DOM order)`, () => {
+        setInteractionModality("keyboard");
+        const [showOld, setShowOld] = createSignal(false);
+        const [showReplacement, setShowReplacement] = createSignal(false);
+        const OldScope = () => (
+          <Show when={showOld()}>
+            <FocusScope restoreFocus>
+              <input data-testid="replacement-old-input" />
+            </FocusScope>
+          </Show>
+        );
+        const ReplacementScope = () => (
+          <Show when={showReplacement()}>
+            <FocusScope restoreFocus>
+              <input data-testid="replacement-new-input" />
+            </FocusScope>
+          </Show>
+        );
+        render(() => (
+          <>
+            <button data-testid="replacement-trigger">Open</button>
+            {replacementFirst
+              ? [<ReplacementScope />, <OldScope />]
+              : [<OldScope />, <ReplacementScope />]}
+          </>
+        ));
+        const trigger = screen.getByTestId("replacement-trigger");
+        trigger.focus();
+        setShowOld(true);
+        flush();
+        const oldInput = screen.getByTestId("replacement-old-input");
+        oldInput.focus();
+        vi.runAllTimers();
+        expect(document.activeElement).toBe(oldInput);
+
+        // The replacement captures focus inside the old scope before removal.
+        setShowReplacement(true);
+        flush();
+        const replacementInput = screen.getByTestId("replacement-new-input");
+        replacementInput.focus();
+        vi.runAllTimers();
+        expect(document.activeElement).toBe(replacementInput);
+
+        let nextId = 0;
+        const frames = new Map<number, FrameRequestCallback>();
+        const request = vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+          frames.set(++nextId, callback);
+          return nextId;
+        });
+        const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+          frames.delete(id);
+        });
+        const focus = vi.spyOn(trigger, "focus");
+        try {
+          setShowOld(false);
+          flush();
+          expect(oldInput.isConnected).toBe(false);
+          expect(replacementInput.isConnected).toBe(true);
+          expect(document.activeElement).toBe(replacementInput);
+          expect(focus).not.toHaveBeenCalled();
+          expect(frames.size).toBe(0);
+
+          setShowReplacement(false);
+          flush();
+          expect(replacementInput.isConnected).toBe(false);
+          expect(document.activeElement).toBe(document.body);
+          expect(focus).not.toHaveBeenCalled();
+          expect(frames.size).toBe(1);
+          const [id, frame] = frames.entries().next().value!;
+          frames.delete(id);
+          frame(16);
+          expect(document.activeElement).toBe(trigger);
+          expect(screen.getByTestId("replacement-trigger")).toBe(trigger);
+          expect(focus).toHaveBeenCalledTimes(1);
+          expect(frames.size).toBe(0);
+          vi.runAllTimers();
+          expect(focus).toHaveBeenCalledTimes(1);
+        } finally {
+          focus.mockRestore();
+          cancel.mockRestore();
+          request.mockRestore();
+        }
+      });
+    }
+  });
+
   // ============================================
   // FOCUS CONTAINMENT
   // ============================================

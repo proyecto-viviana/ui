@@ -357,6 +357,19 @@ class FocusScopeTree {
     const node = this.fastMap.get(scopeRef);
     if (!node) return;
     const parentNode = node.parent;
+    // A surviving scope may restore into this scope. Carry its original
+    // restore target forward before removing it, matching React Aria's tree.
+    for (const current of this.traverse()) {
+      if (
+        current !== node &&
+        node.nodeToRestore &&
+        current.nodeToRestore &&
+        node.scopeRef &&
+        isElementInScope(current.nodeToRestore, node.scopeRef())
+      ) {
+        current.nodeToRestore = node.nodeToRestore;
+      }
+    }
     if (parentNode) {
       parentNode.children.delete(node);
       // Re-parent any children so a mid-tree unmount doesn't orphan descendants.
@@ -1100,9 +1113,28 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     // If this scope is performing focus restoration, clear activeScope so an
     // ancestor scope torn down in the same turn does not steal the restore (#593).
     const parentScope = focusScopeTree.getTreeNode(scopeElements)?.parent?.scopeRef ?? null;
+    // A replacement may have registered beneath this scope while it held focus.
+    // Keep its ownership when it survives this cleanup and still holds focus.
+    const activeDescendant =
+      activeScope !== scopeElements && activeScope && isAncestorScope(scopeElements, activeScope)
+        ? focusScopeTree.getTreeNode(activeScope)
+        : null;
+    const activeDescendantElements = activeDescendant?.scopeRef?.() ?? [];
+    const connectedDescendantElement = activeDescendantElements.find(
+      (element) => element.isConnected,
+    );
+    const descendantFocusedElement = connectedDescendantElement
+      ? getActiveElement(getOwnerDocument(connectedDescendantElement))
+      : null;
+    const preserveFocusedDescendant =
+      !willRestore &&
+      !!activeDescendant &&
+      !!descendantFocusedElement?.isConnected &&
+      isElementInScope(descendantFocusedElement, activeDescendantElements);
     if (
-      scopeElements === activeScope ||
-      (activeScope && isAncestorScope(scopeElements, activeScope))
+      !preserveFocusedDescendant &&
+      (scopeElements === activeScope ||
+        (activeScope && isAncestorScope(scopeElements, activeScope)))
     ) {
       activeScope = willRestore ? null : parentScope;
     }
