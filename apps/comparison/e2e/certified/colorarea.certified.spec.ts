@@ -1,3 +1,5 @@
+import { registerColorNativeTargetProof } from "./color-native-target-proof";
+import { registerTargetSizeDriver } from "../drivers/target-size";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -84,6 +86,10 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *     at rest so it is absent from the tree. NO known divergence (native input backs
  *     the value — the whole point vs the inverted sliders).
  *
+ *   - D8 (target size/native ownership) — original native-input size census plus
+ *     painted-thumb geometry and real pointer focus/value proof across all cases,
+ *     including disabled noninteraction; exact React/Solid equality.
+ *
  * NOT registered:
  *   - D4 events: the 2D pointer drag + arrow-key value stream is a per-control event
  *     concern the two fixtures wire differently (onInput/onChange + `data-comparison-
@@ -92,7 +98,6 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *     certified at rest by D1/D3.
  *   - D7 contrast: ColorArea renders NO text content (the label is an `aria-label`
  *     attribute, not a visible node), so there is nothing to measure.
- *   - D8 target size: the composite adds no hit target of its own beyond the area.
  *   - D2 motion: the thumb's `[width,height]` transition is pinned by D1; the loupe
  *     enter/exit keyframes are drag-only, deferred with D4.
  *
@@ -140,6 +145,7 @@ const colorAreaScenario: DriverScenario = {
     { id: "colorSpace-hsb", params: { colorSpace: "hsb" } },
   ],
   states: ["default"],
+  targetSize: { root: areaTarget },
   styleProps: {
     add: [
       // Thumb 2D geometry — absolute placement + the centering translate.
@@ -203,3 +209,6 @@ registerStateMatrixDriver(colorAreaScenario);
 registerPixelDriver(colorAreaScenario);
 registerFocusTrailDriver(colorAreaScenario);
 registerAxTreeDriver(colorAreaScenario);
+
+registerTargetSizeDriver(colorAreaScenario);
+registerColorNativeTargetProof(colorAreaScenario, root, thumbTarget, 2);

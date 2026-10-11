@@ -1,3 +1,5 @@
+import { registerColorNativeTargetProof } from "./color-native-target-proof";
+import { registerTargetSizeDriver } from "../drivers/target-size";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -101,6 +103,10 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *     label), and `vertical` (`aria-orientation="vertical"`). No known divergence — the
  *     native input backs the value.
  *
+ *   - D8 (target size/native ownership) — original native-input size census plus
+ *     painted-thumb geometry and real pointer focus/value proof across all cases,
+ *     including disabled noninteraction; exact React/Solid equality.
+ *
  * NOT registered:
  *   - D4 events: the pointer drag along the track + arrow-key channel stream is a
  *     per-control event concern the two fixtures wire differently (onInput/onChange +
@@ -109,7 +115,6 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *     targets is certified at rest by D1/D3.
  *   - D7 contrast: the output/label text color is pinned exactly (to the S2 oracle) by
  *     D3's glyph-exact pixel diff; there is no standalone contrast driver in this harness.
- *   - D8 target size: the composite adds no hit target of its own beyond the track.
  *   - D2 motion: the thumb's `[width,height]` transition is pinned by D1; the loupe
  *     enter/exit keyframes are drag-only, deferred with D4.
  *
@@ -177,6 +182,7 @@ const colorSliderScenario: DriverScenario = {
     { id: "vertical", params: { ariaLabel: "Hue", orientation: "vertical" } },
   ],
   states: ["default"],
+  targetSize: { root: sliderTarget },
   styleProps: {
     add: [
       // Track position:relative; thumb position:absolute.
@@ -223,3 +229,6 @@ registerStateMatrixDriver(colorSliderScenario);
 registerPixelDriver(colorSliderScenario);
 registerFocusTrailDriver(colorSliderScenario);
 registerAxTreeDriver(colorSliderScenario);
+
+registerTargetSizeDriver(colorSliderScenario);
+registerColorNativeTargetProof(colorSliderScenario, root, thumbTarget, 1);
