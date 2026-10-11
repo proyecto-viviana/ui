@@ -428,12 +428,8 @@ export function createTab<T>(
   // keyboard on key down, while touch, pen, and virtual pointers select on
   // press up.
   const selectTab = () => {
-    // Press handlers select only — they do NOT set the focused key. Upstream's
-    // useSelectableItem does the same: its press/onSelect path calls
-    // replaceSelection. `focusedKey` is written by handleFocusIn (DOM `focusin`)
-    // and by createTabListState's selected→focused copy after paint (RAC
-    // useTabListState useEffect). Setting it here would flip the roving tabIndex
-    // during press, before React's post-paint copy and before native focus.
+    // Selection and focused-key synchronization belong to state. Mouse
+    // selects on press start; touch selects after its native focus event.
     state.setSelectedKey(key());
   };
   const { isPressed, pressProps } = createPress({
@@ -471,18 +467,9 @@ export function createTab<T>(
     callEventHandler(focusProps.onFocus, e);
   };
 
-  // Roving-tabindex commit (D4 event-ordering). React's `onFocus` is delegated
-  // to a single `focusin` listener at the app root, so the roving tabIndex it
-  // drives reflects one event *after* the native `focus`. Binding the
-  // focusedKey write here (to `focusin`) mirrors that timing: the D4 oracle
-  // records event targets from a document-level capture-phase listener, which
-  // runs before this at-target handler, so a touch tap — whose selection lands
-  // on press-up, after focus — is still observed with tabIndex=-1 at `focusin`,
-  // exactly as React. Mouse press-start selection does not write focusedKey here;
-  // createTabListState copies selected→focused after paint, so capture of
-  // pointerup/click still reads tabindex="-1". Setting it on the earlier `focus`
-  // event flipped the tab a whole event too soon, so touch taps diverged at
-  // `focusin`. The D4 event driver holds this ordering.
+  // Touch focus arrives before press-up selection, so its capture-phase
+  // focusin still sees the previous roving target. Mouse press-start selection
+  // has already synchronized the focused key in state before native focusin.
   const handleFocusIn = () => {
     // Batch collection-focused + roving key. Native `focus` is too early:
     // setting isFocused there flushes the previous tab's focus-move effect

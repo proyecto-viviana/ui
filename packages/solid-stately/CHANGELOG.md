@@ -4,6 +4,8 @@
 
 ### Patch Changes
 
+- Synchronize Tabs selection with the roving focus target after reactive rendering without an extra animation frame, preserving mouse focus event ordering and touch press-up selection.
+
 - Allow createCalendarState to receive an outer props accessor and resolve current props throughout state derivation, navigation, validation and callbacks. Preserve object props support and the existing Calendar value and selection signatures. Keep inferred date subtypes usable in Calendar hooks by requiring only the state capabilities each hook consumes.
 - 02130c8: Align flags declaration layout with runtime output and enforce export target coherence checks.
 - d2d0045: Report equivalent ColorField commits once and restore committed text from the current accepted value. Preserve alpha and numeric channel changes, and avoid repeated channel notifications at clamped boundaries.

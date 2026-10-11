@@ -24,7 +24,6 @@ import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
-import { whileItemDOMFocusSuppressed } from "../selection/createSelectableItem";
 import { createSelectableList } from "../selection/createSelectableList";
 import { ListKeyboardDelegate } from "../selection/ListKeyboardDelegate";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -63,7 +62,7 @@ export interface AriaMenuProps<T = unknown> {
   shouldCloseOnSelect?: boolean;
   /** Whether focus should automatically wrap around. */
   shouldFocusWrap?: boolean;
-  /** Whether to auto-focus the menu root (`true`) or the first/last item. */
+  /** Whether to auto-focus the selected item or menu root (`true`), or the first/last item. */
   autoFocus?: boolean | "first" | "last";
   /** Whether type-to-select is disabled. @default false */
   disallowTypeAhead?: boolean;
@@ -179,8 +178,9 @@ export function createMenu<T>(
   // Arrow, Home/End, Page, and typeahead go through the shared list delegate.
   // Escape stays here: the collection's Escape clears selection, and a menu
   // closes instead. Item Enter/Space is createMenuItem, matching useMenuItem.
-  // autoFocus is not forwarded. Pointer open focuses the menu root after paint
-  // with focusVisible; the collection effect would focus immediately without it.
+  // autoFocus is not forwarded. Pointer open focuses the selected item after
+  // paint, or the menu root when no item is selected. The collection effect
+  // would focus immediately.
   const selectableList = createSelectableList<T>({
     selectionManager: state.selectionManager,
     ref: elementRef,
@@ -194,7 +194,7 @@ export function createMenu<T>(
   });
 
   // Auto-focus the menu (or its first/last/selected item) when `autoFocus` is
-  // set. Mouse open passes `true` (focus the menu root); ArrowDown/ArrowUp
+  // set. Mouse open passes `true` (focus selected item, otherwise root); ArrowDown/ArrowUp
   // pass `"first"`/`"last"`.
   let autoFocusDone = false;
   let cancelAutoFocus: (() => void) | undefined;
@@ -247,20 +247,8 @@ export function createMenu<T>(
           focusSafely(el, { focusVisible: true });
         }
       };
-      // Boolean `autoFocus` is the pointer open. A selection keeps the item
-      // as the focused key (tabindex 0, data-focused) but DOM focus stays on
-      // the menu, matching the published React menu. "first" / "last" still
-      // move real focus onto the item.
-      // setFocused before the root receives focus so the collection focusin
-      // listener does not move focus onto the first item.
-      if (autoFocus === true && focusedKey != null) {
-        whileItemDOMFocusSuppressed(() => {
-          state.setFocused(true);
-          state.setFocusedKey(focusedKey);
-          focusMenuRoot();
-        });
-        return;
-      }
+      // Selected keys receive real item focus, matching upstream
+      // useSelectableCollection. Only an absent focused key focuses the root.
       state.setFocused(true);
       state.setFocusedKey(focusedKey);
       if (focusedKey == null) {

@@ -17,7 +17,7 @@
  * Ported from packages/react-stately/src/tabs/useTabListState.ts.
  */
 
-import { createEffect, createMemo, onCleanup } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 import { ListCollection } from "../collections/ListCollection";
@@ -226,42 +226,19 @@ export function createTabListState<T = unknown>(
     setChildFocusStrategy(childStrategy ?? null);
   };
 
-  // If the tab list doesn't have focus and the selected key changes, or if there
-  // isn't a focused key yet, move the focused key to the selected key so the
-  // roving tabIndex stays on the selected tab. Predicate matches useTabListState.
-  // RAC writes in useEffect (after paint). A tracking-phase write would copy
-  // inside setSelectedKey, so D4 capture of pointerup/click would already see
-  // tabindex 0. Subscribe in compute; write on the next animation frame in apply.
+  // Match useTabListState's passive effect without adding a frame delay. Mouse
+  // press-start selection must update the roving target before native focusin;
+  // touch selects on press-up, so its earlier focusin retains the old tabindex.
   let lastSelectedKey: Key | null = selectedKey();
-  let selectedToFocusedFrame: number | null = null;
-  const copySelectedToFocusedKey = () => {
-    selectedToFocusedFrame = null;
-    const sel = selectedKey();
-    if ((sel !== null && focusedKey() === null) || (!isFocused() && sel !== lastSelectedKey)) {
-      setFocusedKey(sel);
-    }
-    lastSelectedKey = sel;
-  };
   createEffect(
     () => ({ sel: selectedKey(), foc: focusedKey(), focused: isFocused() }),
     ({ sel, foc, focused }) => {
-      if (sel !== null && foc === null) {
+      if ((sel !== null && foc === null) || (!focused && sel !== lastSelectedKey)) {
         setFocusedKey(sel);
-        lastSelectedKey = sel;
-        return;
       }
-
-      if (!focused && sel !== lastSelectedKey) {
-        if (selectedToFocusedFrame != null) return;
-        selectedToFocusedFrame = requestAnimationFrame(copySelectedToFocusedKey);
-      }
+      lastSelectedKey = sel;
     },
   );
-  onCleanup(() => {
-    if (selectedToFocusedFrame == null) return;
-    cancelAnimationFrame(selectedToFocusedFrame);
-    selectedToFocusedFrame = null;
-  });
 
   // Keep uncontrolled selection valid as items/disabled keys change.
   createEffect(

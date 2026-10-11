@@ -1082,6 +1082,45 @@ describe("createSelectableItem — imperative focus dependencies", () => {
     ]);
   });
 
+  it("waits for a virtual item ref without blurring the existing active descendant", () => {
+    const [target, setTarget] = createSignal<HTMLElement | null>(null);
+    let state!: ListState<Item>;
+    const { container } = render(() => {
+      state = createListState<Item>({ items, getKey: (item) => item.key });
+      createSelectableItem(() => ({ key: "a", shouldUseVirtualFocus: true }), state, target);
+      return (
+        <>
+          <input />
+          <div id="pending-virtual-option" role="option">
+            Pro
+          </div>
+        </>
+      );
+    });
+    const input = container.querySelector("input")!;
+    const option = container.querySelector<HTMLElement>("[role='option']")!;
+    input.focus();
+    input.setAttribute("aria-activedescendant", option.id);
+    const events: string[] = [];
+    for (const type of ["blur", "focusout", "focus", "focusin"]) {
+      option.addEventListener(type, () => events.push(type));
+    }
+
+    state.setFocused(true);
+    state.setFocusedKey("a");
+    flush();
+    expect(events).toEqual([]);
+    expect(document.activeElement).toBe(input);
+    expect(input.getAttribute("aria-activedescendant")).toBe(option.id);
+
+    // Resolving the ref still performs the normal virtual-focus transition.
+    input.removeAttribute("aria-activedescendant");
+    setTarget(option);
+    flush();
+    expect(events).toEqual(["focus", "focusin"]);
+    expect(document.activeElement).toBe(input);
+  });
+
   it("isolates virtual event reads while tracking ref and virtual mode changes", () => {
     const [unrelated, setUnrelated] = createSignal(0);
     const [target, setTarget] = createSignal<HTMLElement | null>(null);

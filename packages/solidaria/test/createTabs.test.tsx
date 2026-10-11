@@ -626,6 +626,60 @@ describe("createTabs", () => {
   });
 
   describe("mouse interactions", () => {
+    it.each([
+      ["mouse", "0"],
+      ["touch", "-1"],
+    ] as const)("preserves %s roving tabindex at native focusin", (pointerType, tabindex) => {
+      const onSelectionChange = vi.fn();
+      render(() => <TestTabs aria-label="Test Tabs" onSelectionChange={onSelectionChange} />);
+      flush();
+      const tabs = screen.getAllByRole("tab");
+      const captured: Array<string | null> = [];
+      const record = (event: Event) => {
+        if (event.target === tabs[1]) captured.push(tabs[1].getAttribute("tabindex"));
+      };
+      document.addEventListener("focusin", record, true);
+      try {
+        tabs[1].dispatchEvent(
+          new PointerEvent("pointerdown", {
+            bubbles: true,
+            cancelable: true,
+            pointerType,
+            pointerId: 1,
+            button: 0,
+          }),
+        );
+        flush();
+        tabs[1].focus();
+        expect(captured).toEqual([tabindex]);
+        expect(document.activeElement).toBe(tabs[1]);
+        tabs[1].dispatchEvent(
+          new PointerEvent("pointerup", {
+            bubbles: true,
+            cancelable: true,
+            pointerType,
+            pointerId: 1,
+            button: 0,
+          }),
+        );
+        tabs[1].dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+            detail: 1,
+          }),
+        );
+        flush();
+        expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith("tab2");
+        expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+        expect(tabs[1]).toHaveAttribute("tabindex", "0");
+        expect(tabs[0]).toHaveAttribute("tabindex", "-1");
+      } finally {
+        document.removeEventListener("focusin", record, true);
+      }
+    });
+
     it("clicking a tab selects it", () => {
       const onSelectionChange = vi.fn();
       render(() => <TestTabs aria-label="Test Tabs" onSelectionChange={onSelectionChange} />);

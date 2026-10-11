@@ -73,9 +73,9 @@ import { createDragSession } from "../dnd/DragManager";
 export const ITEM_ACTION_EVENT = "solidaria:item-action";
 
 /**
- * Mouse-open menus keep DOM focus on the collection while the selected item
- * stays the focused key. The item effect below would otherwise call
- * `focusSafely` on that key. Not a package export.
+ * Temporarily suppress item DOM focus while a caller updates collection state.
+ * The item effect below would otherwise call `focusSafely` on the focused key.
+ * Not a package export.
  */
 let itemDOMFocusSuppressed = 0;
 
@@ -452,7 +452,9 @@ export function createSelectableItem<T>(
           focus.call(o);
         } else {
           if (virtualFocus) {
-            moveVirtualFocus(el ?? null);
+            // React's passive item effect runs after the DOM ref is assigned.
+            // A pending Solid ref must not clear an existing active descendant.
+            if (el) moveVirtualFocus(el);
           } else if (el && getOwnerDocument(el).activeElement !== el) {
             focusSafely(el);
           }

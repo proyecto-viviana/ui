@@ -260,6 +260,36 @@ describe("createMenu", () => {
     }
   });
 
+  it.each(["single", "multiple"] as const)(
+    "pointer autoFocus true moves DOM focus to the selected item in %s mode",
+    async (selectionMode) => {
+      setInteractionModality("pointer");
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "paste", label: "Paste" },
+      ];
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode,
+        defaultSelectedKeys: ["paste"],
+      });
+      const menu = mountMenu(state, { autoFocus: true, "aria-label": "Actions" }, items);
+      const role = selectionMode === "single" ? "menuitemradio" : "menuitemcheckbox";
+      const selected = screen.getByRole(role, { name: "Paste" });
+      const unselected = screen.getByRole(role, { name: "Copy" });
+
+      await waitFor(() => expect(document.activeElement).toBe(selected));
+      expect(document.activeElement).not.toBe(menu);
+      expect(state.isFocused()).toBe(true);
+      expect(state.focusedKey()).toBe("paste");
+      expect(selected).toHaveAttribute("tabindex", "0");
+      expect(unselected).toHaveAttribute("tabindex", "-1");
+      expect(state.isSelected("paste")).toBe(true);
+      expect(state.isSelected("copy")).toBe(false);
+    },
+  );
+
   it("calls onAction when Enter is pressed", () => {
     const onAction = vi.fn();
     const items = [

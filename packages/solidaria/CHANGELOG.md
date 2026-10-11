@@ -4,6 +4,9 @@
 
 ### Patch Changes
 
+- Defer selectable-item virtual focus until its element ref exists, preserving the active descendant while a ComboBox option mounts.
+- Derive Calendar and RangeCalendar cell focus visibility from the focus ring and focused cell, so pointer-open DatePicker and DateRangePicker calendars keep focus invisible until keyboard navigation.
+- Focus the selected Menu item when a pointer-open menu has a selection, and focus the menu root only when no selected item exists.
 - Allow createCalendarState to receive an outer props accessor and resolve current props throughout state derivation, navigation, validation and callbacks. Preserve object props support and the existing Calendar value and selection signatures. Keep inferred date subtypes usable in Calendar hooks by requiring only the state capabilities each hook consumes.
 - 47642e6: Expose checkboxGroupData descriptionId, errorMessageId, and attributes as reactive getters in createCheckboxGroup so group and child checkbox aria-describedby retarget dynamically when isInvalid changes live.
 - 88bd0f7: Leave a readonly multiple ComboBox input unchanged, give onChange a key list that is separate from state, and carry the selection mode through the headless hook and component state instead of treating every ComboBox as single.

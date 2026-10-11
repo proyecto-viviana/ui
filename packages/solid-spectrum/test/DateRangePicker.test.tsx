@@ -5,6 +5,7 @@ import { describe, it, expect } from "vite-plus/test";
 import { render, screen, waitFor, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { parseDate, parseDateTime } from "@proyecto-viviana/solid-stately";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { DateRangePicker } from "../src/calendar/DateRangePicker";
 
 async function waitForHydration() {
@@ -340,6 +341,37 @@ describe("DateRangePicker (solid-spectrum)", () => {
   });
 
   describe("calendar popover", () => {
+    it("keeps pointer-open range focus invisible and shows it for keyboard navigation", async () => {
+      const user = setupUser();
+      render(() => (
+        <DateRangePicker
+          aria-label="Trip dates"
+          defaultValue={{ start: parseDate("2025-02-03"), end: parseDate("2025-02-14") }}
+        />
+      ));
+      await waitForHydration();
+
+      await user.click(screen.getByRole("button"));
+      const selectedDay = await waitFor(() =>
+        screen.getByRole("button", { name: /Monday, February 3, 2025 selected$/i }),
+      );
+      await waitFor(() => expect(selectedDay).toHaveFocus());
+      // Cross the former overlay-only delayed update using real paint boundaries.
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      expect(selectedDay).toHaveAttribute("data-selected");
+      expect(selectedDay).toHaveAttribute("data-selection-start");
+      expect(selectedDay).not.toHaveAttribute("data-focus-visible");
+
+      await user.keyboard("{ArrowRight}");
+      const nextDay = screen.getByRole("button", {
+        name: /Tuesday, February 4, 2025 selected$/i,
+      });
+      await waitFor(() => expect(nextDay).toHaveFocus());
+      expect(nextDay).toHaveAttribute("data-focus-visible");
+    });
+
     it("sizes the one-month RangeCalendar with cell-gap (272px)", async () => {
       render(() => (
         <DateRangePicker

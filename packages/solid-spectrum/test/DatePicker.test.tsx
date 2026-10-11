@@ -331,6 +331,28 @@ describe("DatePicker (solid-spectrum)", () => {
     ]);
   });
 
+  it("keeps pointer-open calendar focus invisible and shows it for keyboard navigation", async () => {
+    render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} />);
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    const selectedDay = await waitFor(() =>
+      screen.getByRole("button", { name: /February 14, 2025/i }),
+    );
+    await waitFor(() => expect(selectedDay).toHaveFocus());
+    // Cross the former overlay-only delayed state update using real paint boundaries.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    expect(selectedDay).toHaveAttribute("data-selected");
+    expect(selectedDay).not.toHaveAttribute("data-focus-visible");
+
+    await user.keyboard("{ArrowRight}");
+    const nextDay = screen.getByRole("button", { name: /February 15, 2025/i });
+    await waitFor(() => expect(nextDay).toHaveFocus());
+    expect(nextDay).toHaveAttribute("data-focus-visible");
+  });
+
   it("keeps focus on Next and names the grid for the new month after paging", async () => {
     render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} />);
     await waitForHydration();

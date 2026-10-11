@@ -30,16 +30,22 @@ export function registerSliderNativeTargetProof(
               await expect(input).not.toHaveAttribute("aria-hidden", "true");
               const measurement = await input.evaluate((node) => {
                 const native = node as HTMLInputElement;
-                // Both real S2 trees nest the native input in VisuallyHidden, then
-                // the thumb container, whose other direct div owns the painted hit area.
+                // Pinned S2 nests the native input in VisuallyHidden, then the thumb
+                // container. Its other direct div wraps the painted thumb; the
+                // wrapper can have no geometry because that thumb is absolute.
                 const thumb = native.parentElement?.parentElement;
-                const area =
+                const wrappers =
                   thumb &&
-                  Array.from(thumb.children).find(
+                  Array.from(thumb.children).filter(
                     (child) => child.tagName === "DIV" && !child.contains(native),
                   );
+                const wrapper = wrappers?.length === 1 ? wrappers[0] : undefined;
+                const area =
+                  wrapper?.children.length === 1 && wrapper.firstElementChild?.tagName === "DIV"
+                    ? wrapper.firstElementChild
+                    : undefined;
                 if (!thumb || !area)
-                  throw new Error("Native slider thumb/hit-area structure missing");
+                  throw new Error("Native slider thumb/painted-target structure missing");
                 if (thumb.hasAttribute("tabindex") || thumb.getAttribute("role") === "slider")
                   throw new Error("Thumb container still owns focus or slider semantics");
                 const box = area.getBoundingClientRect();
