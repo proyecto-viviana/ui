@@ -4,7 +4,7 @@ type: task
 title: "Respect active focus ownership in deferred scope restoration"
 created: 2026-10-09
 parent: 531
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "ROOT admits the named two-source/test paths and solidaria Changeset under the verified temporary direct-worker exception and autonomous UI release instruction; one tracked writer and all proof gates remain.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted fresh final release qualification and the bounded actual controls recorded in the final appendix; published RC1 and installed consumer proof are complete.",
     }
 ---
 
@@ -206,3 +211,11 @@ Actual return: `/tmp/ui-focus-teardown-direct-proof-20261009/01-focus-teardown-a
 SHA256 `dbbd4a1328aedd86b787faf8671d8556804611686bda46be0e9bece189156954`.
 The tool session completed with exit 0; owned closure is established, no owned
 process remains and all 3,477 bound post-application inputs are conserved.
+
+### Final actual qualification appendix — 2026-10-11
+
+Fresh authentic controls at published E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` satisfy Done clauses 1–3: identical full owning tests returned OLD 40PASS/2 causal FAIL and restored current 42PASS/0FAIL. The failures are the parent containment callback taking active child ownership and instantaneous removal restoring before the scheduled frame. Original trigger/input identity, real queued callback ordering, cancellation and later-drain assertions remain. Fresh witnesses: `output/qualification-evidence/ui-645-authentic-old-current-owning-control-proof-20261011/01-authentic-old-whole-focus-scope.return.json` and `02-restored-current-whole-focus-scope.return.json`, with corresponding complete raw logs and `ROOT-CLOSED-STAGE-01-REVIEW.json` / `ROOT-CLOSED-STAGE-02-REVIEW.json`. The latter SHA256 is `488b8bd339241245b0fb418a7317f1191ee86ffe2b80f6de6cc91a1b4e0114e5`; it records exact source and natural-state restoration, physical closure and conserved bindings. This replaces no historical witness.
+
+Clauses 4–5 are supported by accepted original full27/full22 qualification at C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`: `output/qualification-evidence/ui-rangeslider-viewport-repaired-full-qualification-proof-20261011/ROOT-FULL-QUALIFICATION-REVIEW.json`, the actual seal, and `26-full-root-release-readiness.raw.log`. The whole unit invocation includes existing FocusScope, owner-document, Dialog/Popover and scheduler compatibility suites together (8276PASS plus one expected failure). Fresh full SSR is 141PASS, root hydrate 141PASS, comparison SSR 9PASS and comparison hydrate 178PASS. Typecheck, attribution/layers, solidaria build and docs retain their original accepted gates. These are aggregate outcomes, not invented per-file counts; the independent O7/S15 accepted successors remain separate actual witnesses. Production focus source is unchanged between qualified C′ and E.
+
+Clause 6 has separate unchanged native evidence: the same Q proof's `09-click-locator-whole-native-input.return.json` / raw log (3PASS) and `10-focus-picker-owning-certification-native-input.return.json` / raw log (80PASS; zero failed/skipped/waived/flaky), plus accepted fresh B8 `output/qualification-evidence/ui-rangeslider-viewport-repaired-eight-certified-runtime-proof-20261011/complete-merge-archive/certified-summary.json`. Dialog D4 records the ordered real-key open/Escape/restore cycle (`apps/comparison/e2e/certified/dialog.certified.spec.ts`, trigger scenario); Picker records selected-option roving and both D13 journeys. Dialog/Picker D2 measures normal/reduced-motion entry and actual dismissal cleanup: it is not a separate exhaustive exit-animation freeze assay. Do not expand these bounded results into all-component port certification.
