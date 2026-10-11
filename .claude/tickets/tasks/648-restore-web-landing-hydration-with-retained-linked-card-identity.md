@@ -4,7 +4,7 @@ type: task
 title: "Restore web landing hydration with retained linked Card identity"
 created: 2026-10-09
 parent: 531
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "independently reviewed a three-file linked-Card SSR/hydration diagnostic; exact owning test admission prepared, product cause and actual route qualification remain unproved",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -127,3 +132,11 @@ success, route clearance or task closure is claimed by source review.
 The current owner continuation extends the earlier server-purity-only boundary to stable client ownership in both styled Card twins. Each linked Card retains an independently owned root for its render-child registration and disposes that root with the Card. This prevents an intermediate reused server/hydration owner from governing the retained linked child. The existing `!isServer` interaction guard remains; no public name, dependency or styling contract changes.
 
 This is an explicit extension to the original scope, whose production allowance covered only the server guard. The admitted paths remain the two `src/card/index.tsx` twins, the three Viviana Landing fixture/SSR/hydration files, the linked-Card patch note and this ticket. Focused owning and paired evidence does not close the production landing route, Site Gate, installed-consumer or release obligations. Latest complete qualification is still pending; preserve all earlier failed and interrupted returns.
+
+## Actual published-E qualification continuation — 2026-10-11
+
+Final Q26 supplies fresh matched Landing/Card SSR and retained-node/generated-ID hydration assertions with whole owning suites. Accepted whole Site and browser checks clear the earlier local route qualification failures; preserve those failures and the explicit linked-Card client-owner scope extension. Aggregate raw totals are not per-file outcome counts. Actual exact-E Site success and genuine published-consumer linkage are retained below.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+Root accepts this bounded ticket closure against its original Done when. Earlier historical limits and separate exclusions remain.
