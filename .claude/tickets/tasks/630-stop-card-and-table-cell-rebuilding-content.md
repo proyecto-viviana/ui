@@ -4,7 +4,7 @@ type: task
 title: "Stop Card and TableCell from rebuilding their content on hover, press, and focus"
 created: 2026-10-08
 parent: 24
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -30,6 +30,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "ROOT accepted current owning247/0/0, restored source-native76/0/0 and canonical source typecheck exit0. Fixture sensitivity controls were closed and exactly restored; installed final-candidate/release proof remains open.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted fresh final release qualification and the bounded actual controls recorded in the final appendix; published RC1 and installed consumer proof are complete.",
     }
 ---
 
@@ -414,3 +419,13 @@ Actual receipts:
 - `/tmp/ui-630-native-20261009-corrected-snapshot-control1-20261009T1127Z-root-control-result-review.json`
 - `/tmp/ui-630-native-20261009-remount-control2-20261009T1136Z-root-control-result-review.json`
 - `/tmp/ui-630-final-source-typecheck-20261009T121508Z/result.json`
+
+### Final actual installed/release appendix — 2026-10-11
+
+The committed accepted checkpoint remains the authority for historical whole owning 247PASS, restored native 76PASS, getter controls and fixture sensitivity controls. Their missing historical physical /tmp receipts have not been recovered or reconstructed. Current whole qualification preserves the TableCell accessor/getter tests (`packages/solid-spectrum/test/Table.test.tsx` and `packages/viviana-ui/test/Table.test.tsx`), nested-interactive key handling and existing assertions; aggregate unit green does not recreate historical OLD controls.
+
+The explicitly remaining coherent installed final-candidate/release requirement now has independent genuine browser witnesses. Local seven-tarball qualification: `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/02-local-installed-native630.return.json` (SHA256 `e34efe1649e8e77f6c52a4595c82c7bb1bbe1d2b6137b73974458b23f15ec819`) and `ROOT-CLOSED-STAGE-02-REVIEW.json`, 12PASS. Published-registry E qualification: `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/04-registry-installed-native630.return.json` (SHA256 `9fb9c15011a7fa766b5b98de9826c9653a5f1896c7b0a4c0e81ead44f17dfd78`) and `ROOT-CLOSED-STAGE-04-REVIEW.json` (SHA256 `a861dc0bc8341b75b221435ac24c80d15baf53c183be9efa0237681590ee3214`), 12PASS at `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58`. Both preserve complete original native12 assertions; published proof does not relabel local artifacts.
+
+These genuine browser routes directly cover literal Done-when: both Spectrum and Viviana Tables, default and custom rendering, retain original connected input, text/backward caret, node identity and independent local state through hover/focus/press; both Cards retain the same open menu through hover/press/focus and separately exercise keyboard opening with intentional Escape dismissal. Acceptance checks physical installed payload/artifact linkage, not only process exit. Root reviews record actual complete raw review, conserved inputs and owned-process closure. Fresh Q original27/full22, B8 and exact-E hosted publication remain separately authenticated release evidence; this appendix invents no historical counts or missing receipts.
+
+Downstream VisualMode workaround removal has not occurred and is not authorized by these results. No all-component port certification or unbounded private-overlay lifetime claim is made.
