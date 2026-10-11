@@ -797,6 +797,31 @@ describe("Color Components", () => {
 
   describe("ColorArea", () => {
     describe("rendering", () => {
+      it("keeps both native axes clipped while filling the thumb", () => {
+        render(() => (
+          <TestColorArea defaultValue={parseColor("hsl(0, 100%, 50%)")} aria-label="Color picker" />
+        ));
+
+        const thumb = document.querySelector(".solidaria-ColorArea-thumb");
+        const inputs = Array.from(thumb!.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+        expect(inputs).toHaveLength(2);
+        expect(inputs.map((input) => input.getAttribute("aria-orientation"))).toEqual([
+          "horizontal",
+          "vertical",
+        ]);
+        for (const input of inputs) {
+          expect(input.style.width).toBe("100%");
+          expect(input.style.height).toBe("100%");
+          expect(input.style.opacity).toBe("0.0001");
+          expect(input.style.pointerEvents).toBe("none");
+          expect(input.style.clipPath).toBe("inset(50%)");
+          expect(input.style.overflow).toBe("hidden");
+        }
+        expect(inputs[0]).not.toHaveAttribute("aria-hidden");
+        expect(inputs[1]).toHaveAttribute("aria-hidden", "true");
+        expect(inputs[1]).toHaveAttribute("tabindex", "-1");
+      });
+
       it("should render with default class", () => {
         render(() => (
           <TestColorArea defaultValue={parseColor("hsl(0, 100%, 50%)")} aria-label="Color picker" />
