@@ -4,7 +4,7 @@ type: task
 title: "Correct Solid 2 SSR and hydration test compilation"
 created: 2026-09-19
 parent: 531
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -90,6 +90,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "bounded styled owning continuation at d8649863: cleanup-only 87/91 with four stale indicator failures; pinned direct SVG/DIV and explicit bare-icon ARIA assertions pass restored combined 91/91. Cleanup-removed control fails 14/91; final bytes restored. Root typecheck exactly matches 24 inherited #638 diagnostics. Await conductor acceptance and owned stop; full SSR/hydration and candidate gates remain open.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -408,3 +413,11 @@ identity and live label/fallback assertions. The earlier OLD hydrate timeout
 remains unclassified and is not an assertion-based causal RED. Preserve it
 separately. Full fresh SSR/hydration, affected ordinary suites, static/docs/build
 qualification and original task acceptance remain outstanding.
+
+## Actual published-E qualification continuation — 2026-10-11
+
+Final Q26 executes the complete fresh root and comparison SSR suites followed by their hydration suites, plus whole units, types and builds. Q21 and accepted prepush docs checks supply documentation currency. Existing hydratable compiler settings, marker-bearing matching output, retained server-node identity, negative mismatch detection, exact cleanup/global restoration and first-error ordering assertions remain required. Aggregate logs do not establish invented per-file counts or turn prior timeouts into causal assertion failures.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+Root accepts this bounded ticket closure against its original Done when. Earlier historical limits and separate exclusions remain.
