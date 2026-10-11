@@ -12,24 +12,21 @@ export type CertifiedSuiteEvidence = {
 );
 
 /**
- * Postcard from the last complete certified suite run that was recorded against
- * an exact checked revision. This is NOT live truth. Ticket #194. The recorded
- * SHA is `08793320` (2026-10-04, 2175 passed / 0 failed / 4 skipped / 2 waived).
- * `validateCertifiedSuiteEvidence` checks arithmetic and skipped-count against
- * the registered `knownDivergences` inventory; `certifiedSuitePostcardCurrency`
- * decides whether the run still speaks for HEAD, and the report blocks when it
- * does not.
+ * Last complete certified suite recorded from the original closed eight-shard
+ * local run and merge. This is recorded evidence, not live truth. Ticket #194.
  */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
-  revision: "08793320540f06c7bdbfb229bbd3cb161b2ba1f5",
-  runId: 37176592599,
-  jobId: 111362935087,
-  completedAt: "2026-10-04T04:36:40Z",
-  total: 2181,
-  passed: 2175,
+  revision: "d8b57f49d2ee93453f4ac4120e1543a4245a55c1",
+  completedAt: "2026-10-11T13:30:11.994575+00:00",
+  total: 2297,
+  passed: 2297,
   failed: 0,
-  skipped: 4,
-  waived: 2,
+  skipped: 0,
+  waived: 0,
+  localMergeReceipt: {
+    path: ".agents/UI-EXECUTION-547-certified-full-2026-10-10.json",
+    sha256: "fec29ed7a47bccecec3fa6891030f4833d77efd4b3ed2d52553d10783f2a286a",
+  },
 };
 
 /**
