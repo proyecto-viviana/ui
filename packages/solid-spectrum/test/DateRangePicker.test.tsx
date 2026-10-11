@@ -364,9 +364,9 @@ describe("DateRangePicker (solid-spectrum)", () => {
       expect(selectedDay).toHaveAttribute("data-selection-start");
       expect(selectedDay).not.toHaveAttribute("data-focus-visible");
 
-      await user.keyboard("{ArrowRight}");
+      await user.keyboard("{ArrowUp}");
       const nextDay = screen.getByRole("button", {
-        name: /Tuesday, February 4, 2025 selected$/i,
+        name: /Monday, January 27, 2025$/i,
       });
       await waitFor(() => expect(nextDay).toHaveFocus());
       expect(nextDay).toHaveAttribute("data-focus-visible");
