@@ -4,7 +4,7 @@ type: task
 title: "Remeasure React breadcrumbs overflow after URL remount"
 created: 2026-09-03
 parent: 26
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "Current reference fixture and owning tests admitted; whole-release qualification remains in progress.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-11,
+      note: "Root accepted original full qualification, fresh zero-debt certification, exact-E hosted gates and actual RC1 registry consumer evidence; bounded closure is recorded in the final continuation.",
     }
 ---
 
@@ -287,3 +292,11 @@ claim. Mandatory native input, full SSR/hydration and final eight-shard gates
 remain outstanding.
 #429 remains open; native-13, aggregate readiness, final eight-shard
 qualification and publication are not established by this checkpoint.
+
+## Actual published-E qualification continuation — 2026-10-11
+
+Final Q13 whole Breadcrumb/Table owners passed 30/30, and fresh B8 preserves the overflow URL-remount AX and interaction assertions: Home, More items, Reports and Annual report, with the same two-item menu. Keep the already accepted pulse withdrawal/restoration evidence and its measurement limits unchanged; no missing historical receipt is described as recovered.
+
+Accepted source qualification remains C′ `d8b57f49d2ee93453f4ac4120e1543a4245a55c1`; E `a2ccaf10885edadfd41ffc2d10c2e65fdad2ca58` records its original eight-shard result (2297 passed, zero failed/skipped/waived/flaky), followed by accepted exact-E strict parity. The same E now has all three required hosted workflows green and automatic Release run `38146924038` successful, independently accepted in `output/qualification-evidence/ui-exact-e-hosted-release-proof-20261011/ROOT-ACTUAL-PUBLICATION-AND-THREE-GATES-REVIEW-20261011.json`. Actual registry capture, crypto consumer and separate installed-native proof are accepted under `output/qualification-evidence/ui-registry-and-native-final-stage-rc1-e-a2ccaf10-proof-20261011/ROOT-CLOSED-STAGE-01-REVIEW.json`, `ROOT-CLOSED-STAGE-02-REVIEW.json` and `ROOT-CLOSED-STAGE-04-REVIEW.json`; the consumer verified 96 signatures and 55 attestations, and registry native passed all 12 original cases. Independently accepted LOCAL12 remains bound to C′ at `output/qualification-evidence/ui-registry-and-native-final-stage-local-rangeslider-viewport-20261011/ROOT-CLOSED-STAGE-02-REVIEW.json`. Physical refs/hashes are cataloged in `.agents/UI-EXECUTION-547-rc1-published-2026-10-11.json`; these later proofs do not recreate missing historical controls or claim complete API parity.
+
+Root accepts this bounded ticket closure against its original Done when. Earlier historical limits and separate exclusions remain.
