@@ -285,8 +285,12 @@ function CalendarWithState<
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Calendar",
     },
     renderValues,
@@ -388,8 +392,12 @@ function CalendarInner<
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Calendar",
     },
     renderValues,
@@ -472,8 +480,12 @@ export function CalendarHeading(props: CalendarHeadingProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-CalendarHeading",
     },
     renderValues,
@@ -580,8 +592,12 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-CalendarGrid",
     },
     renderValues,
@@ -729,8 +745,12 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-CalendarCell",
     },
     renderValues,

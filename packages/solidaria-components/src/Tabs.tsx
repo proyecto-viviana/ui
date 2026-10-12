@@ -350,8 +350,12 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       get children() {
         return props.children;
       },
@@ -447,8 +451,12 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TabList",
     },
     renderValues,
@@ -583,16 +591,20 @@ export function Tab(props: TabProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Tab",
     },
     renderValues,
   );
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: tabAria.isSelected,
-  }));
+  };
 
   // Caller globals land before managed identity. RAC drops id and onClick so
   // the hook owns both; later attributes keep role, selection, and tabindex.
@@ -646,7 +658,7 @@ export function Tab(props: TabProps): JSX.Element {
       data-hovered={dataAttr(isHovered())}
       data-disabled={dataAttr(tabAria.isDisabled())}
     >
-      <SelectionIndicatorContext value={selectionIndicatorContext()}>
+      <SelectionIndicatorContext value={selectionIndicatorContext}>
         {renderProps.renderChildrenStable()}
       </SelectionIndicatorContext>
     </div>
@@ -751,8 +763,12 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TabPanel",
     },
     renderValues,

@@ -215,8 +215,12 @@ export const TokenField = createHideableComponent(function TokenField<
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TokenField",
     },
     renderValues,
@@ -310,8 +314,12 @@ export function TokenInput<T extends TokenFieldValue = TokenFieldValue>(
   }));
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TokenInput",
     },
     renderValues,
@@ -430,8 +438,12 @@ export function Token(props: TokenProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Token",
     },
     renderValues,

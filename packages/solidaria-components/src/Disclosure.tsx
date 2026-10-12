@@ -219,8 +219,12 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
   // Resolve render props - don't pass children, we'll render props.children directly
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-DisclosureGroup",
     },
     renderValues,
@@ -333,8 +337,12 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
   // Resolve render props - don't pass children, we'll render props.children directly
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Disclosure",
     },
     renderValues,
@@ -506,8 +514,12 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-DisclosurePanel",
     },
     renderValues,

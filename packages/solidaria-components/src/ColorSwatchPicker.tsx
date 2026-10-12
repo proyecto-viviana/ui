@@ -465,8 +465,12 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorSwatchPicker",
     },
     renderValues,
@@ -587,8 +591,12 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorSwatchPickerItem",
     },
     renderValues,

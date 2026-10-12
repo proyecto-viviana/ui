@@ -384,8 +384,12 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-NumberField",
     },
     renderValues,
@@ -710,8 +714,12 @@ export function NumberFieldInput(props: NumberFieldInputProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-NumberField-input",
     },
     renderValues,
@@ -801,8 +809,12 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-NumberField-increment",
     },
     renderValues,
@@ -882,8 +894,12 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-NumberField-decrement",
     },
     renderValues,

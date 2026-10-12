@@ -336,8 +336,12 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-DateField",
     },
     renderValues,
@@ -584,8 +588,12 @@ export function DateInput(props: DateInputProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-DateInput",
     },
     renderValues,
@@ -708,8 +716,12 @@ export function DateSegment(props: DateSegmentProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-DateSegment",
     },
     renderValues,

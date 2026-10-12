@@ -1424,8 +1424,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Tree",
     },
     renderValues,
@@ -1972,8 +1976,12 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Tree-item",
     },
     renderValues,
@@ -2352,8 +2360,12 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
       get children() {
         return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-Tree-loadMore",
     },
     () => ({ isLoading: isLoading() }),
@@ -2439,8 +2451,12 @@ export function TreeSection(props: TreeSectionProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       children: undefined,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TreeSection",
     },
     () => ({ hasChildren: true }),

@@ -311,8 +311,12 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-SharedElement",
     },
     () => ({

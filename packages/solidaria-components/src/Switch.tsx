@@ -192,8 +192,12 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ToggleSwitch",
     },
     renderValues,
@@ -435,8 +439,12 @@ function SwitchButtonImpl(props: {
   const renderProps = useRenderProps(
     {
       children: props.buttonProps.children,
-      class: props.buttonProps.class,
-      style: props.buttonProps.style,
+      get class() {
+        return props.buttonProps.class;
+      },
+      get style() {
+        return props.buttonProps.style;
+      },
       defaultClassName: ctx.defaultClassName,
     },
     renderValues,
@@ -647,8 +655,12 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       children: merged.children,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-SwitchField",
     },
     renderValues,

@@ -998,8 +998,12 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Menu",
     },
     renderValues,
@@ -1717,8 +1721,12 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Menu-item",
     },
     renderValues,
@@ -2194,8 +2202,12 @@ export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Menu-loadMore",
     },
     () => ({ isLoading: isLoading() }),

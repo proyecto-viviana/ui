@@ -43,7 +43,9 @@ export function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element {
   // and again during explicit rendering. Hydration code is sensitive to that.
   const [local, others] = splitProps(props, ["elementType", "isFocusable", "style", "children"]);
   const { visuallyHiddenProps } = createVisuallyHidden(() => ({
-    style: local.style,
+    get style() {
+      return local.style;
+    },
     isFocusable: local.isFocusable,
   }));
 

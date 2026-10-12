@@ -584,8 +584,12 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-DatePicker",
     },
     renderValues,
@@ -1192,8 +1196,12 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-DateRangePicker",
     },
     renderValues,
@@ -1361,8 +1369,12 @@ export function DatePickerButton(props: DatePickerButtonProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-DatePickerButton",
     },
     renderValues,
@@ -1435,8 +1447,12 @@ export function DateRangePickerButton(props: DateRangePickerButtonProps): JSX.El
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-DateRangePickerButton",
     },
     renderValues,

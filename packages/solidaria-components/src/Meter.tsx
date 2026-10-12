@@ -148,8 +148,12 @@ export function Meter(props: MeterProps): JSX.Element {
       get children() {
         return mergedProps.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Meter",
     },
     renderValues,

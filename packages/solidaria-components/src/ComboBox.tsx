@@ -623,8 +623,12 @@ export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ComboBox",
     },
     renderValues,
@@ -876,8 +880,12 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ComboBox-input",
     },
     renderValues,
@@ -945,8 +953,12 @@ export function ComboBoxValue(props: ComboBoxValueProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-ComboBox-value",
     },
     () => ({
@@ -1014,8 +1026,12 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ComboBox-button",
     },
     renderValues,
@@ -1171,8 +1187,12 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ComboBox-listbox",
     },
     renderValues,
@@ -1407,16 +1427,20 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ComboBox-option",
     },
     renderValues,
   );
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: optionAria.isSelected,
-  }));
+  };
 
   const cleanOptionProps = () => {
     const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
@@ -1469,7 +1493,7 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
   const selectionMode = () => listState.selectionMode();
 
   return (
-    <SelectionIndicatorContext value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext}>
       {/* `<div role="option">`, not `<li>` — see the ComboBoxListBox note; the
           `role` comes from the spread option aria props (createOption). */}
       <div

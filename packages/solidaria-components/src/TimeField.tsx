@@ -213,8 +213,12 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TimeField",
     },
     renderValues,

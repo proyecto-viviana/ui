@@ -247,8 +247,12 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ModalOverlay",
     },
     renderValues,
@@ -549,8 +553,12 @@ function ModalContent(props: ModalProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Modal",
     },
     renderValues,

@@ -597,8 +597,12 @@ export function Select<T, M extends SelectSelectionMode = "single">(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Select",
     },
     renderValues,
@@ -960,8 +964,12 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Select-trigger",
     },
     renderValues,
@@ -1074,8 +1082,12 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
       get children() {
         return props.children ?? defaultSelectValueChildren;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Select-value",
     },
     renderValues,
@@ -1209,8 +1221,12 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Select-listbox",
     },
     renderValues,
@@ -1519,15 +1535,19 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Select-option",
     },
     renderValues,
   );
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: optionAria.isSelected,
-  }));
+  };
 
   const cleanOptionProps = () => {
     // Press-up and virtual click already select through optionProps. A second
@@ -1571,7 +1591,7 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
     },
   );
   return (
-    <SelectionIndicatorContext value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext}>
       {/* `<div role="option">`, not `<li>` — see the SelectListBox note; upstream
           RAC options are div-based. */}
       <div

@@ -94,8 +94,12 @@ export function FieldError(props: FieldErrorProps): JSX.Element | null {
     {
       children:
         local.children ?? ((currentValidation) => currentValidation.validationErrors.join(" ")),
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-FieldError",
     },
     () => validation() ?? DEFAULT_VALIDATION_RESULT,

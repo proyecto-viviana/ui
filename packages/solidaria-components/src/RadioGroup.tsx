@@ -294,8 +294,12 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-RadioGroup",
     },
     renderValues,
@@ -635,16 +639,20 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Radio",
     },
     renderValues,
   );
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: radioAria.isSelected,
-  }));
+  };
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -788,14 +796,14 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
   // leaves refs pointing at the detached first nodes.
   if (local.render) {
     return (
-      <SelectionIndicatorContext value={selectionIndicatorContext()}>
+      <SelectionIndicatorContext value={selectionIndicatorContext}>
         {local.render(customLabelProps(), renderValues())}
       </SelectionIndicatorContext>
     );
   }
 
   return (
-    <SelectionIndicatorContext value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext}>
       <label
         {...domProps()}
         {...cleanLabelProps()}
@@ -1090,9 +1098,9 @@ function RadioFieldImpl(props: {
     defaultClassName: "solidaria-RadioButton",
   };
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: radioAria.isSelected,
-  }));
+  };
 
   const renderValues = createMemo<RadioFieldRenderProps>(() => ({
     isSelected: radioAria.isSelected(),
@@ -1105,8 +1113,12 @@ function RadioFieldImpl(props: {
   const renderProps = useRenderProps(
     {
       children: fieldProps.children,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-RadioField",
     },
     renderValues,
@@ -1158,7 +1170,7 @@ function RadioFieldImpl(props: {
       data-invalid={dataAttr(state.isInvalid)}
       data-required={dataAttr(state.isRequired)}
     >
-      <SelectionIndicatorContext value={selectionIndicatorContext()}>
+      <SelectionIndicatorContext value={selectionIndicatorContext}>
         <InternalRadioContext value={internalContext}>
           <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
             <FieldChildren />
@@ -1219,8 +1231,12 @@ function RadioButtonImpl(props: {
   const renderProps = useRenderProps(
     {
       children: props.buttonProps.children,
-      class: props.buttonProps.class,
-      style: props.buttonProps.style,
+      get class() {
+        return props.buttonProps.class;
+      },
+      get style() {
+        return props.buttonProps.style;
+      },
       defaultClassName: ctx.defaultClassName,
     },
     renderValues,

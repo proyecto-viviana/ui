@@ -220,8 +220,12 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorArea",
     },
     renderValues,
@@ -308,8 +312,12 @@ export function ColorAreaGradient(props: ColorAreaGradientProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorArea-gradient",
     },
     renderValues,
@@ -380,8 +388,12 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorArea-thumb",
     },
     renderValues,

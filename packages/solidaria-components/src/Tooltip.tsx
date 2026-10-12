@@ -617,8 +617,12 @@ function TooltipContent(
 
   const renderProps = useRenderProps(
     {
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       get children() {
         return props.children;
       },

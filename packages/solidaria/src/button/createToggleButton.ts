@@ -12,7 +12,7 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/button/useToggleButton.ts
 
-import { Accessor, createSignal, merge as solidMergeProps } from "solid-js";
+import { Accessor, createSignal, merge as solidMergeProps, untrack } from "solid-js";
 import { createButton } from "./createButton";
 import { mergeProps } from "../utils";
 import type { AriaButtonProps, ButtonAria } from "./types";
@@ -65,14 +65,16 @@ function getSelectedValue(isSelected: Accessor<boolean> | boolean | undefined): 
  * ```
  */
 export function createToggleButton(props: AriaToggleButtonProps = {}): ToggleButtonAria {
-  // Handle controlled vs uncontrolled state
-  const isControlled = props.isSelected !== undefined;
+  // Controlled while the caller supplies `isSelected`. Read at use, like
+  // createToggleState: a read in this body would be taken once and never update.
+  const isControlled = () => props.isSelected !== undefined;
+  // The default seeds the uncontrolled state once, by definition.
   const [uncontrolledSelected, setUncontrolledSelected] = createSignal(
-    props.defaultSelected ?? false,
+    untrack(() => props.defaultSelected) ?? false,
   );
 
   const isSelected = (): boolean => {
-    if (isControlled) {
+    if (isControlled()) {
       return getSelectedValue(props.isSelected);
     }
     return uncontrolledSelected();
@@ -80,7 +82,7 @@ export function createToggleButton(props: AriaToggleButtonProps = {}): ToggleBut
 
   const toggleSelection = () => {
     const newValue = !isSelected();
-    if (!isControlled) {
+    if (!isControlled()) {
       setUncontrolledSelected(newValue);
     }
     props.onChange?.(newValue);

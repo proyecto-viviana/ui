@@ -165,8 +165,12 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ProgressBar",
     },
     renderValues,

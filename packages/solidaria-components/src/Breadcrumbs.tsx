@@ -247,8 +247,12 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Breadcrumbs",
     },
     renderValues,
@@ -514,8 +518,12 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-BreadcrumbItem",
     },
     renderValues,

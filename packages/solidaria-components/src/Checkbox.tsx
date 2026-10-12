@@ -229,8 +229,12 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-CheckboxGroup",
     },
     renderValues,
@@ -499,8 +503,12 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Checkbox",
     },
     renderValues,
@@ -941,8 +949,12 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       children: mergedProps.children,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-CheckboxField",
     },
     renderValues,
@@ -1077,8 +1089,12 @@ function CheckboxButtonImpl(props: {
   const renderProps = useRenderProps(
     {
       children: props.buttonProps.children,
-      class: props.buttonProps.class,
-      style: props.buttonProps.style,
+      get class() {
+        return props.buttonProps.class;
+      },
+      get style() {
+        return props.buttonProps.style;
+      },
       defaultClassName: ctx.defaultClassName,
     },
     renderValues,

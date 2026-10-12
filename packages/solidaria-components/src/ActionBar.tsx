@@ -171,8 +171,12 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       children: undefined,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ActionBar",
     },
     () => ({

@@ -257,8 +257,12 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorSlider",
     },
     renderValues,
@@ -405,8 +409,12 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorSlider-track",
     },
     renderValues,
@@ -479,8 +487,12 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorSlider-thumb",
     },
     renderValues,

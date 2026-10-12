@@ -786,8 +786,12 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ListBox",
     },
     renderValues,
@@ -1376,16 +1380,20 @@ function ListBoxItemElement<T>(props: ListBoxItemProps<T>): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ListBox-option",
     },
     renderValues,
   );
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: optionAria.isSelected,
-  }));
+  };
 
   const cleanOptionProps = () => {
     const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
@@ -1432,7 +1440,7 @@ function ListBoxItemElement<T>(props: ListBoxItemProps<T>): JSX.Element {
   const selectionMode = () => state.selectionMode();
 
   return (
-    <SelectionIndicatorContext value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext}>
       <div
         ref={(el) => {
           setRef(el);
@@ -1523,8 +1531,12 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-ListBox-loadMore",
     },
     () => ({ isLoading: isLoading() }),

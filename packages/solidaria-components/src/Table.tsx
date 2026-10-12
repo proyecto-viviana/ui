@@ -742,8 +742,12 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   // to avoid eager evaluation before context providers mount)
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table",
     },
     renderValues,
@@ -1013,8 +1017,12 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-header",
     },
     renderValues,
@@ -1265,8 +1273,12 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
   // Resolve render props (children rendered directly in JSX to avoid eager evaluation)
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-column",
     },
     renderValues,
@@ -1381,8 +1393,12 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-body",
     },
     renderValues,
@@ -1591,8 +1607,12 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-footer",
     },
     renderValues,
@@ -1667,8 +1687,12 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
       children:
         props.children ??
         (() => (isLoading() ? <div role="progressbar" aria-label="loading" /> : null)),
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-Table-loadMore",
     },
     () => ({ isLoading: isLoading() }),
@@ -1917,8 +1941,12 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   // Resolve render props (children rendered directly in JSX to avoid eager evaluation)
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-row",
     },
     renderValues,
@@ -2352,8 +2380,12 @@ export function TableCell(props: TableCellProps): JSX.Element {
   // Resolve render props (children rendered directly in JSX to avoid eager evaluation)
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-cell",
     },
     renderValues,
@@ -2691,8 +2723,12 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Table-columnResizer",
     },
     renderValues,

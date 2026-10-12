@@ -459,8 +459,12 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-SearchField",
     },
     renderValues,
@@ -704,8 +708,12 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-SearchField-input",
     },
     renderValues,
@@ -857,8 +865,12 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-SearchField-clear",
     },
     renderValues,

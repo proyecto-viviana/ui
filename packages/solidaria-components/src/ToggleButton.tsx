@@ -144,16 +144,20 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ToggleButton",
     },
     renderValues,
   );
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: toggleAria.isSelected,
-  }));
+  };
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -206,7 +210,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       data-disabled={dataAttr(isDisabled())}
       data-selected={dataAttr(toggleAria.isSelected())}
     >
-      <SelectionIndicatorContext value={selectionIndicatorContext()}>
+      <SelectionIndicatorContext value={selectionIndicatorContext}>
         {renderProps.renderChildrenStable()}
       </SelectionIndicatorContext>
     </button>

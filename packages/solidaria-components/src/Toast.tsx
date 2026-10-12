@@ -313,8 +313,12 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ToastRegion",
     },
     renderValues,
@@ -509,8 +513,12 @@ export function Toast(props: ToastProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Toast",
     },
     renderValues,

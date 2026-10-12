@@ -273,8 +273,12 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-RangeCalendar",
     },
     renderValues,
@@ -380,8 +384,12 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-RangeCalendar",
     },
     renderValues,
@@ -552,8 +560,12 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-RangeCalendarGrid",
     },
     renderValues,
@@ -681,8 +693,12 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-RangeCalendarCell",
     },
     renderValues,

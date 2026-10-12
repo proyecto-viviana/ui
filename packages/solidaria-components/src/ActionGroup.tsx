@@ -187,8 +187,12 @@ export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
   const renderProps = useRenderProps(
     {
       children: undefined,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ActionGroup",
     },
     () => ({

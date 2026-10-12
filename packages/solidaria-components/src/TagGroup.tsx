@@ -422,8 +422,12 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-TagList",
     },
     renderValues,
@@ -545,16 +549,20 @@ export function Tag(props: TagProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Tag",
     },
     renderValues,
   );
 
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected: () => tagAria.isSelected,
-  }));
+  };
 
   const domProps = createMemo(() => filterDOMProps(rest, { global: true }));
 
@@ -586,7 +594,7 @@ export function Tag(props: TagProps): JSX.Element {
   };
 
   return (
-    <SelectionIndicatorContext value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext}>
       <TagContext
         value={{
           get removeButtonProps() {

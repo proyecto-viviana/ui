@@ -194,8 +194,12 @@ export function StepList<T extends { key: Key; label: string }>(
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-StepList",
     },
     renderValues,

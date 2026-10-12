@@ -78,8 +78,12 @@ function DefaultDropIndicator(props: DropIndicatorProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-DropIndicator",
     },
     () => ({

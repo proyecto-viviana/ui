@@ -95,8 +95,12 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
       get children() {
         return local.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorPicker",
     },
     renderValues,

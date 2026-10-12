@@ -248,8 +248,12 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorField",
     },
     renderValues,
@@ -420,8 +424,12 @@ export function ColorFieldInput(props: ColorFieldInputProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorField-input",
     },
     renderValues,

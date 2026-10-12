@@ -193,8 +193,12 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorWheel",
     },
     renderValues,
@@ -262,8 +266,12 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorWheel-track",
     },
     renderValues,
@@ -334,8 +342,12 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-ColorWheel-thumb",
     },
     renderValues,

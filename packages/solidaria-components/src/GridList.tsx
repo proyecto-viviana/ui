@@ -627,8 +627,12 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
 
   const renderProps = useRenderProps(
     {
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-GridList",
     },
     renderValues,
@@ -1032,8 +1036,12 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-GridList-item",
     },
     renderValues,
@@ -1186,8 +1194,12 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
       get children() {
         return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
       },
-      class: props.class,
-      style: props.style,
+      get class() {
+        return props.class;
+      },
+      get style() {
+        return props.style;
+      },
       defaultClassName: "solidaria-GridList-loadMore",
     },
     () => ({ isLoading: isLoading() }),
@@ -1263,8 +1275,12 @@ export function GridListSection(props: GridListSectionProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       children: undefined,
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-GridListSection",
     },
     () => ({ hasChildren: true }),
