@@ -44,9 +44,9 @@ import { style } from "../style" with { type: "macro" };
  * that restates ink: "secondary" is part of the role's definition, not a
  * context choice.
  *
- * Faces come from the `--s2-font-family-*` bridge (display → Geist Pixel,
- * sans → Geist, code → Geist Mono); an app that bridges nothing falls back to
- * the Spectrum stacks and only the metrics of these roles apply. */
+ * Faces come from the `--s2-font-family-*` variables, which `viviana-tokens.css`
+ * binds at the root (display → Geist Pixel, sans → Geist, code → Geist Mono).
+ * An app may rebind one in a narrower scope. */
 export const typeRoles = {
   "display-xl": style({
     font: "heading-3xl",

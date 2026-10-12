@@ -846,17 +846,17 @@ export const fontFamily = {
    * the pixel face only ever appeared because the host app patched it in from
    * outside.
    *
-   * Bridged through `--s2-font-family-display` exactly like sans and code, and
-   * deliberately falling back to the SANS stack rather than to a monospace default:
-   * an app that does not bridge a display face keeps today's rendering unchanged,
-   * so adding this family regresses nothing. */
+   * Read through `--s2-font-family-display` exactly like sans and code;
+   * `viviana-tokens.css` binds all three to the register's faces at the root.
+   * Where that sheet is absent the display family falls back to the SANS stack
+   * rather than to a monospace default. */
   display: {
     default:
       "var(--s2-font-family-display, var(--s2-font-family-sans, adobe-clean-spectrum-vf)), adobe-clean-variable, adobe-clean, ui-sans-serif, system-ui, sans-serif",
     ...i18nFonts,
   },
-  // Given the same `--s2-*` runtime hook as sans/serif above, so an app can bridge
-  // its own mono face. The Glasselated register sets controls in mono, so this is
+  // Given the same `--s2-*` runtime hook as sans/serif above, so an app can rebind
+  // the mono face. The Glasselated register sets controls in mono, so this is
   // no longer a code-block-only family.
   code: 'var(--s2-font-family-code, source-code-pro), "Source Code Pro", Monaco, monospace',
 } as const;
@@ -1769,8 +1769,8 @@ export const style = createTheme({
          * title/headline/label roles on the display family and sets every h1-h4 in the
          * island to it. Routing here rather than per-component means the components
          * that already spell `font: "heading-*"` / `font: "title-*"` pick the face up
-         * from one line. Zero-regression when the app bridges no display face: the
-         * `display` family falls back to the sans stack (see fontFamily above).
+         * from one line. Without the token sheet the `display` family falls back
+         * to the sans stack (see fontFamily above).
          *
          * Deliberately NOT changed: the heading/title WEIGHTS still resolve to
          * Spectrum's tokens below, which are heavier than the register's — a separate,

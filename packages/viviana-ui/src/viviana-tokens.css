@@ -433,7 +433,8 @@
   /* ── Typography — three faces, a closed set of roles ──
      display-xl/lg/md + display/title/headline/label = Geist Pixel ·
      body/meta = Geist · micro/terminal/button = Geist Mono.
-     Faces load via font-faces.css. */
+     Faces load via font-faces.css; the block after this one binds them to the
+     `--s2-font-family-*` variables the component styles read. */
   --font-display: "Geist Pixel", ui-monospace, monospace;
   --font-ui: "Geist", -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
@@ -474,6 +475,19 @@
 :root,
 :host {
   font-variation-settings: var(--type-pixel-vs);
+}
+
+/* The component styles read their faces from `--s2-font-family-*`
+   (`style/spectrum-theme.ts`). Bind those to the register's own faces so a page
+   that loads this sheet renders Geist Pixel, Geist and Geist Mono with no rule
+   of its own. Declared once at the root, and NOT in the scheme blocks: a
+   consumer that sets one of these on a container keeps its face inside a nested
+   `[data-color-scheme]` subtree. */
+:root,
+:host {
+  --s2-font-family-display: var(--font-display);
+  --s2-font-family-sans: var(--font-ui);
+  --s2-font-family-code: var(--font-mono);
 }
 
 [data-color-scheme="light"] {
