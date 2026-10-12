@@ -414,6 +414,12 @@ const focusScopeTree = new FocusScopeTree();
  */
 let activeScope: ScopeRef = null;
 
+/**
+ * The restore target of a scope whose cleanup scheduled a restore that has not
+ * run yet. A scope that sets up in that window inherits it.
+ */
+let pendingRestoreTarget: HTMLElement | null = null;
+
 /** Whether `ancestor` is above `scope` in the focus-scope tree. */
 function isAncestorScope(ancestor: ScopeRef, scope: ScopeRef): boolean {
   let parent = focusScopeTree.getTreeNode(scope)?.parent;
@@ -534,6 +540,14 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
 
   if (props.restoreFocus && !isServer) {
     nodeToRestore = getRestorableElement(getActiveElement(document), document);
+    // A scope that replaces a leaving one sets up after the leaving scope's
+    // cleanup, when its nodes are gone and focus is on the body. Upstream
+    // renders the replacement while the leaving scope still holds focus, and
+    // `removeTreeNode` then hands it the leaving scope's restore target. Take
+    // that target here while the leaving scope's deferred restore is pending.
+    if (!nodeToRestore && pendingRestoreTarget?.isConnected) {
+      nodeToRestore = pendingRestoreTarget;
+    }
   }
 
   // Create focus manager
@@ -1167,7 +1181,12 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
         return false;
       };
 
+      pendingRestoreTarget = capturedSaved;
+
       const tryRestore = () => {
+        if (pendingRestoreTarget === capturedSaved) {
+          pendingRestoreTarget = null;
+        }
         // RAC FocusScope restores when the document's focus is the body after
         // unmount. Instant overlay unmount (no exit animation) can leave
         // activeElement on a detached dialog node instead of body; treat that
