@@ -4,7 +4,7 @@ type: task
 title: "Edit a TreeView item label in place"
 created: 2026-10-08
 parent: 24
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -30,6 +30,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Reopened bounded blur qualification: original and patched #627 controls reproduce commits-on-blur failure; prior assertion-free diagnostic proves execution only. Sole source implementer admitted at 39de9a8268b831dbece6233353f409b3713a25a3, generation 9c02d06e-921b-4663-b2c5-7deea1b57cc0. Codex fallback authorized by current conductor dispatch. Exact scope is UI rename lifecycle and existing rename test, this ticket/generated views, and conditional UI patch note. Conductor owns review, stop and commit.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Published in ui 0.8.0-rc.1; the Chromium rename proof passes 12 of 12. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -120,3 +125,26 @@ SHA256 `5e5a96fd7214878fc592aefae93d4ea752d75f554aaa6b2644763dc6010edb81`.
 The wrapper callback is not established as the cause of that failure. The full
 build, fresh whole Tree SSR/hydration and final browser qualification remain
 pending; this local result does not close the ticket or replace earlier history.
+
+## Published and browser proof — 2026-10-12
+
+Inline renaming shipped in `@proyecto-viviana/ui@0.8.0-rc.1` (Release run
+38146924038 from a2ccaf10, 2026-10-11). Release Readiness run 38145690444 ran
+the unit, SSR and hydration suites green at that SHA.
+
+The Chromium proof from 00bc8821 was run on current main:
+
+```bash
+vp exec --filter @proyecto-viviana/comparison -- playwright test -c e2e/tree-rename.playwright.config.ts
+```
+
+First run: 11 passed, 1 failed, "omitted onRename never opens an editor". The
+product was not at fault. That case loaded the page a second time with
+`?rename=off`; the fixture serves the package source unbundled, and the second
+full load in one page failed with `net::ERR_INSUFFICIENT_RESOURCES` before the
+tree rendered. Opened once at `/?rename=off`, the fixture renders its three
+rows. The case now gets its URL from the single `beforeEach` navigation and
+asserts it is in the `rename=off` page. Second run: 12 passed.
+
+Not yet proved: installed-consumer verification. VisualMode runs ui
+0.8.0-rc.0; its T5 request is checked there on rc.1.

@@ -18,7 +18,12 @@ async function open(page: Page) {
   await expect.poll(() => calls(page)).toEqual([]);
 }
 
-test.beforeEach(async ({ page }) => {
+// One navigation per page: the fixture serves the package source unbundled, and
+// a second full load in the same page exhausts Chromium's request budget
+// (net::ERR_INSUFFICIENT_RESOURCES) before the tree renders.
+const RENAME_OFF = "omitted onRename never opens an editor";
+
+test.beforeEach(async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push("pageerror: " + error.message));
   page.on("console", (message) => {
@@ -34,7 +39,7 @@ test.beforeEach(async ({ page }) => {
       window.treeRenameRejections.push(String(event.reason)),
     );
   });
-  await page.goto("/");
+  await page.goto(testInfo.title === RENAME_OFF ? "/?rename=off" : "/");
   await expect(row(page)).toBeVisible();
 });
 test.afterEach(async ({ page }, testInfo) => {
@@ -253,9 +258,8 @@ test("real typing and arrows stay in editor, not tree typeahead", async ({ page 
   expect(await calls(page)).toEqual([]);
 });
 
-test("omitted onRename never opens an editor", async ({ page }) => {
-  await page.goto("/?rename=off");
-  await expect(row(page)).toBeVisible();
+test(RENAME_OFF, async ({ page }) => {
+  expect(new URL(page.url()).searchParams.get("rename")).toBe("off");
   await row(page).focus();
   await page.keyboard.press("F2");
   await label(page).dblclick();
