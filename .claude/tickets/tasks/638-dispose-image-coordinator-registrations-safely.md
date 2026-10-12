@@ -5,7 +5,7 @@ title: "Dispose Image coordinator registrations safely"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-10-08, note: "Owner added Visualmode D23." }
   - {
@@ -17,6 +17,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Admitted a bounded Solid dev cleanup slice after #632 source acceptance at 36bf8476; native and release qualification stay open.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in bc1dd87b; published in solid-spectrum@0.8.0-rc.1 and ui@0.8.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -347,3 +352,13 @@ observation, with no helper repair or rejection suppression. Full candidate,
 certification, installed-consumer and release proof remain open; #638 stays
 in-progress. Acceptance receipts are under `/tmp/ui-638-source-evidence/` and
 `/tmp/ui-638-source-conductor-verification-2026-10-08.json`.
+
+## Published — 2026-10-12
+
+Landed in bc1dd87b. Fixing release: `@proyecto-viviana/solid-spectrum@0.8.0-rc.1` and `@proyecto-viviana/ui@0.8.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode checks D23 on the installed rc.1.

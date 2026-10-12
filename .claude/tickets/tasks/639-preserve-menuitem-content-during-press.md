@@ -5,7 +5,7 @@ title: "Preserve MenuItem content during press"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-10-08, note: "Owner added Visualmode D24." }
   - {
@@ -17,6 +17,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Admit three owning suites and delegated native target proof after accepted #557; repair only a reproduced current-source owner.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in 92f58d3b; regression proof only, no package change needed. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -153,3 +158,15 @@ release and installed-consumer qualification, plus separate #632 Escape
 focus debt, remain open. Acceptance receipts are
 `/tmp/ui-639-conductor-verification-2026-10-08.json` and
 `/tmp/ui-639-owned-stop-2026-10-08.json`.
+
+## Published — 2026-10-12
+
+Landed in 92f58d3b, which changes no package: current source already kept
+the label, and the commit adds the regression proof. The rc.1 packages were
+published from a2ccaf10, which contains it (Release run 38146924038,
+2026-10-11); Release Readiness run 38145690444 ran this ticket's owning tests
+green at that SHA, and they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode checks D24 on the installed rc.1.

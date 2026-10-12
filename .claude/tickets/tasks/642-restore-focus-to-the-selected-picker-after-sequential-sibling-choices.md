@@ -4,7 +4,7 @@ type: task
 title: "Restore focus to the selected Picker after sequential sibling choices"
 created: 2026-10-09
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-10-09,
       note: "Root accepted bounded owning repair, compiler gate and native 64/64 replay. Final documentation sealed for independent integration review; installed consumer qualification remains outstanding.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in ed4262bb; published in ui@0.8.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -411,3 +416,13 @@ finalized. Canonical final file/input/evidence manifests, actual fresh final.dif
 handoff and seal are under `/tmp/ui-642-popup-20261009-*`; prior exact metadata
 and stale diff remain in `-finalization-history-2026-10-09/`. Root alone verifies,
 archives, owned-stops the registered generation and integrates. No commit.
+
+## Published — 2026-10-12
+
+Landed in ed4262bb. Fixing release: `@proyecto-viviana/ui@0.8.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode replays the consumer10248 Face, Align and Direction sequence on the installed rc.1.

@@ -5,7 +5,7 @@ title: "Report a ColorField commit once"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -21,6 +21,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Bounded source worker launched; commit regressions and exact-base controls in progress. Native and release qualification remains conductor-owned.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in d2d0045c; published in solid-stately@0.6.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -143,3 +148,13 @@ integration. Accept this stately source and its regression coverage for a
 scoped normal-hooks commit. The 24 inherited type diagnostics and ecosystem
 audit failures remain recorded; native, independent twin, installed candidate
 and release verification remain open. Ticket stays in-progress.
+
+## Published — 2026-10-12
+
+Landed in d2d0045c. Fixing release: `@proyecto-viviana/solid-stately@0.6.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode checks D22 on the installed rc.1.

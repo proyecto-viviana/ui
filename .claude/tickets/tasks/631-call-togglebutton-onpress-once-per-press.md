@@ -5,7 +5,7 @@ title: "Call ToggleButton onPress once per press"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -31,6 +31,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Recovery after the owned runtime and earlier proof logs were lost. The worktree hook was still the inherited DOM mergeProps chain. Focused vp test run of the three owning test files failed 7 and passed 83 (90) against that hook, then passed 90/90 after Solid merge last-wins onPress. Root typecheck still exits 2 with 27 inherited errors and none in this hook. Awaiting release. Full candidate, SSR, browser, publish, and Visualmode install were not run. No commit.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in dc990b1c; published in solidaria@0.6.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -64,3 +69,13 @@ Producer for Visualmode #10156. Source request in the hub:
 visualmode/visualmode/.agents/ui-requests-2026-10-07/D17-togglebutton-calls-onpress-twice.md.
 The Layers dock temporarily uses ActionButton with aria-pressed (b7c5fd0e4).
 Patch Changeset in the owning package; rollback stays within button behavior.
+
+## Published — 2026-10-12
+
+Landed in dc990b1c. Fixing release: `@proyecto-viviana/solidaria@0.6.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode #10156: the Layers dock can go back from ActionButton with `aria-pressed` to ToggleButton.

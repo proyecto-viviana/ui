@@ -5,7 +5,7 @@ title: "Deliver a child Button press to FileTrigger"
 created: 2026-10-08
 parent: 31
 priority: high
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -21,6 +21,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Admit bounded FileTrigger composition after accepted Image repair f7a9bcad; native and release qualification remain open.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in 5c92a796; published in solidaria-components@0.7.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -340,3 +345,13 @@ error/rejection arrays are empty; existing dev warnings remain. The original
 31/1 result remains a diagnostic checkpoint, superseded by the repaired run.
 The ticket stays in progress pending candidate gates, installed-consumer
 verification and actual fixing-version reporting. No release is claimed.
+
+## Published — 2026-10-12
+
+Landed in 5c92a796. Fixing release: `@proyecto-viviana/solidaria-components@0.7.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode checks D21 on the installed rc.1.

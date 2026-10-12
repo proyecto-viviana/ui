@@ -5,7 +5,7 @@ title: "Report one Picker choice once"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -36,6 +36,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Replacement generation ui-635-final-20261008 removes the whole SelectOption onClick fallback, including multiple mode. Refused multiple clicks and virtual clicks assert one request after the turn settles. Awaiting conductor review.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in 7ea13b0d; published in solid-stately@0.6.0-rc.1 and solidaria-components@0.7.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -141,3 +146,13 @@ Receipt: `/tmp/ui-635-worker-result-2026-10-08.md`; old-source logs
 `/tmp/ui-635-control-state.log` and `/tmp/ui-635-control-component.log`;
 final tests `/tmp/ui-635-final-tests.log`. Candidate certification, native
 qualification, publication and installed-consumer proof remain outstanding.
+
+## Published — 2026-10-12
+
+Landed in 7ea13b0d. Fixing release: `@proyecto-viviana/solid-stately@0.6.0-rc.1` and `@proyecto-viviana/solidaria-components@0.7.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode #10162 and #10163: `CanvasEntryChoiceField` can stop dropping duplicate reports.

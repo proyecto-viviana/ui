@@ -5,7 +5,7 @@ title: "Restore a controlled toggle after a refused change"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -26,6 +26,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "createToggle restores input.checked from state.isSelected() after setSelected when the browser flip disagrees. Focused suites 229/229. Release, browser, and publish still open.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Landed in 0e5f6714; published in solidaria@0.6.0-rc.1. VisualMode still runs rc.0, so installed-consumer verification is open.",
     }
 ---
 
@@ -77,3 +82,13 @@ Source: `packages/solidaria/src/toggle/createToggle.ts`. Regression paths:
 `packages/viviana-ui/test/Switch.test.tsx`. This ticket, generated status and
 roadmap, `.changeset/controlled-toggle-dom-restoration.md`, and
 `/tmp/ui-634-*` evidence are also admitted. No other source paths.
+
+## Published — 2026-10-12
+
+Landed in 0e5f6714. Fixing release: `@proyecto-viviana/solidaria@0.6.0-rc.1`. Release run 38146924038 published them from a2ccaf10 on 2026-10-11; Release
+Readiness run 38145690444 ran this ticket's owning tests green at that SHA, and
+they pass again in the full local suite on 2026-10-12.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+solidaria 0.6.0-rc.0, solidaria-components 0.7.0-rc.0 and ui 0.8.0-rc.0.
+VisualMode #10161: `CanvasEntryPropertyField.tsx` can stop restoring the input itself.
