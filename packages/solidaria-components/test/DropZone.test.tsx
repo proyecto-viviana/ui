@@ -136,6 +136,29 @@ describe("DropZone", () => {
     expect(button).toBeDisabled();
   });
 
+  // D26: `isDisabled` exists on the headless DropZone and isolates it (#641).
+  it("ignores a drop and a paste while disabled", () => {
+    const onDrop = vi.fn();
+    const onDropEnter = vi.fn();
+    render(() => (
+      <DropZone isDisabled onDrop={onDrop} onDropEnter={onDropEnter}>
+        Drop files
+      </DropZone>
+    ));
+    const zone = document.querySelector(".solidaria-DropZone") as HTMLDivElement;
+    const dataTransfer = createDataTransferStub();
+
+    dispatchDragEvent(zone, "dragenter", dataTransfer, 10, 12);
+    fireEvent.drop(zone, { dataTransfer });
+    fireEvent.paste(screen.getByRole("button", { name: "DropZone" }), {
+      clipboardData: createClipboardDataStub("pasted text"),
+    });
+    flush();
+
+    expect(onDropEnter).not.toHaveBeenCalled();
+    expect(onDrop).not.toHaveBeenCalled();
+  });
+
   it("maps hidden button paste to onDrop copy events", () => {
     const onDrop = vi.fn();
     render(() => <DropZone onDrop={onDrop}>Drop files</DropZone>);

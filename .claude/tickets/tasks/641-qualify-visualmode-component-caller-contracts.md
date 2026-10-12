@@ -5,7 +5,7 @@ title: "Qualify Visualmode component caller contracts"
 created: 2026-10-08
 parent: 24
 priority: high
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-10-08, note: "Owner added Visualmode D26." }
   - {
@@ -17,6 +17,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Card regressions reproduce standalone tabindex loss; lower Link/focus merge needs separate admission. No source repair retained.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Every D26 allegation has a disposition. Card and AlertDialog repairs shipped in solid-spectrum and ui 0.8.0-rc.1; diagnostics moved to #651, extension choices to #653. VisualMode has not installed rc.1 yet.",
     }
 ---
 
@@ -343,3 +348,41 @@ The two styled packages have a patch Changeset. No lower changeset, commit,
 push, native/build/browser, release or full-reactivity certification. #641 stays
 open; conductor owns acceptance and exact-generation stop. Final r2 handoff:
 `/tmp/ui-641-dialog-r2-worker-result-2026-10-08.md`.
+
+## Dispositions — 2026-10-12
+
+| D26 allegation                                                  | Finding                                                                                        | Where it stands                                          |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `Card` declares `tabindex`, drops it                            | Parity gap, repaired (48af500b)                                                                | solid-spectrum and ui 0.8.0-rc.1, solidaria 0.6.0-rc.1   |
+| `AlertDialog` takes no `data-*` attribute                       | Parity gap, repaired (d8b607fe)                                                                | solid-spectrum and ui 0.8.0-rc.1                         |
+| `Picker` cannot tell its parent it is open                      | Not a defect: `onOpenChange` exists                                                            | Proved below                                             |
+| `DropZone` has no `isDisabled`                                  | Headless DropZone has it; pinned S2 DropZone omits it (`Omit<…, 'isDisabled'>`)                | Headless proved below; styled prop is an extension, #653 |
+| `DropZone` padding fixed at 24                                  | Matches pinned S2                                                                              | Extension, #653                                          |
+| `ButtonProps` does not declare `title`                          | Matches pinned S2: `ButtonProps` omits `keyof GlobalDOMAttributes` and RAC declares no `title` | Extension, #653                                          |
+| A Card outside a CardView requires `id`, has no selected state  | Matches pinned S2                                                                              | Extension, #653                                          |
+| `AlertDialog` closes before its primary action runs             | Matches pinned S2                                                                              | Extension, #653                                          |
+| `Button`, `Dialog`, `DialogTrigger` log `STRICT_READ_UNTRACKED` | Reproduced on main with stacks                                                                 | #651                                                     |
+
+Proof added with this entry:
+
+- `packages/solid-spectrum/test/Picker.test.tsx` and
+  `packages/viviana-ui/test/Picker.test.tsx`, "reports each open and close once
+  to onOpenChange": click opens with `[true]`, Escape closes with `[false]`,
+  a second open and a choice add `[true]`, `[false]`. Four calls, in order.
+- `packages/solidaria-components/test/DropZone.test.tsx`, "ignores a drop and a
+  paste while disabled": the drag enter, drop and paste that reach `onDropEnter`
+  and `onDrop` in the neighbouring enabled cases reach neither.
+
+```bash
+vp test run packages/solid-spectrum/test/Picker.test.tsx packages/viviana-ui/test/Picker.test.tsx packages/solidaria-components/test/DropZone.test.tsx
+```
+
+Writing the Picker case found a separate defect: a Picker with static
+`PickerItem` children and no `items` does not open. That is #652.
+
+D26's own "Upstream" paragraph says S2 declares `isDisabled` on DropZone. The
+pin does not.
+
+Not yet proved: installed-consumer verification. VisualMode runs
+0.8.0-rc.0; its stand-ins in `src/app/assets/` and `src/app/canvas/` stay until
+it installs rc.1 (#10151, #10153, #10154).

@@ -26,6 +26,37 @@ const sections: SectionItem[] = [
 ];
 
 describe("Picker (solid-spectrum)", () => {
+  // D26: the Picker tells its parent when its options open and close (#641).
+  it("reports each open and close once to onOpenChange", async () => {
+    const user = setupUser();
+    const onOpenChange = vi.fn();
+    const modes = [
+      { id: "normal", label: "Normal" },
+      { id: "multiply", label: "Multiply" },
+    ];
+    render(() => (
+      <Picker aria-label="Blend mode" items={modes} onOpenChange={onOpenChange}>
+        {(mode) => <PickerItem id={mode.id}>{mode.label}</PickerItem>}
+      </Picker>
+    ));
+    const trigger = screen.getByRole("button", { name: /Blend mode/ });
+
+    await user.click(trigger);
+    const listbox = await screen.findByRole("listbox");
+    expect(onOpenChange.mock.calls).toEqual([[true]]);
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(listbox).not.toBeInTheDocument());
+    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+
+    await user.click(trigger);
+    await user.click(
+      within(await screen.findByRole("listbox")).getByRole("option", { name: "Multiply" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onOpenChange.mock.calls).toEqual([[true], [false], [true], [false]]);
+  });
+
   it("uses getKey for generated options from object-backed items", async () => {
     const user = setupUser();
     const onChange = vi.fn();
