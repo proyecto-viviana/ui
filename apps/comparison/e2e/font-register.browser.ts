@@ -1,8 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 
 // #649: a page that loads only @proyecto-viviana/ui's components.css and writes
-// no font rule of its own must render the Geist register, and must not reach
-// for the Spectrum faces the same sheet declares.
+// no font rule of its own must render the Geist register, and the sheet must
+// neither declare nor reach for a Spectrum face.
 
 const spectrumFace = /^(adobe-clean|source-code-pro)/;
 
@@ -34,22 +34,12 @@ test("components.css alone renders Geist Pixel, Geist and Geist Mono", async ({ 
   expect(await leadingFamily(page, "text")).toBe("Geist");
   expect(await leadingFamily(page, "button")).toBe("Geist Mono");
 
-  // The sheet declares the Spectrum faces; a face is fetched only when a
-  // rendered stack reaches it. None may leave the unloaded state.
-  const reached = await page.evaluate(() =>
-    [...document.fonts]
-      .filter((face) => face.status !== "unloaded")
-      .map((face) => face.family.replace(/"/g, "")),
-  );
-  expect(reached.filter((family) => spectrumFace.test(family))).toEqual([]);
-  expect(typekit).toEqual([]);
-
-  // The declared faces are present, so the assertion above is not vacuous.
+  // The sheet declares no Spectrum face and reaches none.
   const declared = await page.evaluate(() =>
     [...document.fonts].map((face) => face.family.replace(/"/g, "")),
   );
-  expect(declared).toContain("adobe-clean-spectrum-vf");
-  expect(declared).toContain("source-code-pro");
+  expect(declared.filter((family) => spectrumFace.test(family))).toEqual([]);
+  expect(typekit).toEqual([]);
 });
 
 test("a narrower --s2-font-family-sans wins, also inside a nested scheme", async ({ page }) => {

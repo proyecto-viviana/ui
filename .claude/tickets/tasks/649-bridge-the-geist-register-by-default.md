@@ -46,9 +46,9 @@ writing a rule. A consumer may still override the variables in a narrower
 scope, as VisualMode's editor frame does with Geist Mono. `solid-spectrum`
 keeps the Spectrum stacks.
 
-Decide with the owner whether the Adobe Clean `@font-face` blocks stay in
-`@proyecto-viviana/ui`'s `font-faces.css` once no style of the package can
-reach them; #633 covers the entry without font faces.
+The Adobe Clean and Source Code Pro `@font-face` blocks leave
+`@proyecto-viviana/ui`'s `font-faces.css` (owner, 2026-10-12); #633 covers the
+entry without font faces.
 
 ## Done when
 
@@ -81,8 +81,8 @@ vp exec --filter @proyecto-viviana/comparison -- playwright test -c e2e/font-reg
 - Before the change both tests fail: Heading, Text and Button compute
   `adobe-clean-spectrum-vf`.
 - After it both pass. Heading computes Geist Pixel, Text Geist, Button Geist
-  Mono; no `adobe-clean-*` or `source-code-pro` face leaves the `unloaded`
-  state, although the sheet declares them; no request goes to `typekit.net`.
+  Mono; the page declares no `adobe-clean-*` or `source-code-pro` face; no
+  request goes to `typekit.net`.
 - A container that sets `--s2-font-family-sans` computes its own face, also
   inside a nested `<Provider colorScheme="dark">`. With the binding moved into
   the dark scheme block that assertion fails with `Geist`.
@@ -91,19 +91,16 @@ Not yet proved: the last `Done when` clause. VisualMode removes the `:root`
 rule in `src/styles/design-system.css` once it installs the RC that carries
 this change, and checks its admin routes there.
 
-## Open for the owner
+## Adobe faces
 
-Whether the Adobe Clean and Source Code Pro `@font-face` blocks stay in
-`font-faces.css`. Recommendation: remove them, in the same RC. After this
-change the sans, display and code stacks never reach them. Two stacks of the
-package still name Adobe faces: `serif` (`adobe-clean-spectrum-srf-vf`) and
-the `:lang(ar)` and `:lang(he)` stacks (`adobe-clean-arabic`,
-`adobe-clean-hebrew`); with the blocks gone those fall to the system faces
-already listed after them. Removal also ends every `use.typekit.net` request
-from this package, which leaves `components-no-fonts.css` (#633) differing
-from `components.css` by the Geist import alone. It needs one edit beside the
-sheet: the `ui` `full-fonts` case in `scripts/consume-pack-smoke.mjs` asserts a
-Typekit font attempt and would assert the Google Fonts import instead.
+Owner, 2026-10-12: remove them. `font-faces.css` now holds the Geist import
+alone; the Adobe Clean and Source Code Pro `@font-face` blocks are gone, and
+`solid-spectrum` keeps its own. The `serif`, `:lang(ar)` and `:lang(he)`
+stacks still name Adobe faces and fall to the system faces listed after them.
+The `ui` cases of `scripts/consume-pack-smoke.mjs` now require the Google
+Fonts import and refuse any `use.typekit.net` reference or request, and the
+browser proof asserts that the page declares no `adobe-clean-*` or
+`source-code-pro` face.
 
 `apps/web/src/styles/glasselated.css` still sets the three variables under
 `[data-glasselated]`. The rule is now redundant; the file belongs to the

@@ -635,10 +635,22 @@ for (const pkg of styled) {
     full.files.some((file) => file.path.endsWith("/font-faces.css")),
     `${pkg.name} full entry lost font faces`,
   );
-  insist(
-    full.external.some((url) => new URL(url).hostname === "use.typekit.net"),
-    `${pkg.name} full entry lost Adobe URLs`,
-  );
+  // Adobe Clean belongs to solid-spectrum. The UI register is Geist alone: its
+  // full entry reaches Google Fonts and never Typekit.
+  if (pkg.name.endsWith("/ui")) {
+    insist(
+      full.external.some((url) => new URL(url).hostname === "fonts.googleapis.com"),
+      `${pkg.name} full entry lost the Geist import`,
+    );
+    insist(
+      !full.external.some((url) => new URL(url).hostname === "use.typekit.net"),
+      `${pkg.name} full entry references Adobe URLs`,
+    );
+  } else
+    insist(
+      full.external.some((url) => new URL(url).hostname === "use.typekit.net"),
+      `${pkg.name} full entry lost Adobe URLs`,
+    );
   if (pkg.name.endsWith("/ui"))
     insist(
       noFonts.files.some((file) => file.path.endsWith("/viviana-tokens.css")),
@@ -882,13 +894,29 @@ try {
           ),
           `${testCase.name} attempted undeclared external resources: ${JSON.stringify(attempts)}`,
         );
-        insist(
-          attempts.some(
-            (item) =>
-              new URL(item.url).hostname === "use.typekit.net" && item.resourceType === "font",
-          ),
-          `${testCase.name} did not observe a Typekit font attempt`,
-        );
+        if (testCase.package.endsWith("/ui")) {
+          // The detector paragraph names an Adobe face; the UI sheet declares
+          // none, so only the Geist stylesheet import may leave the origin.
+          insist(
+            attempts.some(
+              (item) =>
+                new URL(item.url).hostname === "fonts.googleapis.com" &&
+                item.resourceType === "stylesheet",
+            ),
+            `${testCase.name} did not observe the Geist stylesheet attempt`,
+          );
+          insist(
+            !attempts.some((item) => new URL(item.url).hostname === "use.typekit.net"),
+            `${testCase.name} attempted a Typekit request: ${JSON.stringify(attempts)}`,
+          );
+        } else
+          insist(
+            attempts.some(
+              (item) =>
+                new URL(item.url).hostname === "use.typekit.net" && item.resourceType === "font",
+            ),
+            `${testCase.name} did not observe a Typekit font attempt`,
+          );
       } else
         insist(
           attempts.length === 0,
