@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { Content, InlineAlert } from "../src";
 
 function root(): HTMLDivElement {
@@ -10,16 +11,15 @@ function root(): HTMLDivElement {
 }
 
 describe("InlineAlert (viviana-ui)", () => {
-  // Pinned S2 InlineAlert.tsx spreads `filterDOMProps(props)` with no options and
-  // then writes `role="alert"`: id and data attributes reach the root, while a
-  // caller role, label or live-region attribute does not (#640).
-  it("keeps the alert role and drops a caller role, label and live region", () => {
+  // Like pinned S2, the root is an alert unless told otherwise, and the default
+  // DOM filter passes id and data attributes but no label or live-region
+  // attribute (#640).
+  it("is an alert by default and drops a caller label and live region", () => {
     render(() => (
       <InlineAlert
         id="backup-notice"
         data-testid="inline-alert-root"
         data-kind="backup"
-        role="status"
         aria-label="Backup"
         aria-live="polite"
       >
@@ -33,5 +33,24 @@ describe("InlineAlert (viviana-ui)", () => {
     expect(root()).not.toHaveAttribute("aria-live");
     expect(root()).toHaveAttribute("id", "backup-notice");
     expect(root()).toHaveAttribute("data-kind", "backup");
+  });
+
+  // Beyond S2 (#650): a notice that must not interrupt.
+  it("takes the status role and follows it when it changes", () => {
+    const [role, setRole] = createSignal<"alert" | "status">("status");
+    render(() => (
+      <InlineAlert data-testid="inline-alert-root" role={role()}>
+        <Content>Backup saved.</Content>
+      </InlineAlert>
+    ));
+
+    expect(screen.getByRole("status")).toBe(root());
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+    setRole("alert");
+    flush();
+
+    expect(screen.getByRole("alert")).toBe(root());
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

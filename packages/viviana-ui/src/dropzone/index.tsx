@@ -42,18 +42,15 @@ export type DropZoneSize = "S" | "M" | "L";
 
 export interface DropZoneProps extends Omit<
   HeadlessDropZoneProps,
-  | "class"
-  | "style"
-  | "children"
-  | "isDisabled"
-  | "onHoverStart"
-  | "onHoverEnd"
-  | "onHoverChange"
-  | "slot"
-  | "ref"
+  "class" | "style" | "children" | "onHoverStart" | "onHoverEnd" | "onHoverChange" | "slot" | "ref"
 > {
   /** The content to display in the DropZone. */
   children: JSX.Element;
+  /**
+   * Whether the DropZone refuses drops and pastes. Beyond S2, whose DropZone
+   * omits it; the headless DropZone implements it.
+   */
+  isDisabled?: boolean;
   /** Whether the DropZone already contains a file. Shows the replace message while dragging. */
   isFilled?: boolean;
   /**

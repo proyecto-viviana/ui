@@ -78,8 +78,14 @@ interface InlineAlertStyleProps {
 
 export interface InlineAlertProps extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
-  "children" | "class" | "style" | "ref" | "slot"
+  "children" | "class" | "style" | "ref" | "slot" | "role"
 > {
+  /**
+   * How assistive technology announces the notice. `alert` interrupts;
+   * `status` waits for a pause. Beyond S2, whose InlineAlert is always `alert`.
+   * @default 'alert'
+   */
+  role?: "alert" | "status";
   /** The contents of the InlineAlert. */
   children?: JSX.Element;
   /** Whether to automatically focus the InlineAlert when it first renders. */
@@ -309,6 +315,7 @@ export function InlineAlert(props: InlineAlertProps): JSX.Element {
   const merged = mergeProps<InlineAlertProps>(contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "children",
+    "role",
     "autoFocus",
     "variant",
     "fillStyle",
@@ -370,7 +377,7 @@ export function InlineAlert(props: InlineAlertProps): JSX.Element {
       ref={setRootRef}
       tabindex={autoFocus() ? -1 : undefined}
       autofocus={autoFocus() || undefined}
-      role="alert"
+      role={local.role === "status" ? "status" : "alert"}
       class={className()}
       style={mergedUnsafeStyle()}
     >

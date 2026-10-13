@@ -4,12 +4,17 @@ type: task
 title: "Decide the D26 extensions past S2"
 created: 2026-10-12
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-10-12,
       note: "Follow-up of #641: five VisualMode D26 requests match pinned S2 and need an owner choice before any public name exists.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Owner took every recommendation: the ui DropZone declares isDisabled, the other four requests are declined.",
     }
 ---
 
@@ -45,3 +50,23 @@ new prop in the styled package that gains it, and a patch Changeset.
 Child of #24. Follow-up of #641. Producer for VisualMode #10151, #10153 and
 #10154. Request:
 `visualmode/visualmode/.agents/ui-requests-2026-10-07/D26-button-card-dropzone-and-alertdialog-lack-caller-props.md`.
+
+## Owner answers — 2026-10-12
+
+| Request                                               | Answer                                                                       | What VisualMode uses               |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------- |
+| Styled `DropZone` takes `isDisabled`                  | Accepted, `@proyecto-viviana/ui` only                                        | `<DropZone isDisabled>`            |
+| `DropZone` padding other than 24                      | Declined: S2 fixes it, and one-off spacing is what `styles` is for           | The `styles` prop                  |
+| `Button` declares `title`                             | Declined: S2 omits it and a `title` is not announced reliably                | `TooltipTrigger` around the Button |
+| `AlertDialog` stays open until its action settles     | Declined: S2 closes first, and a confirm that shows a result is not an alert | A `Dialog` with its own buttons    |
+| Standalone `Card` without `id`, with a selected state | Declined: selection has no keyboard model outside a collection               | A Card inside a `CardView`         |
+
+The ui DropZone already forwarded the prop at run time; its type omitted it.
+`packages/viviana-ui/src/dropzone/index.tsx` now declares `isDisabled`.
+`packages/viviana-ui/test/DropZone.test.tsx`: a disabled DropZone has a
+disabled hidden button and ignores a drop, and takes the drop once its signal
+enables it. Patch Changeset `.changeset/ui-dropzone-is-disabled.md`.
+
+```bash
+vp test run packages/viviana-ui/test/DropZone.test.tsx
+```

@@ -4,12 +4,17 @@ type: task
 title: "Decide a status role for InlineAlert"
 created: 2026-10-12
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-10-12,
       note: "Follow-up of #640: VisualMode D25 asks for a notice that does not interrupt; needs an owner decision on a public name.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Owner chose 1: role alert or status on the ui InlineAlert only. Verification waits on VisualMode replacing its two plain panels.",
     }
 ---
 
@@ -54,3 +59,21 @@ Changeset for that package.
 Child of #24. Follow-up of #640. Producer for VisualMode #10153 and #10226.
 Request:
 `visualmode/visualmode/.agents/ui-requests-2026-10-07/D25-inlinealert-takes-only-the-role-alert.md`.
+
+## Decision and proof — 2026-10-12
+
+Owner: choice 1. `packages/viviana-ui/src/inlinealert/index.tsx` declares
+`role?: "alert" | "status"` and writes `status` only for that value, so any
+other role still renders `alert`. `solid-spectrum` is unchanged and keeps the
+#640 fixed-role case.
+
+`packages/viviana-ui/test/InlineAlert.test.tsx`, two cases: the default is an
+alert that drops a caller label and live region; `role="status"` is found by
+`getByRole("status")` and not by `alert`, and follows a signal back to
+`alert`. The second case fails on the source before this change.
+
+```bash
+vp test run packages/viviana-ui/test/InlineAlert.test.tsx
+```
+
+Patch Changeset `.changeset/ui-inlinealert-status-role.md`.
