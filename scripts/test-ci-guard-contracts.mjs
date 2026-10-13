@@ -1601,22 +1601,24 @@ try {
   const reviewedLocalPath = path.join(mappingFixture, "packages/solidaria/src/local/index.ts");
   writeFileSync(reviewedLocalPath, reviewedLocalSource);
   const reviewedSolidHelperSource = "export function access(value) { return value; }\n";
-  writeFileSync(
-    path.join(mappingFixture, "packages/solid-stately/src/utils/reactivity.ts"),
-    reviewedSolidHelperSource,
+  const reviewedSolidHelperPath = path.join(
+    mappingFixture,
+    "packages/solid-stately/src/utils/reactivity.ts",
   );
-  json(path.join(mappingFixture, "scripts", "attribution-local-reviews.json"), [
+  writeFileSync(reviewedSolidHelperPath, reviewedSolidHelperSource);
+  const localReviewsPath = path.join(mappingFixture, "scripts", "attribution-local-reviews.json");
+  const localReviews = [
     {
       localPath: "packages/solidaria/src/local/index.ts",
       classification: "local-module-surface",
-      contentSha256: createHash("sha256").update(reviewedLocalSource).digest("hex"),
     },
     {
       localPath: "packages/solid-stately/src/utils/reactivity.ts",
       classification: "local-solid-helper",
       contentSha256: createHash("sha256").update(reviewedSolidHelperSource).digest("hex"),
     },
-  ]);
+  ];
+  json(localReviewsPath, localReviews);
 
   for (const locale of ["en-US", "fr-FR"]) {
     writeFileSync(
@@ -1793,7 +1795,7 @@ try {
       reviewedLocal.reviewRequired === false &&
       reviewedLocal.localReview?.status === "satisfied" &&
       mappingReport.summary.localReviews.statuses.satisfied === 2,
-    "reviewed local module surface did not retain its content contract",
+    "reviewed local module surface did not satisfy its import-and-export contract",
   );
   const reviewedSolidHelper = mappingByPath.get("packages/solid-stately/src/utils/reactivity.ts");
   assert(
@@ -1937,19 +1939,70 @@ try {
     completeHeaders.status === 0,
     `completed exact-source headers failed:\n${combined(completeHeaders)}`,
   );
-  writeFileSync(reviewedLocalPath, `${reviewedLocalSource}export const behavior = true;\n`);
-  const contradictedLocalReview = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
-    "--check-headers",
+  // #657: a module surface is held by what it may contain. A new export needs
+  // no record edit; anything that can carry an implementation is refused.
+  const checkLocalReviews = () =>
+    runSync("report-attribution-mappings.mjs", mappingFixture, {}, ["--check-headers"]);
+  writeFileSync(
+    reviewedLocalPath,
+    `// A second export.\nimport type { Other } from './other';\n${reviewedLocalSource}export { otherValue, type Other } from './other';\nexport * from './rest';\n`,
+  );
+  const widenedModuleSurface = checkLocalReviews();
+  assert(
+    widenedModuleSurface.status === 0,
+    `a module surface that gained an export failed:\n${combined(widenedModuleSurface)}`,
+  );
+  for (const statement of [
+    "export function behavior() { return true; }",
+    "export const behavior = true;",
+    "export default () => true;",
+    "export type Behavior = { on: boolean };",
+    "sideEffect();",
+  ]) {
+    writeFileSync(reviewedLocalPath, `${reviewedLocalSource}${statement}\n`);
+    const notModuleSurface = checkLocalReviews();
+    assert(
+      notModuleSurface.status !== 0 &&
+        combined(notModuleSurface).includes(
+          `[not-module-surface] packages/solidaria/src/local/index.ts:2 holds \`${statement}\``,
+        ),
+      `a module surface holding \`${statement}\` was accepted:\n${combined(notModuleSurface)}`,
+    );
+  }
+  writeFileSync(
+    reviewedLocalPath,
+    `// Based on @react-aria/focus useFocusRing.\n${reviewedLocalSource}`,
+  );
+  const markedModuleSurface = checkLocalReviews();
+  assert(
+    markedModuleSurface.status !== 0 &&
+      combined(markedModuleSurface).includes("packages/solidaria/src/local/index.ts"),
+    "a module surface that gained a source marker was accepted",
+  );
+  writeFileSync(reviewedLocalPath, reviewedLocalSource);
+  json(localReviewsPath, [
+    { ...localReviews[0], contentSha256: createHash("sha256").update("x").digest("hex") },
+    localReviews[1],
   ]);
+  const hashedModuleSurface = checkLocalReviews();
+  assert(
+    hashedModuleSurface.status !== 0 &&
+      combined(hashedModuleSurface).includes("must not carry a content hash"),
+    "a module surface record carrying an unchecked content hash was accepted",
+  );
+  json(localReviewsPath, localReviews);
+  console.log("PASS: a local module surface accepts new exports and rejects any other statement.");
+  writeFileSync(reviewedSolidHelperPath, `${reviewedSolidHelperSource}export const more = true;\n`);
+  const contradictedLocalReview = checkLocalReviews();
   assert(
     contradictedLocalReview.status !== 0 &&
       combined(contradictedLocalReview).includes(
-        "[mismatch] packages/solidaria/src/local/index.ts",
+        "[mismatch] packages/solid-stately/src/utils/reactivity.ts",
       ),
-    "reviewed local source accepted content drift",
+    "reviewed local helper accepted content drift",
   );
-  writeFileSync(reviewedLocalPath, reviewedLocalSource);
-  console.log("PASS: reviewed local source rejects content drift.");
+  writeFileSync(reviewedSolidHelperPath, reviewedSolidHelperSource);
+  console.log("PASS: a reviewed local helper rejects content drift.");
   json(compositeReviewPath, [
     {
       ...reviewedDisclosure,

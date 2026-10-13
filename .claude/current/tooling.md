@@ -105,21 +105,37 @@ gets a source-path line, not an invented Adobe block. Add a record only after
 you read every listed pinned source.
 
 Reviewed local source is recorded in `scripts/attribution-local-reviews.json`.
-Each record fixes the local path, classification, and reviewed content hash.
+Each record fixes the local path and its classification. The two
+classifications are held differently, by what can go wrong in each (#657).
+
 `local-module-surface` files organize exports; the exported implementations own
-their source mappings. `local-solid-helper` records individually reviewed
-original Solid composition or runtime glue. Referencing a derivative utility
-does not exempt that utility from its own attribution. Add or renew either
-classification only after reviewing the actual source and its provenance.
-The guard reopens review if a recorded file changes, gains a source marker,
-or gains an Adobe header.
+their source mappings. The guard holds such a file by a mechanical rule, not by
+its content: it may contain only import statements, export statements of the
+`export { … }`, `export type { … }` and `export * from` forms, and comments.
+Adding or removing an export needs no record edit. A function, a constant, a
+type alias, `export default` of an expression, or any other statement fails
+the guard as `not-module-surface`, with the line: a file that holds one is not
+a module surface, and is recorded as a helper after review. A module-surface
+record carries no content hash, and the guard refuses one.
+
+`local-solid-helper` records individually reviewed original Solid composition
+or runtime glue, with the SHA-256 of the reviewed content. The guard reopens
+review when the file changes at all. Referencing a derivative utility does not
+exempt that utility from its own attribution. Add or renew a helper record only
+after reviewing the actual source and its provenance.
+
+Either kind fails if the file gains a source marker or an Adobe header.
 
 `guard:attribution-headers` checks confirmed headers for exact and reviewed
-composite mappings. It also checks content contracts for reviewed local files.
+composite mappings. It also checks the contracts above for reviewed local files.
 `sync:attribution-headers` copies the exact
 full Adobe blocks and adds the exact upstream paths. It keeps a required
 `// @ts-nocheck` directive first. It does not change unreviewed ambiguous,
 generated, or unmapped files. Run the guard after the sync.
+
+`vp run ci:release-readiness` runs `guard:attribution-headers` and
+`guard:api-reference` after `guard:attribution`, so a change that would fail
+either on the hosted Certification Gates run fails locally first.
 
 Package builds copy each confirmed source header into emitted chunks.
 `guard:package-artifacts` uses source maps to check every mapped JS and JSX

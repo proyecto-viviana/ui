@@ -67,8 +67,7 @@
       "leg": "test:hydrate"
     },
     "certification-gates / guard attribution-headers": {
-      "leg": null,
-      "why": "guard:attribution-headers runs in Certification Gates, outside ci:release-readiness."
+      "leg": "guard:attribution-headers"
     },
     "certification-gates / guard rac-parity": {
       "leg": null,
@@ -122,8 +121,7 @@
       "why": "guard:examples-purity runs in Certification Gates, outside ci:release-readiness."
     },
     "certification-gates / guard api-reference": {
-      "leg": null,
-      "why": "guard:api-reference runs in Certification Gates, outside ci:release-readiness."
+      "leg": "guard:api-reference"
     },
     "certification-gates / guard outbound-links": {
       "leg": null,

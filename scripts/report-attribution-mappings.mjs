@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import ts from "typescript";
 import { comments, normalizedComment, sourceMarkers } from "./attribution-source-markers.mjs";
 
 const root = process.cwd();
@@ -217,20 +218,28 @@ for (const [index, entry] of localReviewEntries.entries()) {
     typeof entry !== "object" ||
     typeof entry.localPath !== "string" ||
     entry.localPath.length === 0 ||
-    !localReviewClassifications.has(entry.classification) ||
+    !localReviewClassifications.has(entry.classification)
+  ) {
+    fail(`${label} must contain localPath and a supported local classification`);
+  }
+  // A module surface is held by what it may contain, not by its bytes (#657),
+  // so a hash on its record would claim a pin that nothing checks.
+  if (entry.classification === "local-module-surface") {
+    if ("contentSha256" in entry) {
+      fail(`${label} is a local-module-surface and must not carry a content hash`);
+    }
+  } else if (
     typeof entry.contentSha256 !== "string" ||
     !/^[a-f0-9]{64}$/.test(entry.contentSha256)
   ) {
-    fail(
-      `${label} must contain localPath, a supported local classification, and a lowercase SHA-256 content hash`,
-    );
+    fail(`${label} must contain a lowercase SHA-256 content hash`);
   }
   if (reviewedLocalSources.has(entry.localPath)) {
     fail(`${label} repeats localPath ${entry.localPath}`);
   }
   reviewedLocalSources.set(entry.localPath, {
     classification: entry.classification,
-    contentSha256: entry.contentSha256,
+    contentSha256: entry.contentSha256 ?? null,
   });
 }
 
@@ -347,9 +356,47 @@ function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
 }
 
+/**
+ * A module surface holds only import and export statements and comments.
+ * `export function`, `export const`, a type alias, `export default <expression>`
+ * and every other statement can carry an implementation, so none of them
+ * qualifies. Returns the first statement that disqualifies the file, or null.
+ */
+function firstNonSurfaceStatement(relativePath, content) {
+  const sourceFile = ts.createSourceFile(
+    relativePath,
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    /\.[jt]sx$/.test(relativePath) ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  if (sourceFile.parseDiagnostics.length > 0) {
+    return { line: 1, text: "source that does not parse" };
+  }
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) continue;
+    return {
+      line: sourceFile.getLineAndCharacterOfPosition(statement.getStart(sourceFile)).line + 1,
+      text: statement.getText(sourceFile).split("\n")[0].slice(0, 80),
+    };
+  }
+  return null;
+}
+
 function localReviewContract(relativePath, content, status) {
   const review = reviewedLocalSources.get(relativePath);
   if (!review) return null;
+
+  if (review.classification === "local-module-surface") {
+    const offending = firstNonSurfaceStatement(relativePath, content);
+    return {
+      // A source marker or an Adobe header still reopens review, as it does
+      // for a helper: `status` is "unmarked" only without either.
+      status: status !== "unmarked" ? "mismatch" : offending ? "not-module-surface" : "satisfied",
+      classification: review.classification,
+      offending,
+    };
+  }
 
   const actualContentSha256 = sha256(content);
   return {
@@ -1010,6 +1057,9 @@ const managedLocalResults = results.filter((result) => result.localReview);
 const incompleteLocalReviews = managedLocalResults.filter(
   (result) => result.localReview.status !== "satisfied",
 );
+const managedLocalModuleSurfaces = managedLocalResults.filter(
+  (result) => result.localReview.classification === "local-module-surface",
+).length;
 
 const incompleteCompositeHeaders = managedCompositeResults.filter(
   (result) => result.compositeReview.headerContract?.status !== "satisfied",
@@ -1262,7 +1312,14 @@ if (checkHeaders) {
       );
     }
     for (const result of incompleteLocalReviews) {
-      console.error(`- [${result.localReview.status}] ${result.path}`);
+      const offending = result.localReview.offending;
+      console.error(
+        `- [${result.localReview.status}] ${result.path}${
+          result.localReview.status === "not-module-surface" && offending
+            ? `:${offending.line} holds \`${offending.text}\`; a local-module-surface holds only import and export statements and comments`
+            : ""
+        }`,
+      );
     }
     process.exit(1);
   }
@@ -1279,6 +1336,6 @@ if (checkHeaders) {
     `report:attribution-mappings — PASS: ${managedCompositeResults.length} composite headers preserve every distinct upstream block and exact source path.`,
   );
   console.log(
-    `report:attribution-mappings — PASS: ${managedLocalResults.length} reviewed local files match their recorded content.`,
+    `report:attribution-mappings — PASS: ${managedLocalModuleSurfaces} local module surfaces hold only import and export statements; ${managedLocalResults.length - managedLocalModuleSurfaces} reviewed local helpers match their recorded content.`,
   );
 }
