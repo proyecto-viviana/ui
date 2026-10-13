@@ -2635,6 +2635,35 @@ try {
     );
     console.log("PASS: the publish step names the candidate SHA for the guard inside it.");
 
+    // #659: the publish runs through `tee` so the next step can read which
+    // packages it uploaded. Without `pipefail` the pipe's status is tee's, and
+    // a refused publish would be a green step followed by a release step.
+    assert(
+      /\|\s*tee\s+"\$RUNNER_TEMP\/changeset-publish\.log"/.test(publishStep) &&
+        publishStep.indexOf("set -o pipefail") >= 0 &&
+        publishStep.indexOf("set -o pipefail") < publishStep.indexOf("changeset:publish"),
+      "the publish step pipes through tee without pipefail, or no longer keeps its output for the release step",
+    );
+    const releaseJob = jobBlock(releaseWorkflow, "release");
+    const tagStep = stepBlock(releaseJob, "Push package tags and create GitHub releases");
+    assert(
+      releaseJob.indexOf("- name: Push package tags and create GitHub releases") >
+        releaseJob.indexOf("- name: Publish versioned packages"),
+      "the tag and release step runs before the publish that makes the tags",
+    );
+    assert(
+      tagStep.includes('--publish-log "$RUNNER_TEMP/changeset-publish.log"') &&
+        tagStep.includes("--apply") &&
+        tagStep.includes("GH_TOKEN:") &&
+        tagStep.includes("RELEASE_SHA:"),
+      "the tag and release step does not read the publish log, apply, authenticate gh, or name the released commit",
+    );
+    assert(
+      /\n {2}contents: write\n/.test(releaseWorkflow.slice(0, releaseWorkflow.indexOf("\njobs:"))),
+      "the release workflow cannot push tags or create releases without contents: write",
+    );
+    console.log("PASS: the release job pushes the tags it made and creates their releases.");
+
     // The same reasoning one guard along. `ci:changesets` runs publish-drift on
     // pull requests only, and the owner commits straight to main, so the read
     // that stands between this tree and npm is the one inside the publish

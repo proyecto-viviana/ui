@@ -1,0 +1,31 @@
+2026-10-13T03:04:15.5375907Z 🦋 changeset v3.0.1
+2026-10-13T03:04:15.6386137Z ◇  IMPORTANT ────────────────────────────────────────────────────────────────╮
+2026-10-13T03:04:15.6386990Z │                                                                            │
+2026-10-13T03:04:15.6387730Z │  You are in prerelease mode, so packages will be published to the rc npm   │
+2026-10-13T03:04:15.6388437Z │  tag,                                                                      │
+2026-10-13T03:04:15.6389143Z │  except for packages that have not had normal releases, which will be      │
+2026-10-13T03:04:15.6389920Z │  published to latest.                                                      │
+2026-10-13T03:04:15.6390770Z │                                                                            │
+2026-10-13T03:04:15.6391449Z ╰────────────────────────────────────────────────────────────────────────────╯
+2026-10-13T03:04:17.3974806Z 
+2026-10-13T03:04:17.3975882Z These packages will be published as they were not found in the registry:
+2026-10-13T03:04:17.3976772Z @proyecto-viviana/solid-spectrum@0.8.0-rc.2
+2026-10-13T03:04:17.3977420Z @proyecto-viviana/solid-stately@0.6.0-rc.2
+2026-10-13T03:04:17.3978442Z @proyecto-viviana/solidaria@0.6.0-rc.2
+2026-10-13T03:04:17.3978920Z @proyecto-viviana/solidaria-components@0.7.0-rc.2
+2026-10-13T03:04:17.3979301Z @proyecto-viviana/ui@0.8.0-rc.2
+2026-10-13T03:04:17.3979631Z 0 packages are already published.
+2026-10-13T03:04:24.6159421Z [?25l◒  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Publishing packages...
+2026-10-13T03:04:32.4873868Z [1G[J◐  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Publishing packages (1/5)...
+2026-10-13T03:04:40.2722322Z [1G[J◓  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Publishing packages (2/5)...
+2026-10-13T03:04:51.4249865Z [1G[J◑  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Publishing packages (3/5)...
+2026-10-13T03:04:52.9194630Z [1G[J◒  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Publishing packages (4/5)...
+2026-10-13T03:04:52.9195617Z [1G[J◇  Successfully published:
+2026-10-13T03:04:52.9197984Z @proyecto-viviana/solid-spectrum@0.8.0-rc.2
+2026-10-13T03:04:52.9198700Z @proyecto-viviana/solid-stately@0.6.0-rc.2
+2026-10-13T03:04:52.9199398Z @proyecto-viviana/solidaria@0.6.0-rc.2
+2026-10-13T03:04:52.9200098Z @proyecto-viviana/solidaria-components@0.7.0-rc.2
+2026-10-13T03:04:52.9201073Z @proyecto-viviana/ui@0.8.0-rc.2
+2026-10-13T03:04:53.1272717Z [?25h[?25l◒  Creating git tags...
+2026-10-13T03:04:53.1273486Z [1G[J◇  Created git tags.
+2026-10-13T03:04:53.1617823Z [?25h

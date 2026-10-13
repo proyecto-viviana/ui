@@ -316,7 +316,7 @@ These rows cannot move a component off the pin. They are docs, agent setup, or C
 
 | Item                    | Record                                                                                                                                                                                                                                          |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Release job permissions | `.github/workflows/release.yml` grants `contents: write` and `pull-requests: write`. The steps GET workflow runs, publish with OIDC, and create local git tags.                                                                                 |
+| Release job permissions | `.github/workflows/release.yml` grants `contents: write` and `pull-requests: write`. The steps GET workflow runs, publish with OIDC, push the package tags and create GitHub releases.                                                          |
 | Certification postcard  | `.claude/current/certification.md` still quotes postcard `0f1e1198` (2026-08-21, 2170 passed). `apps/comparison/src/data/certified-suite-evidence.ts` records `151006ff` (2026-09-24, 2168 passed, 0 failed, 4 skipped, 5 waived). Ticket #194. |
 | Playwright skill        | The local `.claude/skills/playwright-cli/SKILL.md` calls `apps/comparison/node_modules/.bin/playwright`. `.claude/skills/` is gitignored, so that edit is not on main.                                                                          |
 
