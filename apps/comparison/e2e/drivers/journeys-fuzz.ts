@@ -238,6 +238,45 @@ export function generateJourneySteps(
   return { steps, serialized: steps.map(serializeStep) };
 }
 
+/**
+ * Drops each `keyUp` whose key no earlier `keyDown` in the journey is still
+ * holding. A keyboard cannot release a key it never pressed, and the generator
+ * and the minimizer both produce that step: the first draws steps one by one,
+ * the second deletes the `keyDown` and keeps its `keyUp`.
+ *
+ * It is not a harmless no-op. A lone `keyup` switches the interaction modality
+ * to keyboard and changes no state, so React re-renders nothing and keeps the
+ * `data-focus-visible` it computed at the last render (`useOption` reads
+ * `isFocusVisible()` while rendering), while Solid's option follows the
+ * modality at once. The panels then differ on a snapshot React would correct
+ * at its next render (#654).
+ */
+export function dropOrphanKeyUps(steps: readonly Step[]): Step[] {
+  const held = new Map<string, number>();
+  return steps.filter((step) => {
+    if (step.type === "keyDown") {
+      held.set(step.key, (held.get(step.key) ?? 0) + 1);
+      return true;
+    }
+    if (step.type !== "keyUp") {
+      return true;
+    }
+    const count = held.get(step.key) ?? 0;
+    if (count === 0) {
+      return false;
+    }
+    held.set(step.key, count - 1);
+    return true;
+  });
+}
+
+/** A browser that died says nothing about the two panels. */
+function isBrowserFailure(error: unknown): boolean {
+  return /Page crashed|Target crashed|has been closed|Browser closed/i.test(
+    String((error as Error | undefined)?.message ?? error),
+  );
+}
+
 export interface JourneyFuzzOptions {
   seed?: number;
   budgetMs?: number;
@@ -260,6 +299,7 @@ async function journeyFails(
 ): Promise<boolean> {
   const caseDef = driverCases(scenario)[0]!;
   const panels: Partial<Record<PanelFramework, Awaited<ReturnType<typeof runJourneyOnPanel>>>> = {};
+  journey = { ...journey, steps: dropOrphanKeyUps(journey.steps) };
   try {
     await forEachScenarioPanel(page, scenario, caseDef, "light", async (ctx) => {
       panels[ctx.framework] = await runJourneyOnPanel(ctx, scenario, journey, {
@@ -271,7 +311,12 @@ async function journeyFails(
     }
     await compareJourneyObservations(page, journey, panels.react, panels.solid);
     return false;
-  } catch {
+  } catch (error) {
+    // Counted as a divergence, a crash sent the minimizer after a step that
+    // merely happened to be running when the browser died.
+    if (isBrowserFailure(error)) {
+      throw error;
+    }
     return true;
   }
 }

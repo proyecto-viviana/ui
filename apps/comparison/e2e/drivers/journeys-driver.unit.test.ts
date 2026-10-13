@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "vitest";
 import { flattenContractTree, overlayMotionPhase, type DomNodeSnapshot } from "./journeys-observe";
 import { serializeStep, type SerializedStep, type Step } from "./journeys-steps";
-import { generateJourneySteps, overlayJourneyAlphabet } from "./journeys-fuzz";
+import { dropOrphanKeyUps, generateJourneySteps, overlayJourneyAlphabet } from "./journeys-fuzz";
 import { registerJourneyDriver, type Journey } from "./journeys";
 import type { DriverScenario, TargetResolver } from "./scenario";
 
@@ -161,5 +161,26 @@ describe("D13 journey driver extensions", () => {
       () => registerJourneyDriver({} as DriverScenario, [journey]),
       /unit-only journeys cannot be registered as Playwright tests \(ledger only\): CB-unit-only-sample/,
     );
+  });
+
+  // #654: seed 20261012 minimized to "click trigger, keyUp Enter", a release
+  // of a key that was never pressed.
+  it("drops a keyUp no keyDown is holding and keeps the paired ones", () => {
+    const down = (key: string): Step => ({ type: "keyDown", key, label: `keyDown ${key}` });
+    const up = (key: string): Step => ({ type: "keyUp", key, label: `keyUp ${key}` });
+    const click: Step = {
+      type: "click",
+      target: dummy,
+      label: "click trigger",
+      targetId: "trigger",
+    };
+    const labels = (steps: Step[]) => dropOrphanKeyUps(steps).map((step) => step.label);
+
+    assert.deepEqual(labels([click, up("Enter")]), ["click trigger"]);
+    assert.deepEqual(labels([down("Enter"), up("Enter"), up("Enter")]), [
+      "keyDown Enter",
+      "keyUp Enter",
+    ]);
+    assert.deepEqual(labels([down("a"), up("Enter"), up("a")]), ["keyDown a", "keyUp a"]);
   });
 });
