@@ -84,4 +84,28 @@ describe("reactive props", () => {
     expect(button).toHaveStyle({ color: "rgb(255, 0, 0)" });
     expect(checkbox).toHaveClass("on");
   });
+
+  // The styled layers hand their props on as a spread. mergeProps walks that
+  // object once in the ToggleButton body; the walk is not a read of the values.
+  it("ToggleButton takes signal-driven props through a spread without a strict-read report", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const [on, setOn] = createSignal(false);
+    const props = () => ({
+      isSelected: on(),
+      class: on() ? "on" : "off",
+      onPress: () => {},
+    });
+
+    render(() => <ToggleButton {...props()}>Pin</ToggleButton>);
+    const button = screen.getByRole("button", { name: "Pin" });
+
+    expect(strictReads(warn)).toEqual([]);
+    expect(button).toHaveClass("off");
+
+    setOn(true);
+    flush();
+
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).toHaveClass("on");
+  });
 });

@@ -7,7 +7,7 @@
  * is a getter proxy over the original props object.
  */
 
-import { omit } from "solid-js";
+import { omit, untrack } from "solid-js";
 import { assignRef } from "./refs";
 
 export function splitProps<T extends object, const K extends readonly (keyof T)[]>(
@@ -57,8 +57,16 @@ export function splitProps<T extends object>(
       // Solid 2 compiles `ref={local.ref}` as `local.ref = el`. A getter-only
       // pick would throw; forward the write to the live ref instead.
       if (key === "ref") {
+        // A ref is read when the element attaches, from a ref callback or a
+        // component body, never to follow a signal. On a props object built
+        // from a spread that read is reactive, so mark it as the one-time read
+        // it is.
+        descriptor.get = () => untrack(() => props[key]);
         descriptor.set = (el: unknown) => {
-          assignRef(props[key], el as never);
+          assignRef(
+            untrack(() => props[key]),
+            el as never,
+          );
         };
       }
       Object.defineProperty(picked, key, descriptor);

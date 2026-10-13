@@ -19,7 +19,7 @@
  * Based on packages/react-aria-components/src/ToggleButton.tsx.
  */
 
-import { createContext, createMemo, createUniqueId, useContext } from "solid-js";
+import { createContext, createMemo, createUniqueId, untrack, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createToggleButton,
@@ -103,7 +103,8 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     "id",
   ]);
   const groupState = useToggleButtonGroupStateContext();
-  const groupKey = local.id ?? local.toggleKey;
+  // Standalone or grouped is decided once, when the button mounts.
+  const groupKey = untrack(() => local.id ?? local.toggleKey);
   const standaloneAriaProps = mergeProps<AriaToggleButtonProps>(ariaProps, {
     get id() {
       return local.id;

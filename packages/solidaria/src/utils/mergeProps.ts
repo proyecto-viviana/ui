@@ -12,6 +12,7 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/mergeProps.ts
 
+import { getObserver, untrack } from "solid-js";
 import { assignRef } from "./refs";
 import { canonicalAttrKey, coerceDomBoolean } from "./domAttrs";
 
@@ -95,6 +96,17 @@ export function mergeProps<const T extends object[]>(
 ): UnionToIntersection<T[number]>;
 export function mergeProps<R extends object>(...args: object[]): R;
 export function mergeProps(...args: object[]): object {
+  // The merge walks its arguments once: their keys, and the event handlers it
+  // chains. Inside a tracking scope those reads subscribe the scope, which
+  // re-runs the merge. In a component body nothing can re-run it, so the walk
+  // is a one-time read by construction; say so, or Solid reports every key of
+  // a spread props object as a read that "will not update". Values are not
+  // part of the walk: every getter stays a getter on the result, `class` and
+  // `style` included.
+  return getObserver() ? mergePropsNow(args) : untrack(() => mergePropsNow(args));
+}
+
+function mergePropsNow(args: object[]): object {
   const result: Props = {};
   const setResultValue = (key: string, value: unknown) => {
     const attr = canonicalAttrKey(key);
@@ -164,6 +176,42 @@ export function mergeProps(...args: object[]): object {
                 return coerceDomBoolean(key, next !== undefined ? next : previous());
               }
             : () => readWithReentryGuard(result, key, () => coerceDomBoolean(key, getValue())),
+        });
+        continue;
+      }
+
+      const resultDescriptor = Object.getOwnPropertyDescriptor(result, key);
+      if (
+        (isClassKey(key) || key === "style") &&
+        (hasGetter || typeof resultDescriptor?.get === "function")
+      ) {
+        // A reactive side: combine at read time, with the rules of the eager
+        // branch below, so a signal-driven class or style keeps reaching the DOM.
+        const previous = resultDescriptor
+          ? typeof resultDescriptor.get === "function"
+            ? () => resultDescriptor.get!()
+            : () => resultDescriptor.value
+          : () => undefined;
+        Object.defineProperty(result, key, {
+          enumerable: true,
+          configurable: true,
+          get: () => {
+            const earlier = previous();
+            const later = readWithReentryGuard(result, key, getValue);
+            if (isClassKey(key) && typeof earlier === "string" && typeof later === "string") {
+              return mergeClassNames(earlier, later);
+            }
+            if (
+              key === "style" &&
+              earlier &&
+              later &&
+              typeof earlier === "object" &&
+              typeof later === "object"
+            ) {
+              return { ...(earlier as object), ...(later as object) };
+            }
+            return later !== undefined ? later : earlier;
+          },
         });
         continue;
       }

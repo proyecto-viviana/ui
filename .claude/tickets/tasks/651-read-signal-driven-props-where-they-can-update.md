@@ -17,6 +17,11 @@ history:
       at: 2026-10-12,
       note: "First slice: class and style getters across solidaria-components, lazy ToggleButton controlled state, plain SelectionIndicator context values. Hook bodies and mergeProps remain.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-12,
+      note: "Second slice: mergeProps marks its one-time walk and combines reactive class and style lazily; ref reads through splitProps are one-time. 199 warnings on the probe page are now 148; the field and toggle hook bodies remain.",
+    }
 ---
 
 ## Cause
@@ -62,27 +67,43 @@ The reads fall into five groups:
    (`TextField.tsx`, `SearchField.tsx`, `Checkbox.tsx`, `Switch.tsx`).
 5. `mergeProps` in `packages/solidaria/src/utils/mergeProps.ts` walks its
    arguments when called. Given a props proxy built from a JSX spread, the
-   `for…in`, `getOwnPropertyDescriptor` and the deliberate eager read of event
-   handler, `class` and `style` keys all read reactive sources in the calling
-   component body.
+   `for…in`, `getOwnPropertyDescriptor` and the eager read of event handler,
+   `class` and `style` keys all read reactive sources in the calling component
+   body. Fixed in the second slice, with the `ref` read every component makes
+   through `splitProps`.
 
 A page of eleven `@proyecto-viviana/ui` components (ToggleButton, Button,
 ActionButton, SearchField, Switch, SegmentedControl, MenuTrigger,
 DialogTrigger, TextField, Checkbox, TooltipTrigger) logged 199 warnings at
-mount before this slice and logs 179 after it. By innermost library frame the
-179 are: `mergeProps.ts` 88, `TextField.tsx` 43, `createTextField.ts` 15,
-`Checkbox.tsx` 8, `createSearchField.ts` 5, `createField.ts` 4,
-`SearchField.tsx` 3, and 13 across eight other files. Most of the
-`mergeProps.ts` frames are merged getters read by a group 4 hook body.
+mount before this ticket, 179 after the first slice and 148 after the second.
+None of the 148 comes from the `mergeProps` walk. They come from group 4, by
+the getter that is read: `viviana-ui/src/form/index.tsx` and
+`solidaria-components/src/TextField.tsx` (the TextField, Label and Input
+bodies reading `createTextField` results), `Switch.tsx`, `Checkbox.tsx`,
+`SearchField.tsx`, `createTextField.ts`, `createSearchField.ts`,
+`createField.ts`, `createToggle.ts`, `createFormValidation.ts`; and from
+group 3: `Dialog.tsx`, `viviana-ui/src/provider/index.tsx`.
 
 ## Scope
 
 Move each read into a tracking scope, or wrap a deliberate one-time read in
-`untrack`, one group at a time, lowest owner first. Groups 3 and 4 are
-mechanical per file. Group 5 needs a decision first: keep the eager walk and
-`untrack` it, with the frozen key set and handler identity it implies, or
-make the merge lazy. No blanket `untrack` around a component body, no
-scheduler workaround, no new public name, no dependency.
+`untrack`, one group at a time, lowest owner first. Groups 3 and 4 remain,
+per file. No blanket `untrack` around a component body, no scheduler
+workaround, no new public name, no dependency.
+
+`mergeProps` (owner left the choice open, 2026-10-12): the walk is marked, not
+made lazy. A lazy merge would have to chain event handlers at read time, which
+either mints a new function on every read or returns a wrapper where today's
+result is `undefined`; both change what callers test and bind. Instead:
+
+- Values were already lazy for every key but event handlers, `class` and
+  `style`. `class` and `style` now join at read time too when either side is a
+  getter, so they keep updating.
+- What is left of the walk is the key set and the handlers it chains. Inside a
+  tracking scope those reads still subscribe the scope, which re-runs the
+  merge, exactly as before. In a component body nothing can re-run the merge,
+  so the walk runs under `untrack`. Handler identity and the key set are
+  taken once there, as they always were.
 
 ## Done when
 
@@ -93,7 +114,7 @@ library frame.
 
 ## Proof
 
-`packages/solidaria-components/test/reactive-props.test.tsx`, three cases:
+`packages/solidaria-components/test/reactive-props.test.tsx`, four cases:
 
 ```bash
 vp test run packages/solidaria-components/test/reactive-props.test.tsx
@@ -105,8 +126,18 @@ vp test run packages/solidaria-components/test/reactive-props.test.tsx
 - A signal-driven `class` and `style` on ToggleButton, and `class` on
   Checkbox, reach the element again.
 
-All three fail on the source before this slice and pass after it. The full
-unit suite (`vp run test:run`) and `vp run check` pass with the slice.
+- A ToggleButton given its props as a spread of signal-driven values mounts
+  with no warning and still updates `aria-pressed` and `class` (second slice).
+
+`packages/solidaria/test/mergeProps.test.ts`, "reactive sources": a
+signal-driven `class` and `style` merged between static ones change when the
+signal does; a memo that merges a signal-driven handler re-runs and calls the
+new handler.
+
+Each case but the last fails on the source before its slice and passes after
+it; the last guards the tracked path, which the change must not alter. The
+full unit suite (`vp run test:run`: 424 files, 8296 passed, 1 expected
+failure) and `vp run check` pass with both slices.
 
 Each later slice adds its component to that file with the same two
 assertions: no warning at mount, and the prop still updates.
@@ -115,5 +146,6 @@ assertions: no warning at mount, and the prop still updates.
 
 Child of #531. Covers the `STRICT_READ_UNTRACKED` part of #641 (VisualMode
 D26). Related: #617 (reactive `filterDOMProps`), #533 (stately accessors).
-Patch Changeset `.changeset/reactive-class-style-and-toggle-state.md` covers
-solidaria and solidaria-components.
+Patch Changesets `.changeset/reactive-class-style-and-toggle-state.md` and
+`.changeset/mergeprops-one-time-walk.md` cover solidaria and
+solidaria-components.

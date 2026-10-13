@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
+import { createMemo, createRoot, createSignal, flush } from "solid-js";
 import { mergeProps } from "../src/utils/mergeProps";
 
 describe("mergeProps", () => {
@@ -137,5 +138,60 @@ describe("mergeProps", () => {
 
     const merged = mergeProps<{ "aria-disabled": string | undefined }>(earlier, later);
     expect(merged["aria-disabled"]).toBe("true");
+  });
+
+  // #651
+  describe("reactive sources", () => {
+    it("joins a signal-driven class and style at read time", () => {
+      const [on, setOn] = createSignal(false);
+      const source = {
+        get class() {
+          return on() ? "on" : "off";
+        },
+        get style() {
+          return { color: on() ? "red" : "blue" };
+        },
+      };
+      const merged = mergeProps<{ class: string; style: Record<string, string> }>(
+        { class: "base", style: { margin: "0" } },
+        source,
+        { class: "tail" },
+      );
+
+      expect(merged.class).toBe("base off tail");
+      expect(merged.style).toEqual({ margin: "0", color: "blue" });
+      setOn(true);
+      flush();
+      expect(merged.class).toBe("base on tail");
+      expect(merged.style).toEqual({ margin: "0", color: "red" });
+    });
+
+    it("still subscribes a tracking scope to the handlers it chains", () => {
+      const first = vi.fn();
+      const second = vi.fn();
+      const [handler, setHandler] = createSignal<() => void>(first);
+      const { merged, dispose } = createRoot((dispose) => ({
+        dispose,
+        merged: createMemo(() =>
+          mergeProps<{ onClick: () => void }>(
+            {
+              get onClick() {
+                return handler();
+              },
+            },
+            { onClick: () => {} },
+          ),
+        ),
+      }));
+
+      merged().onClick();
+      setHandler(() => second);
+      flush();
+      merged().onClick();
+
+      expect(first).toHaveBeenCalledTimes(1);
+      expect(second).toHaveBeenCalledTimes(1);
+      dispose();
+    });
   });
 });
