@@ -28,6 +28,8 @@ import { Virtualizer } from "../src/Virtualizer";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Text } from "../src/Text";
 import { Dialog } from "../src/Dialog";
+import { Header } from "../src/Collection";
+import { ListBoxSection } from "../src/ListBox";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
@@ -1995,6 +1997,95 @@ describe("ComboBox", () => {
         expect(input.validity.customError).toBe(false);
         expect(input.checkValidity()).toBe(true);
       });
+    });
+  });
+  // #656: static children never reached the collection, so the list was empty.
+  describe("static children", () => {
+    function StaticComboBox(props: { comboBoxProps?: Partial<Parameters<typeof ComboBox>[0]> }) {
+      return (
+        <ComboBox aria-label="Fruit" {...props.comboBoxProps}>
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox>
+            <ComboBoxOption id="apple">Apple</ComboBoxOption>
+            <ComboBoxOption id="banana">Banana</ComboBoxOption>
+            <ComboBoxOption id="cherry" isDisabled>
+              Cherry
+            </ComboBoxOption>
+          </ComboBoxListBox>
+        </ComboBox>
+      );
+    }
+
+    it("lists every static option and reports a click on one once", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => <StaticComboBox comboBoxProps={{ onSelectionChange }} />);
+
+      await user.click(screen.getByRole("button"));
+      const options = await screen.findAllByRole("option");
+      expect(options.map((option) => option.textContent)).toEqual(["Apple", "Banana", "Cherry"]);
+      expect(options[2]).toHaveAttribute("aria-disabled", "true");
+
+      await user.click(options[1]!);
+      await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+      expect(onSelectionChange.mock.calls).toEqual([["banana"]]);
+      expect(screen.getByRole("combobox")).toHaveValue("Banana");
+    });
+
+    it("filters static options by the typed text and selects with the keyboard", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => <StaticComboBox comboBoxProps={{ onSelectionChange }} />);
+
+      const input = screen.getByRole("combobox");
+      await user.type(input, "an");
+      await waitFor(() =>
+        expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+          "Banana",
+        ]),
+      );
+
+      await user.keyboard("{ArrowDown}{Enter}");
+      await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+      expect(onSelectionChange.mock.calls).toEqual([["banana"]]);
+      expect(input).toHaveValue("Banana");
+    });
+
+    it("shows the text of a default selection while closed", async () => {
+      render(() => <StaticComboBox comboBoxProps={{ defaultSelectedKey: "apple" }} />);
+      await waitFor(() => expect(screen.getByRole("combobox")).toHaveValue("Apple"));
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    });
+
+    it("lists static sections and drops one whose options are all filtered out", async () => {
+      render(() => (
+        <ComboBox aria-label="Plan">
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox>
+            <ListBoxSection>
+              <Header>Personal</Header>
+              <ComboBoxOption id="free">Free</ComboBoxOption>
+              <ComboBoxOption id="pro">Pro</ComboBoxOption>
+            </ListBoxSection>
+            <ListBoxSection>
+              <Header>Organization</Header>
+              <ComboBoxOption id="team">Team</ComboBoxOption>
+            </ListBoxSection>
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      await user.click(screen.getByRole("button"));
+      const listbox = await screen.findByRole("listbox");
+      expect(listbox.querySelectorAll('[role="group"]')).toHaveLength(2);
+      expect(screen.getAllByRole("option")).toHaveLength(3);
+
+      await user.type(screen.getByRole("combobox"), "tea");
+      await waitFor(() =>
+        expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Team"]),
+      );
+      expect(screen.getAllByRole("group")).toHaveLength(1);
+      expect(screen.queryByText("Personal")).not.toBeInTheDocument();
     });
   });
 });

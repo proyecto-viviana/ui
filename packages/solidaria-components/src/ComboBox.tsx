@@ -30,6 +30,7 @@ import {
   For,
   Show,
   createTrackedEffect,
+  untrack,
 } from "solid-js";
 import type { Accessor, Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -78,8 +79,17 @@ import {
 } from "./utils";
 import { TextContext } from "./Text";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
-import { useCollectionRenderer, useCollectionRoot } from "./Collection";
-import { ListBoxLoadMoreItem } from "./ListBox";
+import {
+  StaticCollectionContext,
+  StaticCollectionFilterContext,
+  StaticCollectionProbeContext,
+  StaticCollectionProbeItem,
+  createStaticCollectionState,
+  useCollectionRenderer,
+  useCollectionRoot,
+  type StaticCollectionItem,
+} from "./Collection";
+import { ListBoxLoadMoreItem, ListBoxStateContext } from "./ListBox";
 import { VirtualizerItem } from "./Virtualizer";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -374,6 +384,8 @@ interface ComboBoxContextValue<T, M extends ComboBoxSelectionMode = "single"> {
   isFocused: Accessor<boolean>;
   isFocusVisible: Accessor<boolean>;
   items: T[];
+  /** Whether the collection comes from static JSX children, not `items`. */
+  usesStaticChildren: Accessor<boolean>;
   inputRef: () => HTMLInputElement | null;
   setInputRef: (el: HTMLInputElement | null) => void;
   buttonRef: () => HTMLElement | null;
@@ -464,21 +476,34 @@ export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
   // is the default when the caller omits `defaultFilter`.
   const intlFilter = createFilter({ sensitivity: "base" });
 
+  // Static JSX children register descriptors here, as Select's do. They stand
+  // in for `defaultItems`, so the default filter applies to them the way RAC
+  // filters a ComboBox given children and no `items` (useComboBoxState.ts:297-302).
+  const { items: staticItems, context: staticCollectionContext } = createStaticCollectionState();
+  const usesStaticChildren = () => stateProps.items == null && stateProps.defaultItems == null;
+
   const state = createComboBoxState<T, M>({
     get items() {
       return stateProps.items;
     },
     get defaultItems() {
-      return stateProps.defaultItems;
+      return usesStaticChildren() ? (staticItems() as T[]) : stateProps.defaultItems;
     },
     get getKey() {
-      return stateProps.getKey;
+      return usesStaticChildren()
+        ? (item: T) => (item as StaticCollectionItem).id
+        : stateProps.getKey;
     },
     get getTextValue() {
-      return stateProps.getTextValue;
+      return usesStaticChildren()
+        ? (item: T) =>
+            (item as StaticCollectionItem).textValue ?? String((item as StaticCollectionItem).id)
+        : stateProps.getTextValue;
     },
     get getDisabled() {
-      return stateProps.getDisabled;
+      return usesStaticChildren()
+        ? (item: T) => Boolean((item as StaticCollectionItem).isDisabled)
+        : stateProps.getDisabled;
     },
     get disabledKeys() {
       return stateProps.disabledKeys;
@@ -667,98 +692,110 @@ export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
     },
   };
 
+  // Settled at mount, like Select: the registry is for a ComboBox composed
+  // from children.
+  const providesStaticCollection = untrack(usesStaticChildren);
+
   return (
-    <ComboBoxContext
-      value={
-        {
-          state,
-          listState,
-          inputProps: getInputProps,
-          buttonProps: () => comboBoxAria.buttonProps,
-          listBoxProps: () => ({
-            ...comboBoxAria.listBoxProps,
-            onAction: undefined,
-            shouldUseVirtualFocus: true,
-            shouldSelectOnPressUp: true,
-            shouldFocusOnHover: true,
-            linkBehavior: "selection",
-            UNSTABLE_itemBehavior: "action",
-          }),
-          labelProps: () => comboBoxAria.labelProps,
-          descriptionProps: () => comboBoxAria.descriptionProps,
-          errorMessageProps: () => comboBoxAria.errorMessageProps,
-          isOpen: comboBoxAria.isOpen,
-          isFocused: comboBoxAria.isFocused,
-          isFocusVisible: comboBoxAria.isFocusVisible,
-          items: stateProps.items ?? stateProps.defaultItems ?? [],
-          inputRef: () => inputEl(),
-          setInputRef: (el) => {
-            setInputEl(el);
-          },
-          buttonRef: () => buttonRef,
-          setButtonRef: (el) => {
-            buttonRef = el;
-          },
-          triggerRef: () => triggerRef,
-          setTriggerRef: (el) => {
-            triggerRef = el;
-          },
-          listBoxRef: () => listBoxRef,
-          setListBoxRef: (el) => {
-            listBoxRef = el;
-          },
-          popoverRef,
-          setPopoverRef,
-          registerOptionAction: (key, action) => {
-            if (action) {
-              optionActions.set(key, action);
-            } else {
-              optionActions.delete(key);
-            }
-          },
-          runOptionAction,
-          slots: local.slots,
-        } as ComboBoxContextValue<unknown, ComboBoxSelectionMode>
-      }
-    >
-      <ComboBoxStateContext value={state as ComboBoxState<unknown, ComboBoxSelectionMode>}>
-        <div
-          {...domProps()}
-          ref={(el) => {
-            assignRef(local.ref, el);
-            assignRef(local.rootRef, el);
-          }}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          data-open={dataAttr(comboBoxAria.isOpen())}
-          data-focused={dataAttr(comboBoxAria.isFocused())}
-          data-disabled={dataAttr(ariaProps.isDisabled)}
-          data-required={dataAttr(ariaProps.isRequired)}
-          data-invalid={dataAttr(comboBoxAria.isInvalid)}
-          data-readonly={dataAttr(ariaProps.isReadOnly)}
-          slot={local.slot}
-        >
-          <Provider
-            values={
-              [
-                [TextContext, textSlots],
-                [FieldErrorContext, fieldErrorContext],
-              ] as Array<[Context<unknown>, unknown]>
-            }
+    <StaticCollectionContext value={providesStaticCollection ? staticCollectionContext : null}>
+      <ComboBoxContext
+        value={
+          {
+            state,
+            listState,
+            inputProps: getInputProps,
+            buttonProps: () => comboBoxAria.buttonProps,
+            listBoxProps: () => ({
+              ...comboBoxAria.listBoxProps,
+              onAction: undefined,
+              shouldUseVirtualFocus: true,
+              shouldSelectOnPressUp: true,
+              shouldFocusOnHover: true,
+              linkBehavior: "selection",
+              UNSTABLE_itemBehavior: "action",
+            }),
+            labelProps: () => comboBoxAria.labelProps,
+            descriptionProps: () => comboBoxAria.descriptionProps,
+            errorMessageProps: () => comboBoxAria.errorMessageProps,
+            isOpen: comboBoxAria.isOpen,
+            isFocused: comboBoxAria.isFocused,
+            isFocusVisible: comboBoxAria.isFocusVisible,
+            items: stateProps.items ?? stateProps.defaultItems ?? [],
+            usesStaticChildren,
+            inputRef: () => inputEl(),
+            setInputRef: (el) => {
+              setInputEl(el);
+            },
+            buttonRef: () => buttonRef,
+            setButtonRef: (el) => {
+              buttonRef = el;
+            },
+            triggerRef: () => triggerRef,
+            setTriggerRef: (el) => {
+              triggerRef = el;
+            },
+            listBoxRef: () => listBoxRef,
+            setListBoxRef: (el) => {
+              listBoxRef = el;
+            },
+            popoverRef,
+            setPopoverRef,
+            registerOptionAction: (key, action) => {
+              if (action) {
+                optionActions.set(key, action);
+              } else {
+                optionActions.delete(key);
+              }
+            },
+            runOptionAction,
+            slots: local.slots,
+          } as ComboBoxContextValue<unknown, ComboBoxSelectionMode>
+        }
+      >
+        <ComboBoxStateContext value={state as ComboBoxState<unknown, ComboBoxSelectionMode>}>
+          <div
+            {...domProps()}
+            ref={(el) => {
+              assignRef(local.ref, el);
+              assignRef(local.rootRef, el);
+            }}
+            class={renderProps.class()}
+            style={renderProps.style()}
+            data-open={dataAttr(comboBoxAria.isOpen())}
+            data-focused={dataAttr(comboBoxAria.isFocused())}
+            data-disabled={dataAttr(ariaProps.isDisabled)}
+            data-required={dataAttr(ariaProps.isRequired)}
+            data-invalid={dataAttr(comboBoxAria.isInvalid)}
+            data-readonly={dataAttr(ariaProps.isReadOnly)}
+            slot={local.slot}
           >
-            <ComboBoxChildren />
-          </Provider>
-          {/* Hidden input last among root children — RAC ComboBox.tsx:373-374 */}
-          <Show when={stateProps.name && effectiveFormValue() === "key"}>
-            <For each={hiddenFormValues()}>
-              {(formKey) => (
-                <input type="hidden" name={stateProps.name} form={ariaProps.form} value={formKey} />
-              )}
-            </For>
-          </Show>
-        </div>
-      </ComboBoxStateContext>
-    </ComboBoxContext>
+            <Provider
+              values={
+                [
+                  [TextContext, textSlots],
+                  [FieldErrorContext, fieldErrorContext],
+                ] as Array<[Context<unknown>, unknown]>
+              }
+            >
+              <ComboBoxChildren />
+            </Provider>
+            {/* Hidden input last among root children — RAC ComboBox.tsx:373-374 */}
+            <Show when={stateProps.name && effectiveFormValue() === "key"}>
+              <For each={hiddenFormValues()}>
+                {(formKey) => (
+                  <input
+                    type="hidden"
+                    name={stateProps.name}
+                    form={ariaProps.form}
+                    value={formKey}
+                  />
+                )}
+              </For>
+            </Show>
+          </div>
+        </ComboBoxStateContext>
+      </ComboBoxContext>
+    </StaticCollectionContext>
   );
 }
 
@@ -1212,6 +1249,26 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   };
 
   const items = () => Array.from(state.collection());
+  // Static JSX is a children getter, so the list keeps one registration copy
+  // mounted and renders a second copy while open. Only the registration copy
+  // writes the collection; the displayed copy shows the items the filter kept.
+  // Never read `props.children` outside these providers.
+  const usesStaticChildren = context.usesStaticChildren;
+  const resolveStaticChild = (child: unknown): JSX.Element | undefined => {
+    if (typeof child === "function") {
+      // A render function belongs to `items`, which may not have arrived yet.
+      return child.length === 0 ? (child as () => JSX.Element | undefined)() : undefined;
+    }
+    return child as JSX.Element | undefined;
+  };
+  const renderStaticChildren = (): JSX.Element => {
+    const staticChildren: unknown = props.children;
+    if (Array.isArray(staticChildren)) {
+      return <>{staticChildren.map(resolveStaticChild)}</>;
+    }
+    return <>{resolveStaticChild(staticChildren)}</>;
+  };
+  const isDisplayed = (key: Key) => state.collection().getItem(key) != null;
   const getNodeValue = (node: { key: Key; value?: T | null; index?: number }): T | null => {
     if (node.value != null) {
       return node.value;
@@ -1259,69 +1316,87 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   };
 
   return (
-    <Show when={isOpen()}>
-      {/* `<div role="listbox">`, not `<ul>` — upstream RAC ListBox (and our own
+    <>
+      <Show when={usesStaticChildren()}>
+        <StaticCollectionProbeContext value={true}>
+          {renderStaticChildren()}
+        </StaticCollectionProbeContext>
+      </Show>
+      <Show when={isOpen()}>
+        {/* `<div role="listbox">`, not `<ul>` — upstream RAC ListBox (and our own
           Select/ListBox) render div-over-div rows; the `role` comes from the
           spread listbox aria props (createListBox), not the element tag. */}
-      <div
-        {...domProps}
-        ref={setListBoxElement}
-        {...cleanContextProps()}
-        {...cleanListBoxProps()}
-        {...cleanFocusProps()}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-focused={dataAttr(isListBoxFocused())}
-        data-focus-visible={dataAttr(isListBoxFocusVisible())}
-        data-empty={dataAttr(state.collection().size === 0)}
-        data-layout="stack"
-        data-orientation="vertical"
-      >
-        <CollectionRoot collection={items()} scrollRef={() => listBoxEl()}>
-          <Show
-            when={local.children}
-            fallback={
-              <For each={items()}>
-                {(node, index) => {
-                  const item = <ComboBoxItem id={node.key}>{node.textValue}</ComboBoxItem>;
-                  return isVirtualized() ? (
-                    <VirtualizerItem index={index()}>{item}</VirtualizerItem>
-                  ) : (
-                    item
-                  );
-                }}
-              </For>
-            }
-          >
-            <For each={items()}>
-              {(node, index) => {
-                const value = getNodeValue(node);
-                const child = value != null ? (local.children as Function)!(value) : null;
-                return isVirtualized() ? (
-                  <VirtualizerItem index={index()}>{child}</VirtualizerItem>
-                ) : (
-                  child
-                );
-              }}
-            </For>
+        <div
+          {...domProps}
+          ref={setListBoxElement}
+          {...cleanContextProps()}
+          {...cleanListBoxProps()}
+          {...cleanFocusProps()}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-focused={dataAttr(isListBoxFocused())}
+          data-focus-visible={dataAttr(isListBoxFocusVisible())}
+          data-empty={dataAttr(state.collection().size === 0)}
+          data-layout="stack"
+          data-orientation="vertical"
+        >
+          <CollectionRoot collection={items()} scrollRef={() => listBoxEl()}>
+            <Show
+              when={usesStaticChildren()}
+              fallback={
+                <Show
+                  when={local.children}
+                  fallback={
+                    <For each={items()}>
+                      {(node, index) => {
+                        const item = <ComboBoxItem id={node.key}>{node.textValue}</ComboBoxItem>;
+                        return isVirtualized() ? (
+                          <VirtualizerItem index={index()}>{item}</VirtualizerItem>
+                        ) : (
+                          item
+                        );
+                      }}
+                    </For>
+                  }
+                >
+                  <For each={items()}>
+                    {(node, index) => {
+                      const value = getNodeValue(node);
+                      const child = value != null ? (local.children as Function)!(value) : null;
+                      return isVirtualized() ? (
+                        <VirtualizerItem index={index()}>{child}</VirtualizerItem>
+                      ) : (
+                        child
+                      );
+                    }}
+                  </For>
+                </Show>
+              }
+            >
+              <StaticCollectionFilterContext value={isDisplayed}>
+                <ListBoxStateContext value={listState as ListState<unknown>}>
+                  {renderStaticChildren()}
+                </ListBoxStateContext>
+              </StaticCollectionFilterContext>
+            </Show>
+          </CollectionRoot>
+          {state.collection().size === 0 && local.renderEmptyState ? (
+            <div role="option" style={{ display: "contents" }} data-empty-state>
+              {local.renderEmptyState()}
+            </div>
+          ) : null}
+          <Show when={local.onLoadMore}>
+            <ListBoxLoadMoreItem
+              onLoadMore={local.onLoadMore!}
+              isLoading={local.isLoading}
+              class={local.loadMoreClass}
+            >
+              {local.renderLoadMore?.()}
+            </ListBoxLoadMoreItem>
           </Show>
-        </CollectionRoot>
-        {state.collection().size === 0 && local.renderEmptyState ? (
-          <div role="option" style={{ display: "contents" }} data-empty-state>
-            {local.renderEmptyState()}
-          </div>
-        ) : null}
-        <Show when={local.onLoadMore}>
-          <ListBoxLoadMoreItem
-            onLoadMore={local.onLoadMore!}
-            isLoading={local.isLoading}
-            class={local.loadMoreClass}
-          >
-            {local.renderLoadMore?.()}
-          </ListBoxLoadMoreItem>
-        </Show>
-      </div>
-    </Show>
+        </div>
+      </Show>
+    </>
   );
 }
 
@@ -1332,6 +1407,26 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
  * composing the headless ComboBox. This wrapper stays for existing call sites.
  */
 export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
+  const probe = useContext(StaticCollectionProbeContext);
+  if (probe) {
+    return (
+      <StaticCollectionProbeItem
+        id={props.id}
+        textValue={props.textValue}
+        isDisabled={props.isDisabled}
+        aria-label={props["aria-label"]}
+      >
+        {props.children}
+      </StaticCollectionProbeItem>
+    );
+  }
+  return <ComboBoxItemElement {...props} />;
+}
+
+function ComboBoxItemElement<T>(props: ComboBoxItemProps<T>): JSX.Element {
+  // Among static children every item is rendered; the filter decides which
+  // ones the list shows.
+  const isDisplayed = useContext(StaticCollectionFilterContext);
   const [local, ariaProps] = splitProps(props, [
     "class",
     "style",
@@ -1493,33 +1588,35 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
   const selectionMode = () => listState.selectionMode();
 
   return (
-    <SelectionIndicatorContext value={selectionIndicatorContext}>
-      {/* `<div role="option">`, not `<li>` — see the ComboBoxListBox note; the
+    <Show when={isDisplayed == null || isDisplayed(local.id)}>
+      <SelectionIndicatorContext value={selectionIndicatorContext}>
+        {/* `<div role="option">`, not `<li>` — see the ComboBoxListBox note; the
           `role` comes from the spread option aria props (createOption). */}
-      <div
-        ref={(el) => {
-          setRef(el);
-          assignRef(local.ref, el);
-        }}
-        {...cleanOptionProps()}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-selected={dataAttr(optionAria.isSelected())}
-        data-focused={dataAttr(optionAria.isFocused())}
-        data-focus-visible={dataAttr(isOptionFocusVisible())}
-        data-pressed={dataAttr(optionAria.isPressed())}
-        data-hovered={dataAttr(optionAria.isHovered())}
-        data-disabled={dataAttr(optionAria.isDisabled())}
-        data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
-      >
-        <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
-          <OptionContent
-            render={renderProps.renderChildrenStable}
-            labelProps={optionAria.labelProps}
-          />
-        </Provider>
-      </div>
-    </SelectionIndicatorContext>
+        <div
+          ref={(el) => {
+            setRef(el);
+            assignRef(local.ref, el);
+          }}
+          {...cleanOptionProps()}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-selected={dataAttr(optionAria.isSelected())}
+          data-focused={dataAttr(optionAria.isFocused())}
+          data-focus-visible={dataAttr(isOptionFocusVisible())}
+          data-pressed={dataAttr(optionAria.isPressed())}
+          data-hovered={dataAttr(optionAria.isHovered())}
+          data-disabled={dataAttr(optionAria.isDisabled())}
+          data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
+        >
+          <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
+            <OptionContent
+              render={renderProps.renderChildrenStable}
+              labelProps={optionAria.labelProps}
+            />
+          </Provider>
+        </div>
+      </SelectionIndicatorContext>
+    </Show>
   );
 }
 

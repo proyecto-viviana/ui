@@ -1,8 +1,9 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
-import { ComboBox, ComboBoxOption } from "../src/combobox";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { ComboBox, ComboBoxItem, ComboBoxOption, ComboBoxSection } from "../src/combobox";
 import { Header, Heading, Text } from "../src";
 
 interface Fruit {
@@ -13,6 +14,75 @@ interface Fruit {
 const apple: Fruit = { id: "1", name: "Apple" };
 
 describe("ComboBox", () => {
+  // #656: static children never reached the collection; the one option the
+  // open list held was the "No results" row.
+  it("lists static ComboBoxItem children, filters them and reports a choice once", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <ComboBox aria-label="Fruit" onSelectionChange={onSelectionChange}>
+        <ComboBoxItem id="apple">Apple</ComboBoxItem>
+        <ComboBoxItem id="banana">Banana</ComboBoxItem>
+      </ComboBox>
+    ));
+    const input = screen.getByRole("combobox");
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() =>
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+        "Apple",
+        "Banana",
+      ]),
+    );
+
+    await user.click(screen.getByRole("option", { name: "Banana" }));
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onSelectionChange.mock.calls).toEqual([["banana"]]);
+    expect(input).toHaveValue("Banana");
+
+    await user.clear(input);
+    await user.type(input, "ap");
+    await waitFor(() =>
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Apple"]),
+    );
+    await user.keyboard("{ArrowDown}{Enter}");
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onSelectionChange.mock.calls.at(-1)).toEqual(["apple"]);
+    expect(input).toHaveValue("Apple");
+  });
+
+  it("shows a default selection from static children while closed, and lists static sections", async () => {
+    const user = setupUser();
+    render(() => (
+      <ComboBox aria-label="Plan" defaultSelectedKey="pro">
+        <ComboBoxSection>
+          <Header>Personal</Header>
+          <ComboBoxItem id="free">Free</ComboBoxItem>
+          <ComboBoxItem id="pro">Pro</ComboBoxItem>
+        </ComboBoxSection>
+        <ComboBoxSection>
+          <Header>Organization</Header>
+          <ComboBoxItem id="team">Team</ComboBoxItem>
+        </ComboBoxSection>
+      </ComboBox>
+    ));
+    const input = screen.getByRole("combobox");
+    await waitFor(() => expect(input).toHaveValue("Pro"));
+    expect(screen.queryByText("Personal")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(3));
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+
+    await user.clear(input);
+    await user.type(input, "tea");
+    await waitFor(() =>
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Team"]),
+    );
+    expect(screen.getAllByRole("group")).toHaveLength(1);
+    expect(screen.queryByText("Personal")).not.toBeInTheDocument();
+  });
+
   it("updates direct reactive option children while open", () => {
     // `<ComboBoxOption>{label()}</ComboBoxOption>` compiles to a `children`
     // getter returning the current string. An untracked setup-time read would

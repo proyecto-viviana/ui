@@ -362,6 +362,12 @@ export const StaticCollectionContext = createContext<StaticCollectionContextValu
 export const StaticCollectionProbeContext = createContext(false);
 
 /**
+ * Set around the displayed copy of static children by a host that filters them
+ * (ComboBox): whether the item with this key is in the displayed collection.
+ */
+export const StaticCollectionFilterContext = createContext<((key: Key) => boolean) | null>(null);
+
+/**
  * Display text for a static collection option. An explicit `textValue` wins,
  * including an empty string. Otherwise a string aria-label, then string or number
  * children.

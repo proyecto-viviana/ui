@@ -9,7 +9,9 @@ import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import {
   ComboBox,
   ComboBoxContext,
+  ComboBoxItem,
   ComboBoxOption,
+  ComboBoxSection,
   Form,
   Header,
   Heading,
@@ -124,6 +126,75 @@ function overlayFrom(role: "listbox" | "menu" | "dialog"): HTMLElement {
 }
 
 describe("ComboBox (solid-spectrum)", () => {
+  // #656: static children never reached the collection; the one option the
+  // open list held was the "No results" row.
+  it("lists static ComboBoxItem children, filters them and reports a choice once", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <ComboBox aria-label="Fruit" onSelectionChange={onSelectionChange}>
+        <ComboBoxItem id="apple">Apple</ComboBoxItem>
+        <ComboBoxItem id="banana">Banana</ComboBoxItem>
+      </ComboBox>
+    ));
+    const input = screen.getByRole("combobox");
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() =>
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+        "Apple",
+        "Banana",
+      ]),
+    );
+
+    await user.click(screen.getByRole("option", { name: "Banana" }));
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onSelectionChange.mock.calls).toEqual([["banana"]]);
+    expect(input).toHaveValue("Banana");
+
+    await user.clear(input);
+    await user.type(input, "ap");
+    await waitFor(() =>
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Apple"]),
+    );
+    await user.keyboard("{ArrowDown}{Enter}");
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onSelectionChange.mock.calls.at(-1)).toEqual(["apple"]);
+    expect(input).toHaveValue("Apple");
+  });
+
+  it("shows a default selection from static children while closed, and lists static sections", async () => {
+    const user = setupUser();
+    render(() => (
+      <ComboBox aria-label="Plan" defaultSelectedKey="pro">
+        <ComboBoxSection>
+          <Header>Personal</Header>
+          <ComboBoxItem id="free">Free</ComboBoxItem>
+          <ComboBoxItem id="pro">Pro</ComboBoxItem>
+        </ComboBoxSection>
+        <ComboBoxSection>
+          <Header>Organization</Header>
+          <ComboBoxItem id="team">Team</ComboBoxItem>
+        </ComboBoxSection>
+      </ComboBox>
+    ));
+    const input = screen.getByRole("combobox");
+    await waitFor(() => expect(input).toHaveValue("Pro"));
+    expect(screen.queryByText("Personal")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(3));
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+
+    await user.clear(input);
+    await user.type(input, "tea");
+    await waitFor(() =>
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Team"]),
+    );
+    expect(screen.getAllByRole("group")).toHaveLength(1);
+    expect(screen.queryByText("Personal")).not.toBeInTheDocument();
+  });
+
   afterEach(() => {
     cleanup();
     vi.useRealTimers();

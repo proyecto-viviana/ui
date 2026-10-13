@@ -99,8 +99,10 @@ import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 import {
   StaticCollectionContext,
+  StaticCollectionFilterContext,
   StaticCollectionProbeContext,
   StaticCollectionProbeItem,
+  type StaticCollectionContextValue,
   CollectionRendererContext,
   HeaderContext,
   Section,
@@ -1584,6 +1586,43 @@ function StaticSelectProbeSection(props: { children?: JSX.Element }): JSX.Elemen
  * does. A plain ListBox stays a Section until it is inside that collection.
  */
 function StaticSelectListBoxSection(props: ListBoxSectionProps): JSX.Element {
+  const isDisplayed = useContext(StaticCollectionFilterContext);
+  if (!isDisplayed) {
+    return <StaticSelectListBoxSectionElement {...props} />;
+  }
+
+  // A filtering host drops a section with no displayed item, as RAC's
+  // filtered collection does (useComboBoxState.ts filterCollection). The items
+  // are JSX, so a registration copy of the children names this section's keys.
+  const [keys, setKeys] = createSignal<Key[]>([]);
+  const members = new Set<Key>();
+  const sectionItems: StaticCollectionContextValue = {
+    registerItem(item) {
+      if (members.has(item.id)) return;
+      members.add(item.id);
+      setKeys(Array.from(members));
+    },
+    unregisterItem(id) {
+      if (members.delete(id)) setKeys(Array.from(members));
+    },
+  };
+  const hasDisplayedItem = createMemo(() => keys().some(isDisplayed));
+
+  return (
+    <>
+      <StaticCollectionContext value={sectionItems}>
+        <StaticCollectionProbeContext value={true}>
+          <StaticSelectProbeSection>{props.children}</StaticSelectProbeSection>
+        </StaticCollectionProbeContext>
+      </StaticCollectionContext>
+      <Show when={hasDisplayedItem()}>
+        <StaticSelectListBoxSectionElement {...props} />
+      </Show>
+    </>
+  );
+}
+
+function StaticSelectListBoxSectionElement(props: ListBoxSectionProps): JSX.Element {
   const [sectionContent, sectionDom] = splitProps(props, ["children"]);
   const headingId = createUniqueId();
   const [headingRef, hasHeading] = useSlot();

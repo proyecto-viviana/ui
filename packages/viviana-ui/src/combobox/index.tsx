@@ -43,9 +43,13 @@ import {
   ComboBoxLabel as HeadlessComboBoxLabel,
   ComboBoxListBox as HeadlessComboBoxListBox,
   ComboBoxOption as HeadlessComboBoxOption,
+  ComboBoxStateContext as HeadlessComboBoxStateContext,
   ComboBoxTag as HeadlessComboBoxTag,
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ListBoxSection as HeadlessListBoxSection,
+  StaticSelectCollectionContext,
+  StaticSelectProbeContext,
+  StaticSelectProbeItem,
   Text as HeadlessText,
   TextContext as HeadlessTextContext,
   ListLayout,
@@ -787,8 +791,18 @@ function ComboBoxListBoxPopover(props: {
   align: () => "start" | "end";
   menuWidth: () => number | undefined;
   shouldFlip: () => boolean;
+  /** Whether the ComboBox's items are static JSX children. */
+  hasStaticItems: () => boolean;
   children: JSX.Element;
 }) {
+  // The ComboBox keeps a registration copy of static items mounted beside this
+  // popover, so the collection exists while the list is closed. The copy
+  // rendered in here must not withdraw those items when the popover unmounts.
+  const staticCollection = useContext(StaticSelectCollectionContext);
+  const retainedCollection = staticCollection && {
+    registerItem: staticCollection.registerItem,
+    unregisterItem() {},
+  };
   const comboBoxContext = useContext(HeadlessComboBoxContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -847,7 +861,13 @@ function ComboBoxListBoxPopover(props: {
       }}
       styles={comboBoxMenuWidth}
     >
-      <div class={comboBoxListBoxFrame}>{props.children}</div>
+      <div class={comboBoxListBoxFrame}>
+        <StaticSelectCollectionContext
+          value={props.hasStaticItems() ? retainedCollection : staticCollection}
+        >
+          {props.children}
+        </StaticSelectCollectionContext>
+      </div>
     </Popover>
   );
 }
@@ -996,8 +1016,19 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       isOpen: renderProps.isOpen,
     });
 
-  const child = local.children;
-  const listBoxChildren = typeof child === "function" ? child : undefined;
+  // Same test the headless ComboBox uses: without `items` and `defaultItems`
+  // the collection comes from static JSX children. Never read `local.children`
+  // to decide, which would build the options outside their providers.
+  const hasStaticItems = () => headlessProps.items == null && headlessProps.defaultItems == null;
+  const staticItemsProbe = (): JSX.Element => {
+    const child: unknown = local.children;
+    return typeof child === "function" && child.length > 0 ? undefined : (child as JSX.Element);
+  };
+  const listBoxChildren = () => {
+    if (hasStaticItems()) return local.children;
+    const child = local.children;
+    return typeof child === "function" ? child : undefined;
+  };
 
   return (
     <ComboBoxSizeContext value={size()}>
@@ -1091,7 +1122,13 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               {local.errorMessage}
             </HelpText>
 
+            {/* The list below mounts only while open: register static items
+                here, so a selection has its text while the list is closed. */}
+            <Show when={hasStaticItems()}>
+              <StaticSelectProbeContext value={true}>{staticItemsProbe()}</StaticSelectProbeContext>
+            </Show>
             <ComboBoxListBoxPopover
+              hasStaticItems={hasStaticItems}
               size={size}
               direction={direction}
               align={align}
@@ -1164,7 +1201,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                             </span>
                           )}
                         >
-                          {listBoxChildren}
+                          {listBoxChildren()}
                         </HeadlessComboBoxListBox>
                       </Virtualizer>
                     </TextContext>
@@ -1250,6 +1287,23 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
  * @deprecated Use {@link ComboBoxItem}. Removed in a future minor.
  */
 export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
+  const probe = useContext(StaticSelectProbeContext);
+  if (probe) {
+    return (
+      <StaticSelectProbeItem
+        id={props.id}
+        textValue={props.textValue}
+        isDisabled={props.isDisabled}
+        aria-label={props["aria-label"]}
+      >
+        {props.children}
+      </StaticSelectProbeItem>
+    );
+  }
+  return <ComboBoxOptionElement {...props} />;
+}
+
+function ComboBoxOptionElement<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "children", "ref", "UNSAFE_style"]);
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
@@ -1409,10 +1463,56 @@ export interface ComboBoxSectionProps<T> extends Omit<
  */
 export function ComboBoxSection<T>(props: ComboBoxSectionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
+  const probe = useContext(StaticSelectProbeContext);
+  const staticCollection = useContext(StaticSelectCollectionContext);
+  if (probe) {
+    return <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>;
+  }
+  if (staticCollection == null) {
+    return (
+      <>
+        <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>
+        <Divider size={size} />
+      </>
+    );
+  }
+  return <StaticComboBoxSection {...props} />;
+}
+
+/**
+ * A section among static children. The headless section leaves the list when
+ * the filter keeps none of its items; its divider goes with it. A registration
+ * copy of the children names this section's keys.
+ */
+function StaticComboBoxSection<T>(props: ComboBoxSectionProps<T>): JSX.Element {
+  const size = useContext(ComboBoxSizeContext);
+  const state = useContext(HeadlessComboBoxStateContext);
+  const [keys, setKeys] = createSignal<Key[]>([]);
+  const members = new Set<Key>();
+  const sectionItems = {
+    registerItem(item: { id: Key }) {
+      if (members.has(item.id)) return;
+      members.add(item.id);
+      setKeys(Array.from(members));
+    },
+    unregisterItem(id: Key) {
+      if (members.delete(id)) setKeys(Array.from(members));
+    },
+  };
+  const hasDisplayedItem = createMemo(() =>
+    keys().some((key) => state?.collection().getItem(key) != null),
+  );
   return (
     <>
+      <StaticSelectCollectionContext value={sectionItems}>
+        <StaticSelectProbeContext value={true}>
+          <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>
+        </StaticSelectProbeContext>
+      </StaticSelectCollectionContext>
       <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>
-      <Divider size={size} />
+      <Show when={hasDisplayedItem()}>
+        <Divider size={size} />
+      </Show>
     </>
   );
 }
