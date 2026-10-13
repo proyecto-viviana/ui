@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Provider.tsx.
 import { createContext, createMemo, useContext } from "solid-js";
-import type { ParentProps } from "solid-js";
+import type { Accessor, ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
 // Narrow subpaths, not the root barrel: a consumer that renders only a Provider
 // must not pull the whole primitive surface in with it. `guard:entry-import-budget`
@@ -89,7 +89,9 @@ export const ThemeContext = createContext<ThemeContextValue>(defaultThemeContext
 // (including `"light dark"`) down the tree so consumers can read it. Our nested
 // inheritance already flows through `ProviderContext` above, so this context is
 // provided with the resolved value rather than driving resolution itself.
-export const ColorSchemeContext = createContext<ColorScheme | null>(null);
+// The value is an accessor: a provider reads its `value` once, so a plain
+// string would be the scheme at mount and never the one after a change.
+export const ColorSchemeContext = createContext<Accessor<ColorScheme> | null>(null);
 const ProviderContext = createContext<InternalProviderContextValue | null>(null);
 
 /**
@@ -288,7 +290,7 @@ export function Provider(props: ProviderProps): JSX.Element {
   return (
     <ProviderContext value={providerValue}>
       <ThemeContext value={providerValue}>
-        <ColorSchemeContext value={colorScheme()}>
+        <ColorSchemeContext value={colorScheme}>
           <I18nProvider locale={locale()}>
             <ModalProvider>
               <ProviderRoot

@@ -27,6 +27,11 @@ history:
       at: 2026-10-12,
       note: "Third slice: context props stay live, field and toggle hooks read seeds once and everything else lazily. The probe page logs 1 warning, down from 199; ColorSchemeContext is left for an owner decision. VisualMode's startup log verifies after rc.2.",
     }
+  - {
+      state: merged,
+      at: 2026-10-13,
+      note: "Fourth slice, owner decision 2026-10-13: ColorSchemeContext carries an accessor in both styled packages. The probe page logs no warning.",
+    }
 ---
 
 ## Cause
@@ -186,14 +191,6 @@ and 148 after the first two slices. What the 147 were:
 - The SegmentedControl's `DefaultSelectionTracker`, in both skins, settles at
   mount whether the caller chose the first selection.
 
-Left on purpose: `ColorSchemeContext` in `packages/viviana-ui/src/provider/index.tsx`
-(and its `solid-spectrum` twin). Its value is the scheme string itself, so the
-provider can only hand over a snapshot, and a consumer of that context does
-not see a later scheme change. Making it live means changing the exported
-context's value type to an accessor, which is a public name change and the
-owner's call. Marking the read would hide a real stale value, so it stays
-reported.
-
 Not made live: a caller that swaps an event handler prop after mount.
 `mergeProps` and the component layers above `createFocusable` still take
 handler identity once, as before this ticket.
@@ -206,3 +203,37 @@ SearchField keeps its value and disability live. Each mounts with no
 slice.
 
 Patch Changeset `.changeset/field-and-toggle-reads-stay-live.md`.
+
+## Fourth slice — 2026-10-13
+
+`ColorSchemeContext` in `packages/viviana-ui/src/provider/index.tsx` and its
+`solid-spectrum` twin held the scheme string itself. A provider reads its
+`value` once, so the context carried the scheme at mount: a consumer did not
+see a later scheme change, and the read was the last report on the probe page.
+The owner approved the public type change on 2026-10-13. The context is now
+`Context<Accessor<ColorScheme> | null>` and the provider hands it the scheme
+memo. A consumer calls the value: `useContext(ColorSchemeContext)?.()`.
+
+Nothing in this repository read the context: no package, `apps/web`,
+`apps/comparison` or documentation example. VisualMode's `src` does not read
+it either; its `useTheme` is its own, in `src/shared/theme.ts`.
+
+`packages/viviana-ui/test/Provider.test.tsx`: a consumer under a Provider and
+one under a nested Provider follow a scheme change; the context reads `null`
+outside a Provider; and the eleven-component page, with signal-driven props on
+the eight controls and static props on the three triggers, mounts with no
+`STRICT_READ_UNTRACKED` report. The first and third fail on the source before
+this slice, the third with exactly the one `<ColorSchemeContext>` report.
+`packages/solid-spectrum/test/ProviderParity.test.tsx` holds the consumer case
+for the twin.
+
+```bash
+vp test run packages/viviana-ui/test/Provider.test.tsx packages/solid-spectrum/test/ProviderParity.test.tsx
+```
+
+The page's triggers take static props. A signal-driven `isOpen` on MenuTrigger
+and signal-driven `isDisabled` or `isOpen` on TooltipTrigger still report, and
+still update; #658 owns them.
+
+Minor Changeset `.changeset/color-scheme-context-accessor.md` for
+`solid-spectrum` and `ui`, with the consumer change.

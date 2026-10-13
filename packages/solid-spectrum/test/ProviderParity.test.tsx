@@ -2,12 +2,12 @@
  * @vitest-environment jsdom
  */
 
-import { createSignal } from "solid-js";
+import { createSignal, flush, useContext } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { useModalProvider } from "@proyecto-viviana/solidaria";
-import { Provider, useProvider, useProviderProps } from "../src/provider";
+import { ColorSchemeContext, Provider, useProvider, useProviderProps } from "../src/provider";
 import { Checkbox } from "../src/checkbox";
 import { ToggleSwitch } from "../src/switch/ToggleSwitch";
 import { ActionButton } from "../src/button/ActionButton";
@@ -63,6 +63,36 @@ describe("Provider parity", () => {
 
     expect(screen.getByTestId("outer")).toHaveAttribute("data-color-scheme", "dark");
     expect(screen.getByTestId("inner")).toHaveAttribute("data-color-scheme", "light");
+  });
+
+  // #651: the context held the scheme string, so a consumer kept the scheme
+  // the provider mounted with.
+  it("a consumer of ColorSchemeContext follows a scheme change", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const [colorScheme, setColorScheme] = createSignal<"light" | "dark">("dark");
+
+    function Consumer() {
+      const scheme = useContext(ColorSchemeContext);
+      return <output data-testid="scheme">{scheme?.()}</output>;
+    }
+
+    render(() => (
+      <Provider colorScheme={colorScheme()}>
+        <Consumer />
+      </Provider>
+    ));
+
+    const reports = warn.mock.calls
+      .map((call) => String(call[0]))
+      .filter((message) => message.includes("STRICT_READ_UNTRACKED"));
+    warn.mockRestore();
+    expect(reports).toEqual([]);
+    expect(screen.getByTestId("scheme")).toHaveTextContent("dark");
+
+    setColorScheme("light");
+    flush();
+
+    expect(screen.getByTestId("scheme")).toHaveTextContent("light");
   });
 
   it("exposes provider context and merges inherited props with explicit overrides", () => {
