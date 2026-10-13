@@ -5,12 +5,17 @@ title: "Open a Picker that has static children"
 created: 2026-10-12
 parent: 33
 priority: high
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-10-12,
       note: "Found while proving Picker onOpenChange for #641: a closed Picker with static PickerItem children never opens.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Both styled Pickers register static items beside the popover while closed; the reproduction passes in both skins.",
     }
 ---
 
@@ -36,21 +41,21 @@ calls `onOpenChange(true)` once. With `defaultOpen` the static children render
 their options, which is the only shape the #43 tests cover.
 
 While the Picker is closed its hidden `<select>` holds one option, the
-placeholder: the collection is empty. #43 defers evaluating static children
-until the listbox renders, and the select state, like upstream's
-`useSelectState`, refuses to open an empty collection. So the collection is
-empty because the Picker is closed, and the Picker stays closed because the
-collection is empty.
+placeholder: the collection is empty. The headless `SelectListBox` keeps a
+registration copy of static children mounted while its list is closed, but
+both styled Pickers render that component inside their Popover, which mounts
+only while open. The select state, like upstream's `useSelectState`, refuses
+to open an empty collection. So the collection is empty because the Picker is
+closed, and the Picker stays closed because the collection is empty.
 
 VisualMode passes `items` to every Picker today, so it does not hit this.
 
 ## Scope
 
-Build the collection from static children while the Picker is closed, in the
-owner #43 chose (`packages/solidaria-components/src/Select.tsx`), without
-breaking the slot contexts that made #43 defer. Both styled Pickers consume
-the repair; ComboBox is checked for the same shape. No new public name, no
-dependency.
+Register static items while the Picker is closed, in the two styled Pickers
+(`packages/solid-spectrum/src/picker/index.tsx`,
+`packages/viviana-ui/src/picker/index.tsx`); the headless Select already does
+it for its own list. No new public name, no dependency.
 
 ## Done when
 
@@ -71,3 +76,31 @@ the headless Select case. Patch Changesets for the repaired packages.
 
 Child of #33. Follows #43 (verified with `defaultOpen` only). Found by #641.
 Related: #635 (one report per choice), #246 (Picker journeys).
+
+## Repair and proof — 2026-10-12
+
+Each styled Picker now renders a registration copy of its static children
+beside the Popover, under the probe context, whenever it has no `items`. The
+copy inside the Popover registers through a context whose `unregisterItem`
+does nothing, so closing the Popover does not withdraw the items the outer
+copy holds.
+
+Two cases in each of `packages/solid-spectrum/test/Picker.test.tsx` and
+`packages/viviana-ui/test/Picker.test.tsx`:
+
+- "opens from closed with static PickerItem children and reports the choice
+  once": the closed trigger shows the default selection, the hidden select
+  holds both items, a click opens the list with `onOpenChange(true)` once, a
+  choice reports `multiply` once and updates the trigger, and Enter opens it
+  again.
+- "opens from closed with static PickerSection children": two groups, three
+  options.
+
+```bash
+vp test run packages/solid-spectrum/test/Picker.test.tsx packages/viviana-ui/test/Picker.test.tsx
+```
+
+42 cases pass, the #43 `defaultOpen` cases among them. Before the repair the
+first new case stops at the click: no listbox appears.
+
+Not checked: ComboBox with static children.

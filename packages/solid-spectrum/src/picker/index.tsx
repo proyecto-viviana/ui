@@ -45,6 +45,7 @@ import {
   type SelectListBoxRenderProps,
   type SelectOptionProps as HeadlessSelectOptionProps,
   type SelectOptionRenderProps,
+  StaticSelectCollectionContext,
   StaticSelectProbeContext,
   StaticSelectProbeItem,
 } from "@proyecto-viviana/solidaria-components";
@@ -572,8 +573,18 @@ function PickerListBoxPopover(props: {
   align: () => PickerAlign;
   menuWidth: () => number | undefined;
   shouldFlip: () => boolean;
+  /** Whether the Picker's items are static JSX children. */
+  hasStaticItems: () => boolean;
   children: JSX.Element;
 }) {
+  // The Picker keeps a registration copy of static items mounted beside this
+  // popover, so the collection exists while the list is closed. The copy
+  // rendered in here must not withdraw those items when the popover unmounts.
+  const staticCollection = useContext(StaticSelectCollectionContext);
+  const retainedCollection = staticCollection && {
+    registerItem: staticCollection.registerItem,
+    unregisterItem() {},
+  };
   const selectContext = useContext(HeadlessSelectContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -606,7 +617,13 @@ function PickerListBoxPopover(props: {
       }}
       styles={pickerMenuWidth({ isQuiet: props.isQuiet() })}
     >
-      <div class={pickerListBoxFrame}>{props.children}</div>
+      <div class={pickerListBoxFrame}>
+        <StaticSelectCollectionContext
+          value={props.hasStaticItems() ? retainedCollection : staticCollection}
+        >
+          {props.children}
+        </StaticSelectCollectionContext>
+      </div>
     </Popover>
   );
 }
@@ -803,6 +820,14 @@ export function Picker<T, M extends SelectSelectionMode = "single">(
   const align = () => local.align ?? "start";
   const shouldFlip = () => local.shouldFlip ?? true;
   const isQuiet = () => local.isQuiet === true;
+  // Same test the headless list uses: without `items` the collection comes from
+  // static JSX children. Never read `local.children` to decide, which would
+  // build the options outside their providers.
+  const hasStaticItems = () => headlessProps.items == null;
+  const staticItemsProbe = (): JSX.Element => {
+    const child: unknown = local.children;
+    return typeof child === "function" && child.length > 0 ? undefined : (child as JSX.Element);
+  };
   const isInvalid = () => local.isInvalid === true;
   const isTriggerLoading = () => local.loadingState === "loading";
   const isLoadingMore = () => local.loadingState === "loadingMore";
@@ -1036,7 +1061,13 @@ export function Picker<T, M extends SelectSelectionMode = "single">(
             >
               {local.errorMessage}
             </HelpText>
+            {/* A Picker opens only on a non-empty collection, and the list
+                below mounts only while open: register static items here. */}
+            <Show when={hasStaticItems()}>
+              <StaticSelectProbeContext value={true}>{staticItemsProbe()}</StaticSelectProbeContext>
+            </Show>
             <PickerListBoxPopover
+              hasStaticItems={hasStaticItems}
               size={size}
               isQuiet={isQuiet}
               direction={direction}

@@ -26,6 +26,64 @@ const sections: SectionItem[] = [
 ];
 
 describe("Picker (solid-spectrum)", () => {
+  // #652: the list mounts only while open, and a Picker opens only on a
+  // non-empty collection, so static items must be registered while closed.
+  it("opens from closed with static PickerItem children and reports the choice once", async () => {
+    const user = setupUser();
+    const onOpenChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <Picker
+        aria-label="Blend mode"
+        defaultSelectedKey="normal"
+        onOpenChange={onOpenChange}
+        onSelectionChange={onSelectionChange}
+      >
+        <PickerItem id="normal">Normal</PickerItem>
+        <PickerItem id="multiply">Multiply</PickerItem>
+      </Picker>
+    ));
+    const trigger = screen.getByRole("button", { name: /Blend mode/ });
+    await waitFor(() => expect(trigger).toHaveTextContent("Normal"));
+    expect(document.querySelectorAll("select option[value]:not([value=''])")).toHaveLength(2);
+
+    await user.click(trigger);
+    const listbox = await screen.findByRole("listbox");
+    expect(onOpenChange.mock.calls).toEqual([[true]]);
+    expect(within(listbox).getAllByRole("option")).toHaveLength(2);
+
+    await user.click(within(listbox).getByRole("option", { name: "Multiply" }));
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(onSelectionChange.mock.calls).toEqual([["multiply"]]);
+    expect(trigger).toHaveTextContent("Multiply");
+
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    expect(within(await screen.findByRole("listbox")).getAllByRole("option")).toHaveLength(2);
+  });
+
+  it("opens from closed with static PickerSection children", async () => {
+    const user = setupUser();
+    render(() => (
+      <Picker aria-label="Plan">
+        <PickerSection>
+          <Header>Personal</Header>
+          <PickerItem id="free">Free</PickerItem>
+          <PickerItem id="pro">Pro</PickerItem>
+        </PickerSection>
+        <PickerSection>
+          <Header>Organization</Header>
+          <PickerItem id="team">Team</PickerItem>
+        </PickerSection>
+      </Picker>
+    ));
+
+    await user.click(screen.getByRole("button", { name: /Plan/ }));
+    const listbox = await screen.findByRole("listbox");
+    expect(within(listbox).getAllByRole("group")).toHaveLength(2);
+    expect(within(listbox).getAllByRole("option")).toHaveLength(3);
+  });
+
   // D26: the Picker tells its parent when its options open and close (#641).
   it("reports each open and close once to onOpenChange", async () => {
     const user = setupUser();
