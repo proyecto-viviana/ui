@@ -1,5 +1,20 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.7.0-rc.2
+
+### Patch Changes
+
+- 97527fe: Keep context-supplied props live in slotted components: `useContextProps` no longer copies a parent's context getters into fixed values, so a Label, Input or other slotted part follows its field after mount. Field, toggle, search and dialog-trigger internals no longer read signal-driven props once in a component body, which also ends their `STRICT_READ_UNTRACKED` reports.
+- b053867: `mergeProps` combines a signal-driven `class` or `style` when it is read, so it keeps updating after a merge with other classes or styles. Its one-time walk over a spread props object, and a `ref` read through `splitProps`, no longer log `STRICT_READ_UNTRACKED` in a component body.
+- ead09be: Follow a signal-driven `class` and `style` on the headless components that read them once at setup, and let a ToggleButton follow `isSelected` when the caller starts or stops supplying it. A ToggleButton with reactive `isSelected` and `isDisabled` no longer logs `STRICT_READ_UNTRACKED`.
+- Updated dependencies bc89fea:
+- Updated dependencies 97527fe:
+- Updated dependencies 9c2c6e7:
+- Updated dependencies b053867:
+- Updated dependencies ead09be:
+  - @proyecto-viviana/solidaria@0.6.0-rc.2
+  - @proyecto-viviana/solid-stately@0.6.0-rc.2
+
 ## 0.7.0-rc.1
 
 ### Patch Changes

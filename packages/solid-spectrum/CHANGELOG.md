@@ -1,5 +1,20 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.8.0-rc.2
+
+### Patch Changes
+
+- 97527fe: Keep context-supplied props live in slotted components: `useContextProps` no longer copies a parent's context getters into fixed values, so a Label, Input or other slotted part follows its field after mount. Field, toggle, search and dialog-trigger internals no longer read signal-driven props once in a component body, which also ends their `STRICT_READ_UNTRACKED` reports.
+- dcc0d81: Open a Picker whose items are static `PickerItem` or `PickerSection` children. The items are now registered while the list is closed, so the trigger opens it and shows the selected item's text.
+- Updated dependencies bc89fea:
+- Updated dependencies 97527fe:
+- Updated dependencies 9c2c6e7:
+- Updated dependencies b053867:
+- Updated dependencies ead09be:
+  - @proyecto-viviana/solidaria@0.6.0-rc.2
+  - @proyecto-viviana/solid-stately@0.6.0-rc.2
+  - @proyecto-viviana/solidaria-components@0.7.0-rc.2
+
 ## 0.8.0-rc.1
 
 ### Patch Changes

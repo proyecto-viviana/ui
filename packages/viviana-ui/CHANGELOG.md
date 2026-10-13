@@ -1,5 +1,24 @@
 # @proyecto-viviana/ui
 
+## 0.8.0-rc.2
+
+### Patch Changes
+
+- 34641b1: Bind `--s2-font-family-display`, `--s2-font-family-sans` and `--s2-font-family-code` to the Geist register in `viviana-tokens.css`, so a page that imports the package's CSS renders Geist Pixel, Geist and Geist Mono without a font rule of its own. A consumer can still rebind any of the three in a narrower scope.
+- 97527fe: Keep context-supplied props live in slotted components: `useContextProps` no longer copies a parent's context getters into fixed values, so a Label, Input or other slotted part follows its field after mount. Field, toggle, search and dialog-trigger internals no longer read signal-driven props once in a component body, which also ends their `STRICT_READ_UNTRACKED` reports.
+- dcc0d81: Open a Picker whose items are static `PickerItem` or `PickerSection` children. The items are now registered while the list is closed, so the trigger opens it and shows the selected item's text.
+- 41365f0: DropZone takes `isDisabled` and refuses drops and pastes while it is set.
+- 7162d0c: Remove the Adobe Clean and Source Code Pro `@font-face` blocks from `font-faces.css`. The sheet now holds the Geist import alone and makes no request to `use.typekit.net`. Styles that name the serif, Arabic or Hebrew Spectrum faces fall back to the system faces listed after them.
+- 41365f0: InlineAlert takes `role="status"` for a notice that should not interrupt. The default stays `alert`.
+- Updated dependencies bc89fea:
+- Updated dependencies 97527fe:
+- Updated dependencies 9c2c6e7:
+- Updated dependencies b053867:
+- Updated dependencies ead09be:
+  - @proyecto-viviana/solidaria@0.6.0-rc.2
+  - @proyecto-viviana/solid-stately@0.6.0-rc.2
+  - @proyecto-viviana/solidaria-components@0.7.0-rc.2
+
 ## 0.8.0-rc.1
 
 ### Patch Changes

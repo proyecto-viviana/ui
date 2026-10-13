@@ -1,5 +1,11 @@
 # @proyecto-viviana/solid-stately
 
+## 0.6.0-rc.2
+
+### Patch Changes
+
+- 97527fe: Keep context-supplied props live in slotted components: `useContextProps` no longer copies a parent's context getters into fixed values, so a Label, Input or other slotted part follows its field after mount. Field, toggle, search and dialog-trigger internals no longer read signal-driven props once in a component body, which also ends their `STRICT_READ_UNTRACKED` reports.
+
 ## 0.6.0-rc.1
 
 ### Patch Changes
