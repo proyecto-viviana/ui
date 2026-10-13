@@ -9,6 +9,10 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
 import { Checkbox } from "../src/Checkbox";
+import { Label } from "../src/Label";
+import { SearchField, SearchFieldInput } from "../src/SearchField";
+import { ToggleSwitch } from "../src/Switch";
+import { Input, TextField } from "../src/TextField";
 import { ToggleButton } from "../src/ToggleButton";
 
 function strictReads(warn: ReturnType<typeof vi.spyOn>): string[] {
@@ -107,5 +111,88 @@ describe("reactive props", () => {
 
     expect(button).toHaveAttribute("aria-pressed", "true");
     expect(button).toHaveClass("on");
+  });
+
+  it("Switch and Checkbox follow signal-driven selection and disability", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const [on, setOn] = createSignal(false);
+
+    render(() => (
+      <>
+        <ToggleSwitch isSelected={on()} isDisabled={on()}>
+          Snap
+        </ToggleSwitch>
+        <Checkbox isSelected={on()} isDisabled={on()}>
+          Lock
+        </Checkbox>
+      </>
+    ));
+    const toggle = screen.getByRole("switch", { name: "Snap" }) as HTMLInputElement;
+    const checkbox = screen.getByRole("checkbox", { name: "Lock" }) as HTMLInputElement;
+
+    expect(strictReads(warn)).toEqual([]);
+    expect(toggle.checked).toBe(false);
+    expect(checkbox.checked).toBe(false);
+
+    setOn(true);
+    flush();
+
+    expect(toggle.checked).toBe(true);
+    expect(toggle).toBeDisabled();
+    expect(checkbox.checked).toBe(true);
+    expect(checkbox).toBeDisabled();
+  });
+
+  it("TextField keeps its value, disability and label link live through context", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const [value, setValue] = createSignal("one");
+    const [disabled, setDisabled] = createSignal(false);
+    const [id, setId] = createSignal("first");
+
+    render(() => (
+      <TextField value={value()} isDisabled={disabled()} id={id()}>
+        <Label>Name</Label>
+        <Input />
+      </TextField>
+    ));
+    const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+    const label = screen.getByText("Name") as HTMLLabelElement;
+
+    expect(strictReads(warn)).toEqual([]);
+    expect(input.value).toBe("one");
+    expect(label.htmlFor).toBe(input.id);
+
+    setValue("two");
+    setDisabled(true);
+    setId("second");
+    flush();
+
+    expect(input.value).toBe("two");
+    expect(input).toBeDisabled();
+    expect(input.id).toBe("second");
+    expect(label.htmlFor).toBe("second");
+  });
+
+  it("SearchField keeps its value and disability live", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const [value, setValue] = createSignal("one");
+    const [disabled, setDisabled] = createSignal(false);
+
+    render(() => (
+      <SearchField aria-label="Find" value={value()} isDisabled={disabled()}>
+        <SearchFieldInput />
+      </SearchField>
+    ));
+    const input = screen.getByRole("searchbox", { name: "Find" }) as HTMLInputElement;
+
+    expect(strictReads(warn)).toEqual([]);
+    expect(input.value).toBe("one");
+
+    setValue("two");
+    setDisabled(true);
+    flush();
+
+    expect(input.value).toBe("two");
+    expect(input).toBeDisabled();
   });
 });

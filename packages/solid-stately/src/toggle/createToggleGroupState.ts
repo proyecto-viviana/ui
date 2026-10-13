@@ -21,6 +21,7 @@
  * This is a port of @react-stately/toggle's useToggleGroupState.
  */
 
+import { untrack } from "solid-js";
 import type { Key } from "../collections";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
@@ -69,9 +70,10 @@ export function createToggleGroupState(
 ): ToggleGroupState {
   const getProps = () => access(props);
 
-  const initialProps = getProps();
+  // Seeds the uncontrolled state once, by definition.
+  const initialDefaultSelectedKeys = untrack(() => getProps().defaultSelectedKeys);
   const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Set<Key>>(
-    toKeySet(initialProps.defaultSelectedKeys),
+    toKeySet(initialDefaultSelectedKeys),
   );
 
   const isControlled = () => getProps().selectedKeys !== undefined;

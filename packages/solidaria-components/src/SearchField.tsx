@@ -19,7 +19,7 @@
  * Port of react-aria-components/src/SearchField.tsx
  */
 
-import { createContext, createMemo, onSettled, useContext, Show } from "solid-js";
+import { createContext, createMemo, onSettled, useContext, Show, untrack } from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -808,7 +808,11 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
         inputElement = element;
         context.setInputRef?.(element);
         autocompleteInput?.inputRef(element);
-        assignRef(context.inputProps?.ref, element);
+        // A ref is taken once; `inputProps` is a getter over every live field prop.
+        assignRef(
+          untrack(() => context.inputProps?.ref),
+          element,
+        );
         assignRef((domProps as { ref?: unknown }).ref, element);
       }}
       class={renderProps.class()}

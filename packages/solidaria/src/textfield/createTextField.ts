@@ -20,7 +20,7 @@
  * This is a 1:1 port of @react-aria/textfield's useTextField hook.
  */
 
-import { createSignal } from "solid-js";
+import { createSignal, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFormValidationState, type ValidityState } from "@proyecto-viviana/solid-stately";
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
@@ -159,7 +159,7 @@ export function createTextField<
 
   // RAC useTextField snapshots `props.defaultValue ?? initialValue` and
   // calls setValue on native reset (`useTextField.ts:223-224`).
-  const resetValue = getProps().defaultValue ?? getProps().value ?? "";
+  const resetValue = untrack(() => getProps().defaultValue ?? getProps().value ?? "");
   createFormReset(
     () => inputEl() as ValidatableElement | undefined,
     resetValue,
@@ -223,11 +223,21 @@ export function createTextField<
       get excludeFromTabOrder() {
         return getProps().excludeFromTabOrder;
       },
-      onFocus: getProps().onFocus,
-      onBlur: getProps().onBlur,
-      onFocusChange: getProps().onFocusChange,
-      onKeyDown: getProps().onKeyDown,
-      onKeyUp: getProps().onKeyUp,
+      get onFocus() {
+        return getProps().onFocus;
+      },
+      get onBlur() {
+        return getProps().onBlur;
+      },
+      get onFocusChange() {
+        return getProps().onFocusChange;
+      },
+      get onKeyDown() {
+        return getProps().onKeyDown;
+      },
+      get onKeyUp() {
+        return getProps().onKeyUp;
+      },
     },
     setInputRef as ((el: HTMLElement) => void) | undefined,
   );

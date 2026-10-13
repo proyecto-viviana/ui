@@ -20,7 +20,7 @@
  * This is a 1:1 port of @react-aria/toggle's useToggle hook.
  */
 
-import { Accessor, createTrackedEffect } from "solid-js";
+import { Accessor, createTrackedEffect, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
@@ -177,9 +177,10 @@ export function createToggle(
   const validationFacade: FormValidationState = {
     realtimeValidation: () => activeValidation().realtimeValidation(),
     displayValidation: () => activeValidation().displayValidation(),
-    updateValidation: (result) => activeValidation().updateValidation(result),
-    resetValidation: () => activeValidation().resetValidation(),
-    commitValidation: () => activeValidation().commitValidation(),
+    // Imperative writes: they act on whichever validation is active now.
+    updateValidation: (result) => untrack(activeValidation).updateValidation(result),
+    resetValidation: () => untrack(activeValidation).resetValidation(),
+    commitValidation: () => untrack(activeValidation).commitValidation(),
   };
 
   createFormValidation(

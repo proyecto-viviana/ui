@@ -5,7 +5,7 @@ title: "Read signal-driven props where they can update"
 created: 2026-10-12
 parent: 531
 priority: high
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -21,6 +21,11 @@ history:
       state: in-progress,
       at: 2026-10-12,
       note: "Second slice: mergeProps marks its one-time walk and combines reactive class and style lazily; ref reads through splitProps are one-time. 199 warnings on the probe page are now 148; the field and toggle hook bodies remain.",
+    }
+  - {
+      state: merged,
+      at: 2026-10-12,
+      note: "Third slice: context props stay live, field and toggle hooks read seeds once and everything else lazily. The probe page logs 1 warning, down from 199; ColorSchemeContext is left for an owner decision. VisualMode's startup log verifies after rc.2.",
     }
 ---
 
@@ -149,3 +154,55 @@ D26). Related: #617 (reactive `filterDOMProps`), #533 (stately accessors).
 Patch Changesets `.changeset/reactive-class-style-and-toggle-state.md` and
 `.changeset/mergeprops-one-time-walk.md` cover solidaria and
 solidaria-components.
+
+## Third slice — 2026-10-12
+
+The eleven-component page logs 1 warning at mount: 199 before the ticket, 179
+and 148 after the first two slices. What the 147 were:
+
+- `useContextProps` (`packages/solidaria-components/src/utils.tsx`) took a
+  parent's context apart with a rest-spread. A field's context is an object of
+  getters over its live state, so the spread read every one of them in the
+  slotted component's body and handed it fixed values: a Label kept the `for`
+  and `id` it mounted with. It now splits the context, and the merged props
+  stay getters. This was a stale-prop defect, and most of the count.
+- `Input` and `SearchFieldInput` read `context.inputProps.ref`, which computes
+  every input prop, to take a ref. A ref is taken once; the read is marked.
+- `createTextFieldState`, `createToggleState` and `createToggleGroupState`
+  seed uncontrolled state from the props in their body, and `createTextField`
+  snapshots its reset value as upstream does. Seeds by definition; marked.
+- `createTextField` passed `onFocus`, `onBlur`, `onFocusChange`, `onKeyDown`
+  and `onKeyUp` to `createFocusable` as values; they are getters now.
+  `createFocusable` settles which handlers exist once, because the hooks under
+  it attach a listener only for a handler they are given, and calls the
+  current handler when the event arrives.
+- Imperative reads inside effect callbacks: `syncInputCustomValidity`,
+  `updateValidation` in `createFormValidationState`, the validation facade in
+  `createToggle`, the indeterminate write in `createCheckbox`, and
+  `updatePosition` in `createOverlayPosition`. Each needs the value as it
+  stands when it runs, and its effect's compute function is what subscribes.
+- `Dialog.tsx` gave `PopoverTriggerContext` and `DialogTriggerContext` a memo's
+  value; both are stable objects with getters now.
+- The SegmentedControl's `DefaultSelectionTracker`, in both skins, settles at
+  mount whether the caller chose the first selection.
+
+Left on purpose: `ColorSchemeContext` in `packages/viviana-ui/src/provider/index.tsx`
+(and its `solid-spectrum` twin). Its value is the scheme string itself, so the
+provider can only hand over a snapshot, and a consumer of that context does
+not see a later scheme change. Making it live means changing the exported
+context's value type to an accessor, which is a public name change and the
+owner's call. Marking the read would hide a real stale value, so it stays
+reported.
+
+Not made live: a caller that swaps an event handler prop after mount.
+`mergeProps` and the component layers above `createFocusable` still take
+handler identity once, as before this ticket.
+
+Three more cases in `reactive-props.test.tsx` (seven in all): ToggleSwitch and
+Checkbox follow signal-driven selection and disability; a TextField keeps its
+value, disability, input `id` and the Label's `for` live through context; a
+SearchField keeps its value and disability live. Each mounts with no
+`STRICT_READ_UNTRACKED` report, and each fails on the source before this
+slice.
+
+Patch Changeset `.changeset/field-and-toggle-reads-stay-live.md`.

@@ -21,7 +21,7 @@
  * as used by @react-aria/textfield.
  */
 
-import { Accessor } from "solid-js";
+import { Accessor, untrack } from "solid-js";
 import { createInternalSignal, type MaybeAccessor, access } from "../utils";
 
 export interface TextFieldStateOptions {
@@ -49,8 +49,11 @@ export function createTextFieldState(
 ): TextFieldState {
   const getProps = () => access(props);
 
-  const initialProps = getProps();
-  const initialValue = initialProps.value ?? initialProps.defaultValue ?? "";
+  // Seeds the uncontrolled state once, by definition.
+  const initialValue = untrack(() => {
+    const initialProps = getProps();
+    return initialProps.value ?? initialProps.defaultValue ?? "";
+  });
 
   const [internalValue, setInternalValue] = createInternalSignal(initialValue);
 

@@ -22,7 +22,7 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckbox hook.
  */
 
-import { Accessor, createEffect } from "solid-js";
+import { Accessor, createEffect, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createToggle, type AriaToggleProps } from "../toggle";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";
@@ -97,7 +97,7 @@ export function createCheckbox(
       isIndeterminate: !!getProps().isIndeterminate,
     }),
     ({ isIndeterminate }) => {
-      const input = inputRef();
+      const input = untrack(inputRef);
       if (input) {
         // indeterminate is a property, but it can only be set via javascript
         // https://css-tricks.com/indeterminate-checkboxes/

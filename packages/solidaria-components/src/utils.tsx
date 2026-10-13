@@ -46,6 +46,7 @@ import type { Accessor, Context, FlowComponent } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /**
  * Render props pattern - children can be a function that receives state
@@ -396,9 +397,19 @@ export function useContextProps<TProps extends SlotProps, TRef>(
   ref: RefLike<TRef>,
   context: Context<ContextValue<TProps, TRef>>,
 ): [TProps, (el: TRef) => void] {
-  const ctx = (useSlottedContext(context, props.slot) ?? {}) as WithRef<Partial<TProps>, TRef>;
-  const { ref: contextRef, ...contextProps } = ctx;
-  const mergedRef = mergeRefs(ref, contextRef);
+  // The slot name picks the context once, as upstream's hook call does.
+  const ctx = (useSlottedContext(
+    context,
+    untrack(() => props.slot),
+  ) ?? {}) as WithRef<Partial<TProps>, TRef>;
+  // Split, never spread: a parent's context is an object of getters over its
+  // live state, and a rest-spread here would read every one of them once and
+  // hand the component frozen values.
+  const [contextRefProps, contextProps] = splitProps(
+    ctx as WithRef<Partial<TProps>, TRef>,
+    ["ref"] as never,
+  ) as [{ ref?: RefLike<TRef> }, Partial<TProps>];
+  const mergedRef = mergeRefs(ref, contextRefProps.ref);
   const mergedProps = mergeProps(contextProps as object, props as object) as unknown as TProps;
   return [mergedProps, mergedRef];
 }

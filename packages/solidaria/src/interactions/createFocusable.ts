@@ -19,7 +19,7 @@
  */
 
 import { mergeProps, focusSafely, useContextOptional } from "../utils";
-import { Accessor, createContext, onSettled } from "solid-js";
+import { Accessor, createContext, onSettled, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocus, type FocusEvents } from "./createFocus";
 import { createKeyboard, type KeyboardEvents } from "./createKeyboard";
@@ -136,17 +136,30 @@ export function createFocusable(
   };
 
   // Get focus and keyboard props from the respective hooks
+  // Which handlers exist is settled when the hook runs, because the hooks
+  // below attach a listener only for a handler they were given. The handler
+  // itself is read when the event arrives, so a caller that swaps it is heard.
+  const live = <K extends "onFocus" | "onBlur" | "onFocusChange" | "onKeyDown" | "onKeyUp">(
+    key: K,
+  ): FocusableProps[K] =>
+    untrack(() => props[key]) == null
+      ? undefined
+      : (((...args: unknown[]) =>
+          (props[key] as ((...args: unknown[]) => void) | undefined)?.(
+            ...args,
+          )) as FocusableProps[K]);
+
   const { focusProps } = createFocus({
     isDisabled: () => isDisabledValue(props.isDisabled),
-    onFocus: props.onFocus,
-    onBlur: props.onBlur,
-    onFocusChange: props.onFocusChange,
+    onFocus: live("onFocus"),
+    onBlur: live("onBlur"),
+    onFocusChange: live("onFocusChange"),
   });
 
   const { keyboardProps } = createKeyboard({
     isDisabled: () => isDisabledValue(props.isDisabled),
-    onKeyDown: props.onKeyDown,
-    onKeyUp: props.onKeyUp,
+    onKeyDown: live("onKeyDown"),
+    onKeyUp: live("onKeyUp"),
   });
 
   // mergeProps reads event handlers eagerly. Keep a stable callable for each

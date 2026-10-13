@@ -20,7 +20,7 @@
  * This is a 1:1 port of @react-stately/toggle's useToggleState.
  */
 
-import { Accessor } from "solid-js";
+import { Accessor, untrack } from "solid-js";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface ToggleStateOptions {
@@ -51,8 +51,9 @@ export interface ToggleState {
 export function createToggleState(props: MaybeAccessor<ToggleStateOptions> = {}): ToggleState {
   const getProps = () => access(props);
 
-  const initialProps = getProps();
-  const initialSelected = initialProps.isSelected ?? initialProps.defaultSelected ?? false;
+  // Seeds the uncontrolled state once, by definition.
+  const initialDefaultSelected = untrack(() => getProps().defaultSelected);
+  const initialSelected = untrack(() => getProps().isSelected) ?? initialDefaultSelected ?? false;
 
   const [internalSelected, setInternalSelected] = createInternalSignal(initialSelected);
 
@@ -88,7 +89,7 @@ export function createToggleState(props: MaybeAccessor<ToggleStateOptions> = {})
 
   return {
     isSelected,
-    defaultSelected: initialProps.defaultSelected ?? initialSelected,
+    defaultSelected: initialDefaultSelected ?? initialSelected,
     setSelected,
     toggle,
   };

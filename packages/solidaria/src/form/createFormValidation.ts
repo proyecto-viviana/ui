@@ -21,7 +21,7 @@
  * Port of react-aria's useFormValidation.
  */
 
-import { createEffect } from "solid-js";
+import { createEffect, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import { type FormValidationState, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import { setInteractionModality } from "../interactions/createInteractionModality";
@@ -84,7 +84,9 @@ export function syncInputCustomValidity(
     return;
   }
 
-  const realtime = state.realtimeValidation();
+  // Called from effect callbacks and event handlers: it needs the validity as
+  // it stands now, and nothing here can subscribe to it.
+  const realtime = untrack(() => state.realtimeValidation());
   const message = realtime.isInvalid ? realtime.validationErrors.join(" ") || "Invalid value." : "";
 
   if (!input.hasAttribute("title")) {

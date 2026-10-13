@@ -140,16 +140,22 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   };
 
   // Context value - memoized to avoid unnecessary re-renders
-  const contextValue = createMemo(() => ({
+  // A context value is read once by its provider, so it is a stable object
+  // whose changing fields are getters.
+  const contextValue = {
     state: state,
     triggerRef,
     setTriggerRef,
     triggerId,
-    triggerProps: triggerAria.triggerProps,
-    overlayProps: triggerAria.overlayProps,
-  }));
+    get triggerProps() {
+      return triggerAria.triggerProps;
+    },
+    get overlayProps() {
+      return triggerAria.overlayProps;
+    },
+  };
 
-  const popoverContextValue = createMemo<PopoverTriggerContextValue>(() => ({
+  const popoverContextValue: PopoverTriggerContextValue = {
     state: {
       isOpen: () => state.isOpen(),
       open: () => state.open(),
@@ -162,10 +168,14 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     triggerRef,
     setTriggerRef,
     triggerId,
-    triggerProps: triggerAria.triggerProps,
-    overlayProps: triggerAria.overlayProps,
+    get triggerProps() {
+      return triggerAria.triggerProps;
+    },
+    get overlayProps() {
+      return triggerAria.overlayProps;
+    },
     trigger: "DialogTrigger",
-  }));
+  };
 
   const overlayStateContextValue: ContextOverlayTriggerState = {
     get isOpen() {
@@ -194,8 +204,8 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   return (
     <OverlayTriggerStateContext value={overlayStateContextValue}>
       <RootMenuTriggerStateContext value={state}>
-        <PopoverTriggerContext value={popoverContextValue()}>
-          <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>
+        <PopoverTriggerContext value={popoverContextValue}>
+          <DialogTriggerContext value={contextValue}>{props.children}</DialogTriggerContext>
         </PopoverTriggerContext>
       </RootMenuTriggerStateContext>
     </OverlayTriggerStateContext>

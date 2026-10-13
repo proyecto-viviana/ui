@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/SegmentedControl.tsx
 
 // Port of packages/@react-spectrum/s2/src/SegmentedControl.tsx.
-import { createContext, createMemo, onSettled, useContext } from "solid-js";
+import { createContext, createMemo, onSettled, useContext, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -296,7 +296,8 @@ function DefaultSelectionTracker(props: {
   isJustified?: boolean;
 }): JSX.Element {
   const state = useToggleButtonGroupStateContext();
-  let isRegistered = props.defaultSelectedKey != null || props.selectedKey != null;
+  // Whether the caller chose the first selection is settled at mount.
+  let isRegistered = untrack(() => props.defaultSelectedKey != null || props.selectedKey != null);
 
   const contextValue: InternalSegmentedControlContextValue = {
     register(id: Key) {

@@ -19,7 +19,7 @@
  * Ported from @react-aria/overlays useOverlayPosition.
  */
 
-import { createEffect, createSignal, createTrackedEffect } from "solid-js";
+import { createEffect, createSignal, createTrackedEffect, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { useLocale } from "../i18n";
 import { addEvent, getActiveElement, getPropagationTargets, isFocusWithin } from "../utils/dom";
@@ -324,7 +324,9 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
       return [open, overlay, target] as const;
     },
     () => {
-      updatePosition();
+      // Measures the nodes and options as they stand; the compute above is
+      // what subscribes.
+      untrack(updatePosition);
     },
   );
 

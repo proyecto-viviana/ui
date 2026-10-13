@@ -152,7 +152,8 @@ export function Input(props: InputProps): JSX.Element {
   // read from inside the callback runs with no owner. A styled register may put a
   // proxy on that context whose `inputProps` getter re-runs caller thunks (#545),
   // and anything ownerless those thunks reach throws.
-  const contextInputRef = context?.inputProps?.ref as RefLike<HTMLInputElement>;
+  // A ref is taken once; `inputProps` is a getter over every live field prop.
+  const contextInputRef = untrack(() => context?.inputProps?.ref) as RefLike<HTMLInputElement>;
 
   createEffect(
     () => attrString(props.id),

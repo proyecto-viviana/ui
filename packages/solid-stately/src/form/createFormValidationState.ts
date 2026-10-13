@@ -21,7 +21,7 @@
  * Port of react-stately's useFormValidationState.
  */
 
-import { createContext, createEffect, createMemo } from "solid-js";
+import { createContext, createEffect, createMemo, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createInternalSignal, useContextOptional } from "../utils";
 
@@ -324,7 +324,11 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
     displayValidation,
     updateValidation(value: ValidationResult) {
       // If validationBehavior is 'aria', update in realtime. Otherwise, store until commit.
-      if (validationBehavior() === "aria" && !isEqualValidation(currentValidity(), value)) {
+      // An imperative write: it reads the behavior and validity as they stand.
+      if (
+        untrack(validationBehavior) === "aria" &&
+        !isEqualValidation(untrack(currentValidity), value)
+      ) {
         setCurrentValidity(value);
       } else {
         nextValidation = value;
