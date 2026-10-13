@@ -10,6 +10,18 @@
       "source": "packages/viviana-ui/src/inlinealert/index.tsx",
       "props": [
         {
+          "name": "role",
+          "type": "\"alert\" | \"status\"",
+          "values": [
+            "'alert'",
+            "'status'"
+          ],
+          "required": false,
+          "default": "'alert'",
+          "description": "How assistive technology announces the notice. `alert` interrupts; `status` waits for a pause. Beyond S2, whose InlineAlert is always `alert`.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "children",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
@@ -104,6 +116,10 @@
   ],
   "divergence": {
     "InlineAlertProps": [
+      {
+        "prop": "role",
+        "kind": "only-here"
+      },
       {
         "prop": "variant",
         "kind": "values",

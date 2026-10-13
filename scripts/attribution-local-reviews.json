@@ -757,7 +757,7 @@
   {
     "localPath": "packages/solidaria-components/src/Icon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "84f8ca65cdef19d329ce38fe2a4d026a6e24f44facbaf502db78e20c17d00f79"
+    "contentSha256": "2dac727b47a4aaed95813095926dca1db94d8e1ecd5301fea2e865a3d2d1bc13"
   },
   {
     "localPath": "packages/solidaria-components/src/index.ts",
@@ -1272,7 +1272,7 @@
   {
     "localPath": "packages/viviana-ui/src/text/type-roles.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "00cb3ae0c65ee0bae42b05d656761dd2d33026283a1b4ee332296343e7c2b1ca"
+    "contentSha256": "77146a5049b34b84df08ec563a09519f2c0485b88cbd4118996b14da7f86f063"
   },
   {
     "localPath": "packages/viviana-ui/src/vite.ts",

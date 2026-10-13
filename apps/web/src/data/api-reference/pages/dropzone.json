@@ -17,6 +17,17 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the DropZone refuses drops and pastes. Beyond S2, whose DropZone omits it; the headless DropZone implements it.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "isFilled",
           "type": "boolean",
           "values": [
@@ -135,5 +146,12 @@
       ]
     }
   ],
-  "divergence": {}
+  "divergence": {
+    "DropZoneProps": [
+      {
+        "prop": "isDisabled",
+        "kind": "only-here"
+      }
+    ]
+  }
 }
