@@ -66,8 +66,15 @@ describe("Picker", () => {
       </Picker>
     ));
 
+    // The copy that registers the items while closed paints nothing.
+    await waitFor(() => expect(document.querySelectorAll("select option")).toHaveLength(4));
+    expect(screen.queryByText("Personal")).not.toBeInTheDocument();
+    expect(screen.queryByText("Organization")).not.toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: /Plan/ }));
     const listbox = await screen.findByRole("listbox");
+    expect(within(listbox).getByText("Personal")).toBeInTheDocument();
+    expect(screen.getAllByText("Personal")).toHaveLength(1);
     expect(within(listbox).getAllByRole("group")).toHaveLength(2);
     expect(within(listbox).getAllByRole("option")).toHaveLength(3);
   });

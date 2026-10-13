@@ -28,7 +28,11 @@ import {
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
 import { typeRoles } from "./type-roles";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
-import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components";
+import {
+  joinSlotClass,
+  StaticSelectProbeContext,
+  useSlotValue,
+} from "@proyecto-viviana/solidaria-components";
 
 /* Standalone type-role defaults (Glasselated register, mirror panel 09):
  * Text, Content and Keyboard were pure slot markers — bare elements with an
@@ -112,6 +116,7 @@ export function Text(props: TextProps): JSX.Element {
 }
 
 export function Header(props: HeaderProps): JSX.Element {
+  const probe = useContext(StaticSelectProbeContext);
   const contextProps = getSlottedContextProps(useContext(HeaderContext), props.slot);
   const merged = mergeProps(contextProps ?? {}, props) as HeaderProps;
   const [local] = splitProps(merged, [
@@ -132,7 +137,9 @@ export function Header(props: HeaderProps): JSX.Element {
       .join(" ");
   const unsafeStyle = () => mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
 
-  if (local.isHidden) {
+  // The registration copy of a static Picker or ComboBox section, mounted while
+  // the list is closed, must not paint a heading; the headless Header does the same.
+  if (local.isHidden || probe) {
     return null as unknown as JSX.Element;
   }
 

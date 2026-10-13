@@ -17,6 +17,11 @@ history:
       at: 2026-10-12,
       note: "Both styled Pickers register static items beside the popover while closed; the reproduction passes in both skins.",
     }
+  - {
+      state: merged,
+      at: 2026-10-13,
+      note: "The registration copy painted a static section's styled Header beside the closed trigger; the styled Header now renders nothing there.",
+    }
 ---
 
 ## Cause
@@ -103,4 +108,17 @@ vp test run packages/solid-spectrum/test/Picker.test.tsx packages/viviana-ui/tes
 42 cases pass, the #43 `defaultOpen` cases among them. Before the repair the
 first new case stops at the click: no listbox appears.
 
-Not checked: ComboBox with static children.
+ComboBox with static children is #656.
+
+## Section headers while closed — 2026-10-13
+
+The registration copy this repair added sits beside the Popover, in the page.
+The headless `Header` renders nothing in a registration copy, but the styled
+`Header` (`src/text/index.tsx` in both styled packages) did not know about it:
+a closed Picker with `<PickerSection><Header>Personal</Header>…` painted
+"Personal" next to its trigger, in rc.2. The styled `Header` now returns
+nothing under the registration context, as the headless one does.
+
+The static-section case in both Picker test files now also asserts that no
+section heading is in the document while the Picker is closed and exactly one
+while it is open. It fails on the source before this change.
