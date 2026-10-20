@@ -22,6 +22,7 @@ import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TreeState, TreeCollection, Key, Collection } from "@proyecto-viviana/solid-stately";
+import type { KeyboardDelegate } from "../grid/types";
 import type { AriaTreeProps, TreeAria } from "./types";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
@@ -42,6 +43,7 @@ interface TreeData {
   keyboardNavigationBehavior: "arrow" | "tab";
   /** Text direction for row-child arrow navigation and tree expansion keys. */
   direction: "ltr" | "rtl";
+  keyboardDelegate?: KeyboardDelegate;
   /** Actions registered for the tree. */
   actions: {
     onAction?: (key: Key) => void;
@@ -114,6 +116,9 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     get direction() {
       return props().direction ?? "ltr";
     },
+    get keyboardDelegate() {
+      return props().keyboardDelegate;
+    },
     actions: {
       get onAction() {
         return props().onAction;
@@ -125,6 +130,12 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
   treeDataMap.set(state(), treeData);
 
   const { typeSelectProps } = createTypeSelect({
+    get keyboardDelegate() {
+      return props().keyboardDelegate;
+    },
+    get isDisabled() {
+      return props().isDisabled || props().disallowTypeAhead;
+    },
     collection: () => state().collection as unknown as Collection<T>,
     focusedKey: () => state().focusedKey,
     onFocusedKeyChange: (key) => state().setFocusedKey(key),
@@ -135,6 +146,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
   const restoreFocusedRow = (key: Key | null) => {
     if (key == null) return;
     queueMicrotask(() => {
+      if (state().focusedKey !== key) return;
       state().setFocused(true);
       const el = ref();
       const target = el?.querySelector<HTMLElement>(`[data-key="${CSS.escape(String(key))}"]`);
@@ -154,6 +166,68 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     const collapseKey = direction === "rtl" ? "ArrowRight" : "ArrowLeft";
 
     if (p.isDisabled) return;
+
+    // Like useSelectableCollection, a supplied delegate replaces navigation:
+    // absent methods and null results do not fall back to the built-in walk.
+    const delegate = p.keyboardDelegate;
+    if (delegate) {
+      let key: Key | null | undefined;
+      let strategy: "first" | "last" = "first";
+      switch (e.key) {
+        case "ArrowDown":
+          if (!delegate.getKeyBelow) return;
+          key = focusedKey != null ? delegate.getKeyBelow?.(focusedKey) : delegate.getFirstKey?.();
+          break;
+        case "ArrowUp":
+          if (!delegate.getKeyAbove) return;
+          key = focusedKey != null ? delegate.getKeyAbove?.(focusedKey) : delegate.getLastKey?.();
+          break;
+        case "ArrowLeft":
+          if (!delegate.getKeyLeftOf) return;
+          key = focusedKey != null ? delegate.getKeyLeftOf?.(focusedKey) : delegate.getFirstKey?.();
+          strategy = direction === "rtl" ? "first" : "last";
+          break;
+        case "ArrowRight":
+          if (!delegate.getKeyRightOf) return;
+          key =
+            focusedKey != null ? delegate.getKeyRightOf?.(focusedKey) : delegate.getFirstKey?.();
+          strategy = direction === "rtl" ? "last" : "first";
+          break;
+        case "Home":
+          key = delegate.getFirstKey?.(focusedKey ?? undefined, e.ctrlKey || e.metaKey);
+          break;
+        case "End":
+          key = delegate.getLastKey?.(focusedKey ?? undefined, e.ctrlKey || e.metaKey);
+          break;
+        case "PageDown":
+          key = focusedKey != null ? delegate.getKeyPageBelow?.(focusedKey) : null;
+          break;
+        case "PageUp":
+          key = focusedKey != null ? delegate.getKeyPageAbove?.(focusedKey) : null;
+          break;
+        default:
+          break;
+      }
+      if (
+        [
+          "ArrowDown",
+          "ArrowUp",
+          "ArrowLeft",
+          "ArrowRight",
+          "Home",
+          "End",
+          "PageDown",
+          "PageUp",
+        ].includes(e.key)
+      ) {
+        if (key != null) {
+          e.preventDefault();
+          s.setFocusedKey(key, strategy);
+          if (e.shiftKey) s.extendSelection(key);
+        }
+        return;
+      }
+    }
 
     switch (e.key) {
       case "ArrowDown": {
@@ -309,11 +383,20 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       const backward =
         !!relatedTarget &&
         !!(currentTarget.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING);
+      const delegate = props().keyboardDelegate;
       key = backward
         ? (lastSelectedKey(s) ??
-          findNextNavigableKey(s, s.collection.getLastKey(), (k) => s.collection.getKeyBefore(k)))
+          (delegate
+            ? (delegate.getLastKey?.() ?? null)
+            : findNextNavigableKey(s, s.collection.getLastKey(), (k) =>
+                s.collection.getKeyBefore(k),
+              )))
         : (firstSelectedKey(s) ??
-          findNextNavigableKey(s, s.collection.getFirstKey(), (k) => s.collection.getKeyAfter(k)));
+          (delegate
+            ? (delegate.getFirstKey?.() ?? null)
+            : findNextNavigableKey(s, s.collection.getFirstKey(), (k) =>
+                s.collection.getKeyAfter(k),
+              )));
     }
     if (key != null) {
       s.setFocusedKey(key);
@@ -343,7 +426,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       return;
     }
 
-    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    const target = el.querySelector<HTMLElement>(`[data-key="${CSS.escape(String(key))}"]`);
     // Upstream useSelectableCollection focuses the row only when focus is not
     // already inside it (`isFocusWithin`). A nested ActionMenu trigger keeps
     // the key event; pulling focus onto the row closed the menu before Enter.

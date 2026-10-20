@@ -101,6 +101,197 @@ function enterTree(onFocusIn: unknown) {
 }
 
 describe("createTree", () => {
+  it("uses the delegate to choose entry focus", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      const getFirstKey = vi.fn(() => "2");
+      const aria = createTree(
+        () => ({ keyboardDelegate: { getFirstKey } }),
+        () => state,
+        () => null,
+      );
+      enterTree(aria.treeProps.onFocusIn);
+      expect(getFirstKey).toHaveBeenCalled();
+      expect(state.focusedKey).toBe("2");
+      dispose();
+    });
+  });
+
+  it("leaves an arrow unhandled when its delegate method is absent", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      const aria = createTree(
+        () => ({ keyboardDelegate: { getFirstKey: () => "2" } }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      const event = createRowKeyboardEvent("ArrowDown", tree, tree);
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(event);
+      expect(state.focusedKey).toBeNull();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("uses the supplied keyboard delegate for navigation without default fallback", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      state.setFocusedKey("1");
+      const keyboardDelegate = {
+        getKeyBelow: vi.fn(() => "2"),
+        getKeyAbove: vi.fn(() => null),
+        getKeyRightOf: vi.fn(() => "2"),
+        getKeyLeftOf: vi.fn(() => "1"),
+        getFirstKey: vi.fn(() => "2"),
+        getLastKey: vi.fn(() => "1"),
+        getKeyPageBelow: vi.fn(() => "2"),
+        getKeyPageAbove: vi.fn(() => "1"),
+      };
+      const aria = createTree(
+        () => ({ keyboardDelegate }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      const press = (key: string) =>
+        (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(
+          createRowKeyboardEvent(key, tree, tree),
+        );
+      press("ArrowDown");
+      expect(keyboardDelegate.getKeyBelow).toHaveBeenCalledWith("1");
+      expect(state.focusedKey).toBe("2");
+      press("ArrowUp");
+      expect(state.focusedKey).toBe("2");
+      press("ArrowRight");
+      expect(keyboardDelegate.getKeyRightOf).toHaveBeenCalledWith("2");
+      expect(state.expandedKeys.size).toBe(0);
+      press("ArrowLeft");
+      expect(state.focusedKey).toBe("1");
+      press("Home");
+      expect(state.focusedKey).toBe("2");
+      press("End");
+      expect(state.focusedKey).toBe("1");
+      press("PageDown");
+      expect(state.focusedKey).toBe("2");
+      press("PageUp");
+      expect(state.focusedKey).toBe("1");
+      dispose();
+    });
+  });
+
+  it("disables type-ahead reactively without consuming letter keys", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      state.setFocusedKey("2");
+      const [disabled, setDisabled] = createSignal(true, { ownedWrite: true });
+      const aria = createTree(
+        () => ({ disallowTypeAhead: disabled() }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      const event = createRowKeyboardEvent("I", tree, tree);
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(event);
+      expect(state.focusedKey).toBe("2");
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      setDisabled(false);
+      flush();
+      state.setFocusedKey(null);
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(
+        createRowKeyboardEvent("I", tree, tree),
+      );
+      expect(state.focusedKey).toBe("1");
+      dispose();
+    });
+  });
+
+  it("does not fall back to text matching when a delegate has no search method", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      const aria = createTree(
+        () => ({ keyboardDelegate: {} }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      const event = createRowKeyboardEvent("I", tree, tree);
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(event);
+      expect(state.focusedKey).toBeNull();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("stops delegated space searches when type-ahead is disabled", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      const [disabled, setDisabled] = createSignal(false, { ownedWrite: true });
+      const getKeyForSearch = vi.fn(() => "2");
+      const aria = createTree(
+        () => ({ keyboardDelegate: { getKeyForSearch }, disallowTypeAhead: disabled() }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(
+        createRowKeyboardEvent("a", tree, tree),
+      );
+      setDisabled(true);
+      flush();
+      getKeyForSearch.mockClear();
+      const event = createRowKeyboardEvent(" ", tree, tree);
+      (aria.treeProps.onKeyDownCapture as (e: KeyboardEvent) => void)(event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(getKeyForSearch).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("does not capture a space after the owner removes delegate search", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      const [hasSearch, setHasSearch] = createSignal(true, { ownedWrite: true });
+      const aria = createTree(
+        () => ({ keyboardDelegate: hasSearch() ? { getKeyForSearch: () => "2" } : {} }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(
+        createRowKeyboardEvent("a", tree, tree),
+      );
+      setHasSearch(false);
+      flush();
+      const event = createRowKeyboardEvent(" ", tree, tree);
+      (aria.treeProps.onKeyDownCapture as (e: KeyboardEvent) => void)(event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("delegates letter search, including retry from the top", () => {
+    createRoot((dispose) => {
+      const state = createState();
+      state.setFocusedKey("1");
+      const getKeyForSearch = vi.fn((_search: string, fromKey?: string | number) =>
+        fromKey == null ? "2" : null,
+      );
+      const aria = createTree(
+        () => ({ keyboardDelegate: { getKeyForSearch } }),
+        () => state,
+        () => null,
+      );
+      const tree = document.createElement("div");
+      (aria.treeProps.onKeyDown as (e: KeyboardEvent) => void)(
+        createRowKeyboardEvent("z", tree, tree),
+      );
+      expect(getKeyForSearch.mock.calls).toEqual([["z", "1"], ["z"]]);
+      expect(state.focusedKey).toBe("2");
+      dispose();
+    });
+  });
+
   it("should return treeProps with correct role", () => {
     createRoot((dispose) => {
       const state = createState();

@@ -62,7 +62,11 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
 
   // Focus state
   const [isFocused, setIsFocused] = createInternalSignal(false);
-  const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
+  const [internalFocusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
+  const focusedKey = (): Key | null => {
+    const key = getOptions().focusedKey;
+    return key !== undefined ? key : internalFocusedKey();
+  };
   const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(
     null,
   );
@@ -117,8 +121,18 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   );
 
   // Set focused key
+  const updateFocusedKey = (key: Key | null) => {
+    const opts = getOptions();
+    if (key !== focusedKey()) {
+      if (opts.focusedKey === undefined) {
+        setFocusedKeyInternal(key);
+      }
+      opts.onFocusChange?.(key);
+    }
+  };
+
   const setFocusedKey = (key: Key | null, strategy: FocusStrategy = "first") => {
-    setFocusedKeyInternal(key);
+    updateFocusedKey(key);
     setChildFocusStrategy(strategy);
   };
 
@@ -144,7 +158,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
           if (node?.parentKey != null) {
             const parent = coll.getItem(node.parentKey);
             if (parent && visibleKeys.includes(parent.key)) {
-              setFocusedKeyInternal(parent.key);
+              updateFocusedKey(parent.key);
               cachedCollection = coll;
               return;
             }
@@ -159,7 +173,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
               const newIndex = Math.min(cachedNode.rowIndex, rows.length - 1);
               const newNode = rows[newIndex];
               if (newNode && !disabled.has(newNode.key)) {
-                setFocusedKeyInternal(newNode.key);
+                updateFocusedKey(newNode.key);
                 cachedCollection = coll;
                 return;
               }
@@ -167,12 +181,12 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
             // Fall back to first non-disabled item
             for (const row of rows) {
               if (!disabled.has(row.key)) {
-                setFocusedKeyInternal(row.key);
+                updateFocusedKey(row.key);
                 break;
               }
             }
           } else {
-            setFocusedKeyInternal(null);
+            updateFocusedKey(null);
           }
         }
       }

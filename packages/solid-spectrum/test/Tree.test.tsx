@@ -96,6 +96,169 @@ function FileTree(props: {
 describe("TreeView (solid-spectrum)", () => {
   afterEach(() => cleanup());
 
+  it("waits for owner focus updates and leaves selection unchanged", async () => {
+    const user = setupUser();
+    const [focusedKey, setFocusedKey] = createSignal<string | null>("projects");
+    const onFocusChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <TreeView
+        aria-label="Controlled files"
+        items={files}
+        focusedKey={focusedKey()}
+        onFocusChange={onFocusChange}
+        selectionMode="multiple"
+        selectedKeys={["archive"]}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => (
+          <TreeViewItem id={itemKey(item)} textValue={item.textValue}>
+            {item.textValue}
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
+    const row = (name: string) => screen.getByRole("row", { name });
+    row("Projects").focus();
+    await user.keyboard("{ArrowDown}");
+    expect(onFocusChange).toHaveBeenLastCalledWith("archive");
+    expect(document.activeElement).toBe(row("Projects"));
+    expect(row("Projects")).toHaveAttribute("tabindex", "0");
+    expect(row("Archive")).toHaveAttribute("tabindex", "-1");
+    setFocusedKey("archive");
+    flush();
+    await waitFor(() => expect(document.activeElement).toBe(row("Archive")));
+    expect(row("Archive")).toHaveAttribute("aria-selected", "true");
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    // Owner updates while the tree is blurred must not steal focus.
+    const outside = document.createElement("button");
+    document.body.append(outside);
+    outside.focus();
+    setFocusedKey("projects");
+    flush();
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
+  });
+
+  it("requests controlled expansion and renders only the owner-approved keys", async () => {
+    const user = setupUser();
+    const [expandedKeys, setExpandedKeys] = createSignal<Set<string | number>>(new Set());
+    const onExpandedChange = vi.fn();
+    render(() => (
+      <TreeView
+        aria-label="Controlled folds"
+        items={files}
+        expandedKeys={expandedKeys()}
+        onExpandedChange={onExpandedChange}
+      >
+        {(item) => (
+          <TreeViewItem id={itemKey(item)} textValue={item.textValue}>
+            {item.textValue}
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
+    const row = () => screen.getByRole("row", { name: "Projects" });
+    row().focus();
+    await user.keyboard("{ArrowRight}");
+    expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(["projects"]));
+    expect(row()).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("row", { name: "Project brief" })).not.toBeInTheDocument();
+    setExpandedKeys(new Set(["projects"]));
+    flush();
+    await waitFor(() => expect(row()).toHaveAttribute("aria-expanded", "true"));
+    expect(screen.getByRole("row", { name: "Project brief" })).toBeInTheDocument();
+    row().focus();
+    await user.keyboard("{ArrowLeft}");
+    expect(onExpandedChange).toHaveBeenLastCalledWith(new Set());
+    expect(row()).toHaveAttribute("aria-expanded", "true");
+    setExpandedKeys(new Set());
+    flush();
+    await waitFor(() => expect(row()).toHaveAttribute("aria-expanded", "false"));
+  });
+
+  it("delegates row arrows and letters and preserves Tab access to row controls", async () => {
+    const user = setupUser();
+    const onExpandedChange = vi.fn();
+    const getKeyRightOf = vi.fn(() => "archive");
+    const getKeyForSearch = vi.fn(() => "projects");
+    const [disallowTypeAhead, setDisallowTypeAhead] = createSignal(false);
+    render(() => (
+      <>
+        <TreeView
+          aria-label="Delegated files"
+          items={files}
+          keyboardNavigationBehavior="tab"
+          keyboardDelegate={{ getKeyRightOf, getKeyForSearch }}
+          disallowTypeAhead={disallowTypeAhead()}
+          onExpandedChange={onExpandedChange}
+        >
+          {(item) => (
+            <TreeViewItem id={itemKey(item)} textValue={item.textValue}>
+              <TreeViewItemContent>
+                <Text slot="label">{item.textValue}</Text>
+                <span slot="actions">
+                  <button>First {item.textValue}</button>
+                  <button>Second {item.textValue}</button>
+                </span>
+              </TreeViewItemContent>
+            </TreeViewItem>
+          )}
+        </TreeView>
+        <button>After tree</button>
+      </>
+    ));
+    const projects = () => screen.getByRole("row", { name: "Projects" });
+    projects().focus();
+    await user.keyboard("{ArrowRight}");
+    expect(getKeyRightOf).toHaveBeenCalledWith("projects");
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("row", { name: "Archive" })),
+    );
+    expect(onExpandedChange).not.toHaveBeenCalled();
+    await user.keyboard("z");
+    expect(getKeyForSearch).toHaveBeenCalledWith("z", "archive");
+    await waitFor(() => expect(document.activeElement).toBe(projects()));
+    setDisallowTypeAhead(true);
+    flush();
+    getKeyForSearch.mockClear();
+    await user.keyboard("a");
+    expect(getKeyForSearch).not.toHaveBeenCalled();
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "First Projects" }));
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Second Projects" }));
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "First Projects" }));
+  });
+
+  it("lets a delegate override row expansion in the default arrow mode", async () => {
+    const user = setupUser();
+    const getKeyRightOf = vi.fn(() => "archive");
+    const onExpandedChange = vi.fn();
+    render(() => (
+      <TreeView
+        aria-label="Arrow delegate"
+        items={files}
+        keyboardDelegate={{ getKeyRightOf }}
+        onExpandedChange={onExpandedChange}
+      >
+        {(item) => (
+          <TreeViewItem id={itemKey(item)} textValue={item.textValue}>
+            {item.textValue}
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
+    screen.getByRole("row", { name: "Projects" }).focus();
+    await user.keyboard("{ArrowRight}");
+    expect(getKeyRightOf).toHaveBeenCalledWith("projects");
+    expect(onExpandedChange).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("row", { name: "Archive" })),
+    );
+  });
+
   it("renders static item function children only with live row state", async () => {
     const user = setupUser();
     let renderCount = 0;

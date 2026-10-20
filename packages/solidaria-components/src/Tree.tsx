@@ -200,6 +200,10 @@ export interface TreeProps<T extends object> extends Omit<AriaTreeProps, "childr
   defaultSelectedKeys?: "all" | Iterable<Key>;
   /** Handler called when selection changes. */
   onSelectionChange?: (keys: "all" | Set<Key>) => void;
+  /** Currently focused key (controlled). Use null for no focused item. */
+  focusedKey?: Key | null;
+  /** Requests a focused key change without changing selection. */
+  onFocusChange?: (key: Key | null) => void;
   /** Currently expanded keys (controlled). */
   expandedKeys?: Iterable<Key>;
   /** Default expanded keys (uncontrolled). */
@@ -1141,6 +1145,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       "selectedKeys",
       "defaultSelectedKeys",
       "onSelectionChange",
+      "focusedKey",
+      "onFocusChange",
       "expandedKeys",
       "defaultExpandedKeys",
       "onExpandedChange",
@@ -1167,6 +1173,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     selectedKeys: stateProps.selectedKeys,
     defaultSelectedKeys: stateProps.defaultSelectedKeys,
     onSelectionChange: stateProps.onSelectionChange,
+    focusedKey: stateProps.focusedKey,
+    onFocusChange: stateProps.onFocusChange,
     expandedKeys: stateProps.expandedKeys,
     defaultExpandedKeys: stateProps.defaultExpandedKeys,
     onExpandedChange: stateProps.onExpandedChange,
@@ -1219,6 +1227,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
       keyboardNavigationBehavior: ariaProps.keyboardNavigationBehavior,
+      keyboardDelegate: ariaProps.keyboardDelegate,
+      disallowTypeAhead: ariaProps.disallowTypeAhead,
       direction: treeDirection(),
     }),
     () => state,

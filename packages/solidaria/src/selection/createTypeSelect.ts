@@ -25,6 +25,7 @@ import { bindCapture, captureRef } from "../utils/capture";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
+import type { KeyboardDelegate } from "../grid/types";
 import { createCollator } from "../i18n/createCollator";
 
 /**
@@ -33,6 +34,8 @@ import { createCollator } from "../i18n/createCollator";
 const TYPEAHEAD_DEBOUNCE_WAIT_MS = 1000; // 1 second
 
 export interface TypeSelectOptions<T> {
+  /** Overrides collection text matching with the supplied delegate. */
+  keyboardDelegate?: KeyboardDelegate;
   /** The collection to search through. */
   collection: Accessor<Collection<T>>;
   /** The currently focused key. */
@@ -174,15 +177,14 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
 
     // Prioritize items at/after the focused item, then retry from the top to
     // cover earlier ones (upstream's two getKeyForSearch calls).
-    let key = getKeyForSearch(
-      collection,
-      state.search,
-      currentKey,
-      collator(),
-      options.isKeyDisabled,
-    );
+    const delegate = options.keyboardDelegate;
+    let key = delegate
+      ? delegate.getKeyForSearch?.(state.search, currentKey ?? undefined)
+      : getKeyForSearch(collection, state.search, currentKey, collator(), options.isKeyDisabled);
     if (key == null) {
-      key = getKeyForSearch(collection, state.search, null, collator(), options.isKeyDisabled);
+      key = delegate
+        ? delegate.getKeyForSearch?.(state.search)
+        : getKeyForSearch(collection, state.search, null, collator(), options.isKeyDisabled);
     }
 
     if (key != null) {
@@ -190,7 +192,7 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       options.onTypeSelect?.(key);
     }
 
-    return key;
+    return key ?? null;
   };
 
   const restartDebounce = () => {
@@ -204,7 +206,11 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
   // action, so we consume it before the collection's own keydown handler can act
   // on it. Mirrors upstream useTypeSelect's onKeyDownCapture.
   const onKeyDownCapture: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
-    if (options.isDisabled) return;
+    if (
+      options.isDisabled ||
+      (options.keyboardDelegate && !options.keyboardDelegate.getKeyForSearch)
+    )
+      return;
 
     if (state.search.length > 0 && e.key === " ") {
       e.preventDefault();
@@ -222,7 +228,11 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
   // capture listener above is inert, mid-search Spacebar via its non-bailing
   // branch). Mirrors upstream useTypeSelect's onKeyDown.
   const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
-    if (options.isDisabled) return;
+    if (
+      options.isDisabled ||
+      (options.keyboardDelegate && !options.keyboardDelegate.getKeyForSearch)
+    )
+      return;
 
     const character = getStringForKey(e.key);
 

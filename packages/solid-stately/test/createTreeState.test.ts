@@ -57,6 +57,65 @@ function createState<T extends object>(
 }
 
 describe("createTreeState", () => {
+  it("keeps controlled focus with the owner, independently of selection", () => {
+    createRoot((dispose) => {
+      const [focusedKey, setFocusedKey] = createSignal<string | null>("1.1", { ownedWrite: true });
+      const [expandedKeys, setExpandedKeys] = createSignal(["1"], { ownedWrite: true });
+      const onFocusChange = vi.fn();
+      const state = createState(
+        () => ({
+          focusedKey: focusedKey(),
+          onFocusChange,
+          expandedKeys: expandedKeys(),
+          defaultSelectedKeys: ["2"],
+          selectionMode: "multiple",
+        }),
+        createTestItems(),
+      );
+      flush();
+      expect(state.focusedKey).toBe("1.1");
+      state.setFocusedKey("2");
+      expect(onFocusChange).toHaveBeenLastCalledWith("2");
+      expect(state.focusedKey).toBe("1.1");
+      expect(state.selectedKeys).toEqual(new Set(["2"]));
+      setExpandedKeys([]);
+      flush();
+      expect(onFocusChange).toHaveBeenLastCalledWith("1");
+      expect(state.focusedKey).toBe("1.1");
+      setFocusedKey("1");
+      flush();
+      expect(state.focusedKey).toBe("1");
+      setFocusedKey(null);
+      flush();
+      state.setFocusedKey("3");
+      expect(state.focusedKey).toBeNull();
+      expect(onFocusChange).toHaveBeenLastCalledWith("3");
+      dispose();
+    });
+  });
+
+  it("allows the owner to accept a focus recovery request", () => {
+    const [focusedKey, setFocusedKey] = createSignal<string | number | null>("1.1");
+    const [expandedKeys, setExpandedKeys] = createSignal(["1"]);
+    let state!: ReturnType<typeof createState<TestItem>>;
+    const dispose = createRoot((dispose) => {
+      state = createState(
+        () => ({
+          focusedKey: focusedKey(),
+          onFocusChange: setFocusedKey,
+          expandedKeys: expandedKeys(),
+        }),
+        createTestItems(),
+      );
+      return dispose;
+    });
+    flush();
+    setExpandedKeys([]);
+    flush();
+    expect(state.focusedKey).toBe("1");
+    dispose();
+  });
+
   describe("collection", () => {
     it("should create a tree collection with root items only when nothing is expanded", () => {
       createRoot((dispose) => {

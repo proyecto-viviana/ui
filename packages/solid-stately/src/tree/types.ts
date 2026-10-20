@@ -179,6 +179,10 @@ export interface TreeStateOptions<T, C extends TreeCollection<T> = TreeCollectio
   defaultSelectedKeys?: Selection | Iterable<Key>;
   /** Handler for selection changes. */
   onSelectionChange?: (keys: "all" | Set<Key>) => void;
+  /** Currently focused key (controlled). Use null for no focused item. */
+  focusedKey?: Key | null;
+  /** Handler called when the focused key changes. */
+  onFocusChange?: (key: Key | null) => void;
   /** Currently expanded keys (controlled). */
   expandedKeys?: Iterable<Key>;
   /** Default expanded keys (uncontrolled). */

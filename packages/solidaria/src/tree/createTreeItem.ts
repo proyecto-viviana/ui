@@ -210,7 +210,9 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       ref,
       keyboardNavigationBehavior: () => treeData?.keyboardNavigationBehavior ?? "arrow",
       direction,
+      layout: () => (treeData?.keyboardDelegate ? "grid" : "stack"),
       onBeforeArrowNavigation: (event) => {
+        if (treeData?.keyboardDelegate) return false;
         const s = state();
         const node = props().node;
         const row = ref();

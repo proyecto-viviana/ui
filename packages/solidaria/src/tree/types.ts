@@ -38,6 +38,7 @@
 
 import type { JSX } from "@solidjs/web";
 import type { Key, TreeNode } from "@proyecto-viviana/solid-stately";
+import type { KeyboardDelegate } from "../grid/types";
 import type { AriaButtonProps } from "../button";
 
 /**
@@ -66,6 +67,13 @@ export interface AriaTreeProps {
    * @default "arrow"
    */
   keyboardNavigationBehavior?: "arrow" | "tab";
+  /**
+   * Replaces built-in keyboard navigation, folding and type-to-select lookup.
+   * Omitted delegate methods do not fall back to the built-in navigation.
+   */
+  keyboardDelegate?: KeyboardDelegate;
+  /** Whether type-ahead navigation is disabled. @default false */
+  disallowTypeAhead?: boolean;
   /** Whether the tree is disabled. */
   isDisabled?: boolean;
   /** The writing direction for the tree. Determines expand/collapse key mapping. */
