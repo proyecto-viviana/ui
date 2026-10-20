@@ -213,6 +213,13 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "onFocusChange",
+          "type": "(key: Key | null) => void",
+          "required": false,
+          "description": "Requests a focused key change without changing selection.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "selectionMode",
           "type": "\"none\" | \"single\" | \"multiple\"",
           "values": [
@@ -243,6 +250,18 @@
           "type": "(key: Key) => void",
           "required": false,
           "description": "Handler called when an item action is triggered.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "disallowTypeAhead",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether type-ahead navigation is disabled.",
           "origin": "solidaria"
         },
         {
@@ -286,6 +305,13 @@
           ],
           "required": false,
           "description": "Whether the tree is virtualized.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "keyboardDelegate",
+          "type": "KeyboardDelegate",
+          "required": false,
+          "description": "Replaces built-in keyboard navigation, folding and type-to-select lookup. Omitted delegate methods do not fall back to the built-in navigation.",
           "origin": "solidaria"
         },
         {
@@ -334,6 +360,13 @@
           "type": "ClassNameOrFunction<{ isLoading: boolean; }>",
           "required": false,
           "description": "CSS className for the load-more sentinel.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "focusedKey",
+          "type": "Key",
+          "required": false,
+          "description": "Currently focused key (controlled). Use null for no focused item.",
           "origin": "solidaria-components"
         },
         {
@@ -1169,6 +1202,13 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "onFocusChange",
+          "type": "(key: Key | null) => void",
+          "required": false,
+          "description": "Requests a focused key change without changing selection.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "selectionMode",
           "type": "\"none\" | \"single\" | \"multiple\"",
           "values": [
@@ -1199,6 +1239,18 @@
           "type": "(key: Key) => void",
           "required": false,
           "description": "Handler called when an item action is triggered.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "disallowTypeAhead",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether type-ahead navigation is disabled.",
           "origin": "solidaria"
         },
         {
@@ -1242,6 +1294,13 @@
           ],
           "required": false,
           "description": "Whether the tree is virtualized.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "keyboardDelegate",
+          "type": "KeyboardDelegate",
+          "required": false,
+          "description": "Replaces built-in keyboard navigation, folding and type-to-select lookup. Omitted delegate methods do not fall back to the built-in navigation.",
           "origin": "solidaria"
         },
         {
@@ -1290,6 +1349,13 @@
           "type": "ClassNameOrFunction<{ isLoading: boolean; }>",
           "required": false,
           "description": "CSS className for the load-more sentinel.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "focusedKey",
+          "type": "Key",
+          "required": false,
+          "description": "Currently focused key (controlled). Use null for no focused item.",
           "origin": "solidaria-components"
         },
         {
