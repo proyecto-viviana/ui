@@ -27,8 +27,6 @@ overrides:
   shell-quote: "1.11.0"
   source-map-js: "1.2.2"
   smol-toml: "1.9.0"
-  # GHSA-qx66-fv34-fjm8: keep Solid Start 2 while patching its server core.
-  "@tanstack/start-server-core": "1.169.39"
   # GHSA-587h-7wmj-h5pm: also covers the Changesets dependency path.
   launch-editor: "2.14.2"
 
