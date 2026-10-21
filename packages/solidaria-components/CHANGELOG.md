@@ -1,5 +1,18 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.7.0-rc.3
+
+### Minor Changes
+
+- 6137727: Add controlled TreeView focus through `focusedKey` and `onFocusChange`, independently of selection. Support custom keyboard navigation and letter search through `keyboardDelegate`, and allow type-ahead to be disabled with `disallowTypeAhead`. Existing controlled expansion uses `expandedKeys` and `onExpandedChange`; row controls remain reachable with `keyboardNavigationBehavior="tab"`.
+
+### Patch Changes
+
+- 5e49625: A `ComboBox` given static `ComboBoxItem` and `ComboBoxSection` children and no `items` now lists them. Before, its list opened holding only the "No results" row. Static items are filtered by the typed text, a section with no matching item leaves the list, and a `defaultSelectedKey` shows its text while the list is closed.
+- Updated dependencies 6137727:
+  - @proyecto-viviana/solid-stately@0.6.0-rc.3
+  - @proyecto-viviana/solidaria@0.6.0-rc.3
+
 ## 0.7.0-rc.2
 
 ### Patch Changes

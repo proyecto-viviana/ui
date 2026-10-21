@@ -1,5 +1,11 @@
 # @proyecto-viviana/solid-stately
 
+## 0.6.0-rc.3
+
+### Minor Changes
+
+- 6137727: Add controlled TreeView focus through `focusedKey` and `onFocusChange`, independently of selection. Support custom keyboard navigation and letter search through `keyboardDelegate`, and allow type-ahead to be disabled with `disallowTypeAhead`. Existing controlled expansion uses `expandedKeys` and `onExpandedChange`; row controls remain reachable with `keyboardNavigationBehavior="tab"`.
+
 ## 0.6.0-rc.2
 
 ### Patch Changes
