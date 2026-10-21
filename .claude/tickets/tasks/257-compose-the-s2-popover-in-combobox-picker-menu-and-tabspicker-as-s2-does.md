@@ -127,7 +127,7 @@ minus `class`/`style`/`children`; `hideArrow`, `padding`, `styles`,
 - `react-spectrum/packages/@react-spectrum/s2/src/Picker.tsx:84,465-484` →
   `packages/solid-spectrum/src/picker/index.tsx:568-588`. Same hideArrow /
   padding none / offset / placement / shouldFlip; `crossOffset={isQuiet ? -12
-: undefined}` (existing; no `RTLFlipOffset` added); `UNSAFE_style.width`
+  : undefined}` (existing; no `RTLFlipOffset` added); `UNSAFE_style.width`
   when `menuWidth && !isQuiet`; `styles={pickerMenuWidth({isQuiet})}`
   (`:374`, S2 `:475-484`). Solid wiring: `trigger="Select"`.
 - `react-spectrum/packages/@react-spectrum/s2/src/Menu.tsx:66,467-475` →

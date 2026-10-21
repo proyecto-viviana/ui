@@ -284,11 +284,11 @@ CI run `35291788795` (`site-gate`, HEAD `578b2f96`),
   dark/light loop).
 - **Element:** playground Meter,
   `<div id="solidaria-cl-713" … role="meter progressbar"
-aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"
-aria-valuetext="75%">`. Same class, 8 nodes (`solidaria-cl-713` …
+  aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"
+  aria-valuetext="75%">`. Same class, 8 nodes (`solidaria-cl-713` …
   `solidaria-cl-727`; last node `aria-label="Progress"`).
 - **Dark:** logged `[dark] WCAG 2.2 AA violations (1): aria-allowed-attr
-(8 nodes)`, then two retries, then 1 failed. **Light:** the same test
+  (8 nodes)`, then two retries, then 1 failed. **Light:** the same test
   body is `[2/2]` in that job; serial describe, so light did not produce
   its own violation dump after dark failed. The nodes are not theme-specific.
 
@@ -315,8 +315,8 @@ Applied in this change:
 ## How counted
 
 - Local certified: `cd apps/comparison && stdbuf -oL -eL pnpm exec playwright
-test e2e/certified --workers=8 --reporter=line
---reporter=./e2e/reporters/certified-summary.ts` after
+  test e2e/certified --workers=8 --reporter=line
+  --reporter=./e2e/reporters/certified-summary.ts` after
   `node scripts/check-upstream-oracle.mjs --acquire` and
   `vp run comparison:build`. Host:
   `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`.

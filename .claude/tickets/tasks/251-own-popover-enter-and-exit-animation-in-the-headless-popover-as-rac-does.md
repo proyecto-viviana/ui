@@ -63,7 +63,7 @@ The port inverted this:
   Popover-based component (ComboBox, Picker, Menu, DialogTrigger popovers)
   appears and disappears instantly — S2's fade/translate never plays, and the
   placement-gated enter state that hides the pre-placement `fixed; top:0;
-left:0` frame does not exist.
+  left:0` frame does not exist.
 - `solidaria-components/src/DatePicker.tsx` (:1371, :1484) and the styled
   DatePicker / DateRangePicker in both packages call
   `createEnterAnimation` / `createExitAnimation` themselves — duplicates of what
@@ -107,7 +107,7 @@ structure exists; it is simply not wired where RAC wires it.
   and the exit) — today they show none; the existing certified specs must
   gain the motion trigger where missing.
 - D13 journeys (#245 / #246): `open → observe overlay opacity==1 after
-settle`, `close → reopen before exit finishes → opacity==1, no second enter`,
+  settle`, `close → reopen before exit finishes → opacity==1, no second enter`,
   `open → resize → placement recomputed`, all equal React step by step.
 - `rg -n 'setTimeout|requestAnimationFrame' packages/*/src/menu/ActionMenu.tsx`
   returns nothing; `rg -n 'createEnterAnimation|createExitAnimation' packages/*/src`

@@ -25,7 +25,7 @@ slot inheritance, and render-prop state.
 - When the current component provides context or slot behavior to a child
   component whose own pass has not happened yet, create or update that child
   component's validation notes immediately under `Incoming Cross-Component
-Findings`.
+  Findings`.
 - Custom rendered elements, aliases, and imperative refs preserve the same
   consumer-facing behavior as upstream.
 

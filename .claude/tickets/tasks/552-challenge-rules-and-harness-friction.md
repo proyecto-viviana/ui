@@ -37,7 +37,7 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
    A fresh clone reinstalls that dispatcher through the root `prepare`
    script `vp config --no-agent`. That is Vite+'s lifecycle install: it
    refreshes `.vite-hooks/_`, skips when `VP_GIT_HOOKS=0` or `vp hooks
-disable` is set, and does not rewrite agent instruction files. A
+   disable` is set, and does not rewrite agent instruction files. A
    `guard:git-hooks` step in `pr:check:fast` was the other option and was
    not added, because it would only fail a check and that script does not
    run on the install a fresh clone actually does.

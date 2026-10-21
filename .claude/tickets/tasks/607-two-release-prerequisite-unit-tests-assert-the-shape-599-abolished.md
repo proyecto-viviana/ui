@@ -31,7 +31,7 @@ history:
    `PASS: an attestation with no owner and date is refused`, and four more), so
    a rewrite has to say what it adds over the harness rather than duplicate it.
 2. The third case in that block, `fails a publish candidate the prerequisite
-list forgets`, is green and is not in question.
+   list forgets`, is green and is not in question.
 3. Do not widen `check-release-prerequisites.mjs` to make the old shape pass
    again: #599 refused `satisfied`/`evidence` by name precisely so it could not
    return one entry at a time.

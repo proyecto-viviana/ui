@@ -164,4 +164,4 @@ Commands, from `/home/emoporemilio/projects/viviana-hub/ui` unless noted.
   change was still uncommitted). With `CHANGED_FILES` set to
   `packages/viviana-ui/src/vite.ts`, `apps/web/vite.config.ts`, and
   `.changeset/viviana-macros-vite-plugin.md` → exit 0, `Changeset covers every
-changed package: @proyecto-viviana/ui.`
+  changed package: @proyecto-viviana/ui.`

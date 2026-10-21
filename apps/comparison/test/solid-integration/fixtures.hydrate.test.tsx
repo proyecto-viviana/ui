@@ -968,12 +968,12 @@ it("stage A collections Virtualizer windows semantic options and retains focused
   });
   vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
   const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
-  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockImplementation(
-    function (this: HTMLElement) {
-      if (this.getAttribute("role") === "listbox") return 240;
-      return clientHeight?.get?.call(this) ?? 0;
-    },
-  );
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    if (this.getAttribute("role") === "listbox") return 240;
+    return clientHeight?.get?.call(this) ?? 0;
+  });
 
   dispose = render(() => Virtualizer(), container);
   await settle();

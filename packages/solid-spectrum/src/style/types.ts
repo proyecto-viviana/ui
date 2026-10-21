@@ -190,18 +190,17 @@ export type VariantMap<
 // to automatically accept the correct arguments based on the style definition.
 type ExtractConditionalValue<C extends keyof any, V> = V extends Value
   ? never
-  :
-      // Add the keys from this level for boolean conditions not in the theme.
-      | RuntimeConditionObject<Extract<keyof V, BooleanConditionName>, boolean>
-      // Add variant values for non-boolean named keys.
-      | Variants<V, Exclude<keyof V, C | BooleanConditionName>>
-      // Recursively include conditions from the next level.
-      | ExtractConditionalValue<
-          C,
-          | Values<V, Extract<keyof V, C | BooleanConditionName>>
-          // And skip over variants to get to the values.
-          | Values<Values<V, Exclude<keyof V, C | BooleanConditionName>>>
-        >;
+  : // Add the keys from this level for boolean conditions not in the theme.
+    | RuntimeConditionObject<Extract<keyof V, BooleanConditionName>, boolean>
+    // Add variant values for non-boolean named keys.
+    | Variants<V, Exclude<keyof V, C | BooleanConditionName>>
+    // Recursively include conditions from the next level.
+    | ExtractConditionalValue<
+        C,
+        | Values<V, Extract<keyof V, C | BooleanConditionName>>
+        // And skip over variants to get to the values.
+        | Values<Values<V, Exclude<keyof V, C | BooleanConditionName>>>
+      >;
 
 type RuntimeConditionObject<K, V> = K extends keyof any ? { [P in K]?: V } : never;
 

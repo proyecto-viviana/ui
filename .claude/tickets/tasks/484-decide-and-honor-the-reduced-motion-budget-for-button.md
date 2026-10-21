@@ -130,8 +130,8 @@ The ActionButton extension was measured and pinned in this pass, on current
   `COMPARISON_PORT=4342` ran both certified specs together and passed **4/4** —
   `D2 motion` and `D2 motion (reduced)` for Button and ActionButton — in 8.4 s.
 - Command: `vp exec -c 'COMPARISON_PORT=4342 playwright test
-e2e/certified/button.certified.spec.ts e2e/certified/actionbutton.certified.spec.ts
---grep "D2 motion" --reporter=line'` from `apps/comparison`.
+  e2e/certified/button.certified.spec.ts e2e/certified/actionbutton.certified.spec.ts
+  --grep "D2 motion" --reporter=line'` from `apps/comparison`.
 
 Repository gates on the twelve changed paths: `git diff --check` clean,
 `vp fmt --check` clean, `vp check` clean, `vp run typecheck` clean,

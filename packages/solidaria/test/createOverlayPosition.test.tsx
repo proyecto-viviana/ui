@@ -136,16 +136,16 @@ describe("createOverlayPosition measured placement", () => {
       configurable: true,
       value: 500,
     });
-    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(
-      function (this: HTMLElement) {
-        return parseInt(this.style.width, 10) || 0;
-      },
-    );
-    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(
-      function (this: HTMLElement) {
-        return parseInt(this.style.height, 10) || 0;
-      },
-    );
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return parseInt(this.style.width, 10) || 0;
+    });
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return parseInt(this.style.height, 10) || 0;
+    });
     window.HTMLElement.prototype.getBoundingClientRect = function () {
       const rect = originalGetBoundingClientRect.apply(this);
       if (this.tagName === "BODY") {

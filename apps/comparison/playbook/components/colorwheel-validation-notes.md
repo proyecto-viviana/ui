@@ -138,7 +138,7 @@ No subagents were used for this component pass.
 ## Style Source-To-Computed Parity
 
 - S2 root style maps to `outerRadius * 2`, with `outerRadius =
-max(size, 175) / 2` and 24px ring thickness.
+  max(size, 175) / 2` and 24px ring thickness.
 - Track style maps full circular sizing, conic hue gradient, even-odd ring clip
   path, 1px inset outline, disabled background, touch-action, and forced-colors
   adjustment.

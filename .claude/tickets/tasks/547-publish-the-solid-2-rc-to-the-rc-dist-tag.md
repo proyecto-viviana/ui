@@ -221,7 +221,7 @@ line and a registry check on the one tag that exists.
   Done when and both halves of the 2026-09-20 wording, at the price of a tag
   that nothing in this repository can keep current and no credential can even
   set. Dropped on 2026-09-21 with the delegated tag call; `npm install
-@proyecto-viviana/ui@next` stays `ETARGET`, on purpose, and the Done when
+  @proyecto-viviana/ui@next` stays `ETARGET`, on purpose, and the Done when
   above is rewritten to say so.
 
 ## Relationship

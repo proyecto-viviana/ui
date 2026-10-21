@@ -19,7 +19,7 @@ report/guard evidence.
   route controls, StatusLight visual spec, and existing StatusLight unit tests.
 - Result: accepted for StatusLight. Solid now exposes the documented S2
   surface: `children`, documented `variant` values, `size` values `S | M | L |
-XL`, optional `role="status"`, `id`, role-gated ARIA label props, `slot`,
+  XL`, optional `role="status"`, `id`, role-gated ARIA label props, `slot`,
   `styles`, `UNSAFE_className`, `UNSAFE_style`, `data-*` harness attributes,
   and `ref`. The styled wrapper no longer exposes legacy `info`, `sm`/`md`/`lg`
   aliases, legacy `class`, legacy `indicatorClass`, raw `style`, arbitrary DOM

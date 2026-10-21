@@ -327,7 +327,7 @@
 
   `createRangeCalendarState` now mirrors upstream `useRangeCalendarState`:
   - `isDateUnavailable` widens to `(date: DateValue, anchorDate: CalendarDate | null)
-=> boolean`. The second argument is the current selection anchor, so consumers
+    => boolean`. The second argument is the current selection anchor, so consumers
     can adjust availability based on the user's first pick. (Single-argument
     callbacks remain assignable, so existing callers are unchanged.)
   - While anchored, an available range is derived via `nextUnavailableDate` — walking
@@ -469,7 +469,7 @@
   Disabled tree keys now follow React Aria's split between navigation and
   selection, instead of conflating the two:
   - **Keyboard navigation skips disabled rows under the default `disabledBehavior:
-"all"`.** `createTree`'s `ArrowDown`/`ArrowUp`/`Home`/`End` handlers (and the
+    "all"`.** `createTree`'s `ArrowDown`/`ArrowUp`/`Home`/`End` handlers (and the
     focus-in entry point) previously landed on disabled rows; they now walk past
     them to the next/previous/first/last enabled row, mirroring
     `ListKeyboardDelegate.getKeyBelow`/`getKeyAbove`/`getFirstKey`/`getLastKey`.

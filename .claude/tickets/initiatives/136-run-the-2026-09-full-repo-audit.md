@@ -528,7 +528,7 @@ Failures split per cluster with the verbatim React-vs-Solid diffs in
     (RAC `Popover.tsx:309-331`, Solid `Popover.tsx:486-512`), so the element
     being measured differs; start at `solid-spectrum/src/picker/index.tsx:562-566`
     (`triggerRef` fallback) and `solidaria-components/src/Select.tsx:601-603,
-766`. Needs the browser. **Not started.**
+    766`. Needs the browser. **Not started.**
   - `datepicker-popover` (6: D2 motion ×4, D5 focus ×2 on DatePicker and
     DateRangePicker) — enter translate `0px 4px` vs React `0px -4px` (S2
     `Popover.tsx` keys the sign on the `placement` render prop), and one extra

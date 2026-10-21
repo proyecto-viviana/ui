@@ -56,7 +56,7 @@ F-UP-003, F-API-008. Delta on #33 (prune extras) and #118.
 - `scripts/check-rac-parity.ts` and `scripts/check-rac-export-gap.ts` print
   `export present` / `export missing`. They no longer say "parity".
 - Shared parser in `scripts/rac-export-presence.ts` counts every `export { … }
-from` value name, including RAC sibling re-exports from `react-aria` /
+  from` value name, including RAC sibling re-exports from `react-aria` /
   `react-stately` (`exports/index.ts:130-302` on the pin).
 - `scripts/rac-export-gap-pending.json` lists ticketed misses. Open ticket →
   PENDING (exit 0 for that symbol). Unlisted missing, closed ticket, or a

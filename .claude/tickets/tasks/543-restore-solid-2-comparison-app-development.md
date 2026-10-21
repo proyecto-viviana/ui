@@ -226,7 +226,7 @@ authorize packaging before #139, deployment, or release.
 - `vp run comparison:build` initially fails on `ComponentDetailMeta`'s removed
   API; after its independently reviewed migration it passes, 91 pages.
 - Root `vp run typecheck` and scoped lint pass. Separate app `vp exec astro
-check` exits 1: 40 errors, zero warnings and 37 hints across 435 files. Most
+  check` exits 1: 40 errors, zero warnings and 37 hints across 435 files. Most
   errors concern hyperscript's callable return type, with additional fixture
   prop/import and two boolean-returning `onSettled` callbacks. Root typecheck
   excludes this app and does not supersede its failed check.

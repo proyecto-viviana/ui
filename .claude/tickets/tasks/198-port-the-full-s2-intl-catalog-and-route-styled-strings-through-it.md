@@ -146,11 +146,11 @@ loading keys; TagGroup `tag.actions`, `tag.showAllButtonLabel`,
   because `test:run` on release-readiness has no `./react-spectrum` oracle and
   the suites failed with ENOENT there.
 - `packages/solid-spectrum/test/intl-strings.test.tsx`: `I18nProvider
-locale="ar-AE"` (plus one `de-DE` ActionBar) for necessity, Picker loading,
+  locale="ar-AE"` (plus one `de-DE` ActionBar) for necessity, Picker loading,
   DatePicker time, DateRangePicker start/end, ActionBar ICU count, Menu
   unavailable, ComboBox no-results.
 - Existing English assertions updated to en-US catalog values (`Loading
-more…` U+2026, `Unavailable, expand for details`, es-ES ActionBar one-form
+  more…` U+2026, `Unavailable, expand for details`, es-ES ActionBar one-form
   `1 seleccionado`).
 
 Red-then-green: temporarily inlined `"(required)"` on TextField

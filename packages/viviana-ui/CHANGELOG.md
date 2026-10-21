@@ -709,7 +709,7 @@
   build source instead of the built sheet.
 
   The five CSS entries were conditional — `{ "import": "./dist/X.css", "default":
-"./src/X.css" }` — and `src/styles.css` is no longer a real sheet: since the
+  "./src/X.css" }` — and `src/styles.css` is no longer a real sheet: since the
   macro started emitting one flat atomic file, it is a 64-byte comment, against
   73KB of shipped CSS in `dist/styles.css`. Any resolver that fell through to
   `default` (a CSS-level `@import` of the package, a `require`-conditioned

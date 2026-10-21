@@ -55,7 +55,7 @@ deferred focus in `createDroppableItem`.
 - Mirror GridList, Table, Tree, Menu through Collection (Rule #5), not a
   ListBox-only patch.
 - Then Chromium `sameNode` on `#read` before vs after Enter. If `sameNode:
-true` and focus still listbox, remount is dead; fix DragManager /
+  true` and focus still listbox, remount is dead; fix DragManager /
   `createDroppableItem` timing.
 - Tests: after Enter, exactly 4 unique drop-indicator option names; certified
   walk: `activeElement` is `option:Insert between Read and Write`.

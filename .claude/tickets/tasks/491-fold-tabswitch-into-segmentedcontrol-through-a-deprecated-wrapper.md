@@ -36,7 +36,7 @@ following breaking release.
   accent pill with white text, and none of S2 SegmentedControl's branches:
   `isDisabled`, `isJustified`, forced-colors, the reduced-motion slider
   (`react-spectrum/packages/@react-spectrum/s2/src/SegmentedControl.tsx:30-56,
-116-131`). Its own comment says the track matches S2 SegmentedControl.
+  116-131`). Its own comment says the track matches S2 SegmentedControl.
 - That is duplicated upstream behavior with silent drift, not a documented
   local addition with a non-overlapping purpose (Rule #2).
 - Consumers: `apps/web/src/routes/showcase/selection.tsx`,

@@ -105,7 +105,7 @@ Extract obligations into the later playbook categories:
 - Every S2 docs example and interactive viewer setting is mapped to the route,
   source branch ledger, or an explicit gap.
 - Every missing React Aria blog/example/testing page is recorded as `none
-found`, not silently skipped.
+  found`, not silently skipped.
 - Every external source that adds an obligation maps to a route item, source
   branch row, behavior row, accessibility row, style row, or explicit gap.
 - No implementation code changes in this task.

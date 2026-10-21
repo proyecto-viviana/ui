@@ -166,7 +166,7 @@ ComboBox/Picker wrap-order (`Popover > Virtualizer > ListBox`, S2 `ComboBox.tsx:
   `Popover > div > Provider > Virtualizer > ListBox` — the Virtualizer sits
   _inside_ the popover — and that is already what
   `solid-spectrum/src/combobox/index.tsx` (`ComboBoxListBoxPopover >
-FormContext.Provider > Virtualizer > HeadlessComboBoxListBox`) and the
+  FormContext.Provider > Virtualizer > HeadlessComboBoxListBox`) and the
   Picker render after #252/#257. The "outside the popover" wording in
   `## Work` described a #252 experiment that was never S2's shape; the item is
   closed. The remaining S2 deltas in that block (the `display:flex; size:full`
@@ -180,7 +180,7 @@ Negative test assertions (`Virtualizer.test.tsx:32,59`); unused `data-virtualize
 - Orchestrator (2026-09-02): the dead `data-virtualizer-spacer` blocks and the
   two unused `virtualSpacerStyle` helpers were deleted from ListBox, GridList,
   Tree and Menu (the non-virtualized arm can never see a range). `rg -n
-"data-virtualizer" packages apps` now returns only the negative assertions
+  "data-virtualizer" packages apps` now returns only the negative assertions
   and CHANGELOG history.
 
 ### Wave-3 regression fix

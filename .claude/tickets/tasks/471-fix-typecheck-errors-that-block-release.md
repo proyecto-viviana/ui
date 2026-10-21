@@ -30,7 +30,7 @@ before package tests. None of these is a new API.
   last so a stray `tag` cannot redirect the element.
 - PopoverTrigger: `setOpen`/`setPoint` `next` parameters had no type.
 - PreviewTrigger: `Provider` needs the same `Array<[Context<unknown>,
-unknown]>` cast every other caller uses. Not a PreviewTrigger behavior
+  unknown]>` cast every other caller uses. Not a PreviewTrigger behavior
   slice.
 - ActionMenu: `autofocus={local.autoFocus}` is not a HeadlessButton prop.
   The trigger already focuses via effect; pass `autoFocus`.

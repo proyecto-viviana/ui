@@ -289,7 +289,7 @@ stop is unexecuted, so the repository has no verdict on most of its own gates.
   cannot see the runner, the merger or the pinned oracle.
 - **S0-e #578**, `in-progress`, the certified job and the other blocking red.
   Its merge step reported `Run status: failed`, `2085 passed, 88 failed,
-4 skipped, 0 waived, 1 flaky` at `96376e9a` and exited 1. It supplies the
+  4 skipped, 0 waived, 1 flaky` at `96376e9a` and exited 1. It supplies the
   revision S0-d's pin needs, so S0-d's rule lands first and S0-e's run is
   recorded under it.
 - **S0-f #606**, `merged` in this checkout and lettered last because it was

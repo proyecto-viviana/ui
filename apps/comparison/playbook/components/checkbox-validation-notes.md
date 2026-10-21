@@ -146,7 +146,7 @@ Updated: 2026-05-21
 - `COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison playwright test e2e/checkbox-visual.spec.ts e2e/modeled-controls-contract.spec.ts --grep Checkbox --reporter=line --workers=1`
   - `12` browser tests passed after running outside the sandbox because
     Chromium launch hit `sandbox_host_linux.cc:41 shutdown: Operation not
-permitted`.
+    permitted`.
 - `vp run comparison:report:gaps`
   - report passed; `69` official entries tracked, `47` live on both sides,
     `22` missing/gap, `272` official visual states tracked.
