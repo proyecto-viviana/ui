@@ -1,0 +1,14 @@
+{
+  "review": "Owner ruling 2026-10-21, hub grant bbe6e1f. Expiry dates take effect at 00:00 UTC.",
+  "entries": [
+    {
+      "advisoryId": "GHSA-qx66-fv34-fjm8",
+      "package": "@tanstack/start-server-core",
+      "version": "1.169.26",
+      "workspace": "apps/web",
+      "reach": "The private docs-site server only, not the published packages.",
+      "reason": "No patched Solid Start 2 release exists; the fix ships only on the 1.x line.",
+      "expires": "2026-11-03"
+    }
+  ]
+}
