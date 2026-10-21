@@ -17,16 +17,16 @@ export type CertifiedSuiteEvidence = {
  * truth. Ticket #194.
  */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
-  revision: "6d685a030562e715e40ba7a7c421e8883f783d72",
-  completedAt: "2026-10-21T13:06:17.960555+00:00",
+  revision: "38294bd75ab75dd2eada91dd0f0b8bd4b2beacb2",
+  completedAt: "2026-10-21T17:26:06.290702+00:00",
   total: 2317,
   passed: 2317,
   failed: 0,
   skipped: 0,
   waived: 0,
   localMergeReceipt: {
-    path: ".agents/UI-EXECUTION-574-certified-full-6d685a03.json",
-    sha256: "c75ec9423ae79ca904a19c919a790ab5cdf008ad67d49abbdae7b61dd350c0ba",
+    path: ".agents/UI-EXECUTION-574-certified-full-38294bd7.json",
+    sha256: "523c566c1e1e90898282421efd5aa73863050ca04ba6845e0de0f75b65667dc8",
   },
 };
 
