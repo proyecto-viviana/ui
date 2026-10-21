@@ -27,6 +27,10 @@ overrides:
   shell-quote: "1.11.0"
   source-map-js: "1.2.2"
   smol-toml: "1.9.0"
+  # GHSA-qx66-fv34-fjm8: keep Solid Start 2 while patching its server core.
+  "@tanstack/start-server-core": "1.169.39"
+  # GHSA-587h-7wmj-h5pm: also covers the Changesets dependency path.
+  launch-editor: "2.14.2"
 
 # Native build hooks are denied unless explicitly trusted here. These three
 # install platform binaries required by the repository's macro, bundler, and
@@ -86,9 +90,9 @@ minimumReleaseAgeExclude:
   - "@solidjs/compiler-win32-x64-msvc@2.0.0-rc.9"
   - "@solidjs/signals@2.0.0-rc.9"
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
+  vite: npm:@voidzero-dev/vite-plus-core@1.1.0
   vitest: 4.1.11
-  vite-plus: 0.2.9
+  vite-plus: 1.1.0
 peerDependencyRules:
   allowAny:
     - vite
