@@ -12,20 +12,22 @@ export type CertifiedSuiteEvidence = {
 );
 
 /**
- * Last complete certified suite, recorded from the eight-shard hosted
- * Certification Gates run on the second release candidate. This is recorded
- * evidence, not live truth. Ticket #194.
+ * Last complete certified suite, recorded from a sequential eight-shard local
+ * run and the merged certified report. This is recorded evidence, not live
+ * truth. Ticket #194.
  */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
-  revision: "d8230da4bd0bc962d23a948f3bf14206f3d6127e",
-  completedAt: "2026-10-13T02:28:29+00:00",
+  revision: "6d685a030562e715e40ba7a7c421e8883f783d72",
+  completedAt: "2026-10-21T13:06:17.960555+00:00",
   total: 2317,
   passed: 2317,
   failed: 0,
   skipped: 0,
   waived: 0,
-  runId: 38335457353,
-  jobId: 115099253229,
+  localMergeReceipt: {
+    path: ".agents/UI-EXECUTION-574-certified-full-6d685a03.json",
+    sha256: "c75ec9423ae79ca904a19c919a790ab5cdf008ad67d49abbdae7b61dd350c0ba",
+  },
 };
 
 /**
