@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor, cleanup, within } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
 import { setInteractionModality } from "@proyecto-viviana/solidaria";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
@@ -184,14 +184,15 @@ describe("ComboBox (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("button"));
     await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(3));
-    expect(screen.getAllByRole("group")).toHaveLength(2);
+    // Match pinned ComboBoxTester.getSections(): query groups within its listbox.
+    expect(within(screen.getByRole("listbox")).queryAllByRole("group")).toHaveLength(2);
 
     await user.clear(input);
     await user.type(input, "tea");
     await waitFor(() =>
       expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Team"]),
     );
-    expect(screen.getAllByRole("group")).toHaveLength(1);
+    expect(within(screen.getByRole("listbox")).queryAllByRole("group")).toHaveLength(1);
     expect(screen.queryByText("Personal")).not.toBeInTheDocument();
   });
 

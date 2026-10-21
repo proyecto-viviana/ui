@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal, onMount, onSettled } from "solid-js";
 import {
   ComboBox,
@@ -2077,14 +2077,15 @@ describe("ComboBox", () => {
 
       await user.click(screen.getByRole("button"));
       const listbox = await screen.findByRole("listbox");
-      expect(listbox.querySelectorAll('[role="group"]')).toHaveLength(2);
+      // Match pinned ComboBoxTester.getSections(): query groups within its listbox.
+      expect(within(listbox).queryAllByRole("group")).toHaveLength(2);
       expect(screen.getAllByRole("option")).toHaveLength(3);
 
       await user.type(screen.getByRole("combobox"), "tea");
       await waitFor(() =>
         expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["Team"]),
       );
-      expect(screen.getAllByRole("group")).toHaveLength(1);
+      expect(within(screen.getByRole("listbox")).queryAllByRole("group")).toHaveLength(1);
       expect(screen.queryByText("Personal")).not.toBeInTheDocument();
     });
   });
