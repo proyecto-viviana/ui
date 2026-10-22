@@ -33,13 +33,15 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  * HTML5 drag-and-drop cannot be driven by Playwright — and is tracked separately.
  *
  * DRIVERS REGISTERED:
- *   - D-reorder (keyboard DnD) — the crux. Two walks, each entered by keyboard
+ *   - D-reorder (keyboard DnD) — the crux. Three walks, each entered by keyboard
  *     (Tab from the Before button → first option):
  *       · `reorder-down` — Enter (pick up "Read") → ArrowDown ×2 (walk drop
  *         positions) → Enter (drop). The `active` (drop-target) trail AND the
  *         resulting order are pair-diffed after every key.
  *       · `cancel` — Enter (pick up) → ArrowDown → Escape (cancel). Certifies the
  *         cancel path leaves the order untouched and returns focus, on both stacks.
+ *       · `cancel-delayed-pickup` — the same cancel walk with RAC's pickup frame
+ *         delayed beyond the driver's settle time, proving it awaits drop focus.
  *   - D6 (AX tree) — the resting `role="listbox"` subtree: roles/names/states AND
  *     the drag-affordance descriptions (`aria-describedby` → "press Enter to
  *     drag"), pair-diffed vs RAC so the accessible drag instructions match.
@@ -92,4 +94,30 @@ registerReorderDriver(scenario, {
     { id: "cancel", keys: ["Enter", "ArrowDown", "Escape"] },
   ],
 });
+registerReorderDriver(
+  {
+    ...scenario,
+    async beforePanel({ page, framework }) {
+      if (framework !== "react") return;
+      // RAC starts pickup in rAF, then focuses its indicator in an effect.
+      // Delay that frame to reproduce a loaded browser deterministically.
+      await page.evaluate(() => {
+        const arm = (event: KeyboardEvent) => {
+          if (event.key !== "Enter") return;
+          window.removeEventListener("keyup", arm, true);
+          const raf = window.requestAnimationFrame.bind(window);
+          window.requestAnimationFrame = (callback) => {
+            window.requestAnimationFrame = raf;
+            return raf((time) => window.setTimeout(() => callback(time), 600));
+          };
+        };
+        window.addEventListener("keyup", arm, true);
+      });
+    },
+  },
+  {
+    cases: ["reorder"],
+    walks: [{ id: "cancel-delayed-pickup", keys: ["Enter", "ArrowDown", "Escape"] }],
+  },
+);
 registerAxTreeDriver(scenario);

@@ -630,6 +630,59 @@ describe("ListBox", () => {
       }
     });
 
+    it("restores the source option after cancelling a keyboard reorder", async () => {
+      const items: TestItem[] = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      const onReorder = vi.fn();
+      const { dragAndDropHooks } = useDragAndDrop<TestItem>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder,
+      });
+      render(() => (
+        <ListBox
+          aria-label="Permissions"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          selectionMode="multiple"
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {(item) => (
+            <ListBoxOption id={item.id} textValue={item.name}>
+              {item.name}
+            </ListBoxOption>
+          )}
+        </ListBox>
+      ));
+
+      const read = screen.getByRole("option", { name: "Read" });
+      read.focus();
+      await user.keyboard("{Enter}");
+      try {
+        await waitFor(() =>
+          expect(
+            screen.getByRole("option", { name: "Insert between Read and Write" }),
+          ).toHaveFocus(),
+        );
+        await user.keyboard("{ArrowDown}");
+        await waitFor(() =>
+          expect(
+            screen.getByRole("option", { name: "Insert between Write and Admin" }),
+          ).toHaveFocus(),
+        );
+      } finally {
+        await user.keyboard("{Escape}");
+      }
+      await waitFor(() => expect(read).toHaveFocus());
+      expect(onReorder).not.toHaveBeenCalled();
+      expect(document.querySelector(".solidaria-DropIndicator")).not.toBeInTheDocument();
+      await user.keyboard("{ArrowDown}");
+      expect(screen.getByRole("option", { name: "Write" })).toHaveFocus();
+    });
+
     it("describes a drop target from the drag catalog while a drag is in progress", async () => {
       // useVirtualDrop describes the target only during a drag session.
       // es-ES proves the catalog, not the English sentence the en-US row happens to use.

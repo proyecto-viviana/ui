@@ -122,8 +122,19 @@ export function registerReorderDriver(scenario: DriverScenario, config: ReorderC
             await ctx.page.waitForTimeout(settleMs);
 
             const trail: TrailStep[] = [await snapshot(handle, "(start)")];
+            let dragging = false;
             for (const key of walk.keys) {
               await ctx.page.keyboard.press(key);
+              if (key === "Enter") dragging = !dragging;
+              if (key === "Escape") dragging = false;
+              if (dragging) {
+                // RAC starts the session in rAF, then focuses the active gap in
+                // an effect. Under load, the collection can still have focus
+                // after the fixed settle time. Wait for the actual keyboard
+                // handoff before sampling or sending the next drag key. This
+                // also fails explicitly if indicator focus never arrives.
+                await expect(listbox.locator("[data-drop-target]")).toBeFocused();
+              }
               await ctx.page.waitForTimeout(settleMs);
               trail.push(await snapshot(handle, key));
             }
