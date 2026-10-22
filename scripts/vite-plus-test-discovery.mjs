@@ -89,7 +89,9 @@ function loadResolveConfig() {
 export async function loadVitePlusTestConfig(configPath) {
   const resolveConfig = await loadResolveConfig();
   const abs = isAbsolute(configPath) ? configPath : join(ROOT, configPath);
-  return resolveConfig({ config: abs });
+  // Vitest 5 returns the resolved Vite config, with test options under `test`.
+  const viteConfig = await resolveConfig({ config: abs });
+  return { viteConfig, vitestConfig: viteConfig.test };
 }
 
 /**
