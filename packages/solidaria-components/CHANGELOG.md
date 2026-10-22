@@ -1,5 +1,13 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.7.0-rc.4
+
+### Patch Changes
+
+- 6e3467d: Keep TreeView rows and their controls mounted by item key across collection rebuilds, including controlled focus changes. Preserve row state and in-flight button presses while keeping item data, expansion render state, and expand-button labels reactive. Avoid seeding keyboard entry focus when a pointer focuses a row, so a first-key delegate query cannot override the pointer's controlled focus change.
+- Updated dependencies 6e3467d:
+  - @proyecto-viviana/solidaria@0.6.0-rc.4
+
 ## 0.7.0-rc.3
 
 ### Minor Changes
