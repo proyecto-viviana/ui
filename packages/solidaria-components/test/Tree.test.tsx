@@ -230,6 +230,57 @@ describe("Tree", () => {
       expect(screen.getByText("Eagle")).toBeInTheDocument();
     });
 
+    it("keeps section rows and local control state through focus, expansion and item updates", async () => {
+      const user = setupUser();
+      const [items, setItems] = createSignal(createSectionedTreeItems());
+      const [focusedKey, setFocusedKey] = createSignal<string | number | null>("lion");
+      render(() => (
+        <Tree
+          items={items()}
+          focusedKey={focusedKey()}
+          onFocusChange={setFocusedKey}
+          aria-label="Animals"
+        >
+          {(item, state) => {
+            const [count, setCount] = createSignal(0);
+            return (
+              <TreeItem id={item.key}>
+                <TreeExpandButton />
+                <span>{item.textValue}</span>
+                <span data-testid={`expanded-${item.key}`}>{String(state.isExpanded)}</span>
+                <Button onPress={() => setCount(count() + 1)}>Count {count()}</Button>
+              </TreeItem>
+            );
+          }}
+        </Tree>
+      ));
+      const rows = screen.getAllByRole("row");
+      const groups = screen.getAllByRole("rowgroup");
+      const lion = screen.getByText("Lion").closest<HTMLElement>("[role=row]")!;
+      const button = screen.getAllByRole("button", { name: "Count 0" })[0];
+      await user.click(button);
+      expect(button).toHaveTextContent("Count 1");
+      setFocusedKey("eagle");
+      flush();
+      rows.forEach((row, index) => expect(screen.getAllByRole("row")[index]).toBe(row));
+      groups.forEach((group, index) => expect(screen.getAllByRole("rowgroup")[index]).toBe(group));
+      await user.click(lion.querySelector<HTMLButtonElement>(".solidaria-Tree-expand-button")!);
+      expect(screen.getByTestId("expanded-lion")).toHaveTextContent("true");
+      expect(screen.getByText("Cub")).toBeInTheDocument();
+      setItems((entries) =>
+        entries.map((entry) => ({
+          ...entry,
+          items: entry.items.map((item) =>
+            item.key === "lion" ? { ...item, textValue: "Lion updated" } : item,
+          ),
+        })),
+      );
+      flush();
+      expect(screen.getByText("Lion updated").closest("[role=row]")).toBe(lion);
+      expect(lion).toContainElement(button);
+      expect(button).toHaveTextContent("Count 1");
+    });
+
     it("should honor defaultExpandedKeys for nested items inside sections", () => {
       render(() => (
         <Tree

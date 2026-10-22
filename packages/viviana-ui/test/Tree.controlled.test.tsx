@@ -3,6 +3,7 @@ import { createSignal, flush } from "solid-js";
 import { cleanup, render, waitFor } from "@solidjs/testing-library";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { Button } from "@proyecto-viviana/solidaria-components";
 import { TreeView, TreeViewItem, type TreeProps, type Key } from "../src/TreeView";
 
 const items = [
@@ -12,6 +13,67 @@ const items = [
 
 describe("TreeView controlled public entry point", () => {
   afterEach(cleanup);
+
+  it.each(["pointer", "keyboard"] as const)(
+    "keeps rows and their controls mounted across controlled %s focus",
+    async (input) => {
+      const user = setupUser();
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(
+        input === "pointer" ? null : "parent",
+      );
+      const onPress = vi.fn();
+      const getFirstKey = vi.fn(() => "parent");
+      const view = render(() => (
+        <TreeView
+          items={items}
+          aria-label="Layers"
+          focusedKey={focusedKey()}
+          onFocusChange={setFocusedKey}
+          keyboardDelegate={{ getFirstKey, getKeyBelow: () => "other" }}
+        >
+          {(item) => (
+            <TreeViewItem id={item.id!} textValue={item.textValue}>
+              {item.textValue}
+              <Button
+                ref={(button) =>
+                  button.addEventListener("pointerdown", () =>
+                    button.closest<HTMLElement>("[role=row]")!.focus(),
+                  )
+                }
+                onPress={onPress}
+              >
+                Add keyframe
+              </Button>
+            </TreeViewItem>
+          )}
+        </TreeView>
+      ));
+      const rows = view.getAllByRole("row");
+      const buttons = view.getAllByRole("button", { name: "Add keyframe" });
+      if (input === "pointer") {
+        await user.pointer({ target: buttons[1], keys: "[MouseLeft>]" });
+      } else {
+        rows[0].focus();
+        await user.keyboard("{ArrowDown}");
+      }
+      flush();
+      expect(focusedKey()).toBe("other");
+      rows.forEach((row, index) => expect(view.getAllByRole("row")[index]).toBe(row));
+      buttons.forEach((button, index) =>
+        expect(view.getAllByRole("button", { name: "Add keyframe" })[index]).toBe(button),
+      );
+      // Delegates are queries. Reading the first key during pointer focus must
+      // not reset controlled focus to that key.
+      expect(getFirstKey()).toBe("parent");
+      flush();
+      expect(focusedKey()).toBe("other");
+      expect(rows[1].contains(document.activeElement)).toBe(true);
+      if (input === "pointer") {
+        await user.pointer({ target: buttons[1], keys: "[/MouseLeft]" });
+        expect(onPress).toHaveBeenCalledTimes(1);
+      }
+    },
+  );
 
   it("forwards controlled focus, expansion, delegation and disabled type-ahead", async () => {
     const user = setupUser();

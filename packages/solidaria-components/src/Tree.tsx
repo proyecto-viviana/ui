@@ -26,6 +26,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  merge,
   createSignal,
   createUniqueId,
   useContext,
@@ -1072,14 +1073,20 @@ function TreeRenderedItem<T extends object>(props: {
   node: TreeNode<T>;
   renderItem: (item: TreeItemData<T>, state: TreeRenderItemState) => JSX.Element;
 }): JSX.Element {
+  const item = merge(() => treeItemDataFromNode(props.node));
   // Indicator updates must not rebuild the row. A shared fragment that tracks
   // the drop target disposes the item and drops the keyboard drag.
   const child = untrack(() => {
-    const node = props.node;
-    const rendered = props.renderItem(treeItemDataFromNode(node), {
-      isExpanded: node.isExpanded ?? false,
-      isExpandable: node.isExpandable ?? false,
-      level: node.level,
+    const rendered = props.renderItem(item, {
+      get isExpanded() {
+        return props.node.isExpanded ?? false;
+      },
+      get isExpandable() {
+        return props.node.isExpandable ?? false;
+      },
+      get level() {
+        return props.node.level;
+      },
     });
     return typeof rendered === "function" ? (rendered as () => JSX.Element)() : rendered;
   });
@@ -1639,6 +1646,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     if (!range) return null;
     return { start: range.start, end: range.end };
   });
+  // Collection rebuilds replace node wrappers. Reconcile rows by collection key
+  // so controlled focus updates preserve each row and its in-flight presses.
   const renderableRows = createMemo(() => {
     const offset = renderRange()?.start ?? 0;
     return virtualizedVisibleRows().map((node, index) => ({
@@ -1646,6 +1655,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       globalIndex: offset + index,
     }));
   });
+  const persistedOutsideRows = createMemo(() =>
+    persistedOutsideIndexes().map((index) => ({
+      node: visibleRows()[index],
+      globalIndex: index,
+    })),
+  );
   const sectionedRenderableRows = createMemo(() => {
     if (!hasSections()) return null;
     const rootMap = rootKeyByNodeKey();
@@ -1655,7 +1670,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         const matching = rows.filter((row) => rootMap.get(row.node.key) === entry.key);
         return {
           type: "single" as const,
-          item: entry,
+          key: entry.key,
+          title: undefined,
           rows: matching,
         };
       }
@@ -1666,20 +1682,21 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       });
       return {
         type: "section" as const,
-        section: entry,
+        key: entry.key,
+        title: entry.title,
         rows: sectionRows,
       };
     });
   });
-  const renderTreeRow = (node: TreeNode<T>, itemIndex: number) => (
+  const RenderTreeRow = (row: { node: TreeNode<T>; itemIndex: number }) => (
     <TreeRowWithDropIndicators
-      node={node}
-      itemIndex={itemIndex}
+      node={row.node}
+      itemIndex={row.itemIndex}
       renderItem={props.children}
       renderDropIndicator={(index, position) =>
         collectionRenderer().renderDropIndicator?.(index, position)
       }
-      afterIndexes={() => getAfterIndicatorIndexes(itemIndex, renderRange())}
+      afterIndexes={() => getAfterIndicatorIndexes(row.itemIndex, renderRange())}
     />
   );
 
@@ -1733,28 +1750,40 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
                     <Show
                       when={hasSections()}
                       fallback={
-                        <For each={renderableRows()}>
-                          {(row) => renderTreeRow(row.node, row.globalIndex)}
+                        <For each={renderableRows()} keyed={(row) => row.node.key}>
+                          {(row) => (
+                            <RenderTreeRow node={row().node} itemIndex={row().globalIndex} />
+                          )}
                         </For>
                       }
                     >
-                      <For each={sectionedRenderableRows() ?? []}>
+                      <For each={sectionedRenderableRows() ?? []} keyed={(entry) => entry.key}>
                         {(entry) => (
-                          <Show when={entry.rows.length > 0}>
+                          <Show when={entry().rows.length > 0}>
                             <Show
-                              when={entry.type === "section"}
+                              when={entry().type === "section"}
                               fallback={
-                                <For each={entry.rows}>
-                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                <For each={entry().rows} keyed={(row) => row.node.key}>
+                                  {(row) => (
+                                    <RenderTreeRow
+                                      node={row().node}
+                                      itemIndex={row().globalIndex}
+                                    />
+                                  )}
                                 </For>
                               }
                             >
                               <TreeSection>
-                                {entry.type === "section" && entry.section.title ? (
-                                  <TreeHeader>{entry.section.title}</TreeHeader>
+                                {entry().type === "section" && entry().title ? (
+                                  <TreeHeader>{entry().title}</TreeHeader>
                                 ) : null}
-                                <For each={entry.rows}>
-                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                <For each={entry().rows} keyed={(row) => row.node.key}>
+                                  {(row) => (
+                                    <RenderTreeRow
+                                      node={row().node}
+                                      itemIndex={row().globalIndex}
+                                    />
+                                  )}
                                 </For>
                               </TreeSection>
                             </Show>
@@ -1762,15 +1791,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
                         )}
                       </For>
                     </Show>
-                    <For each={persistedOutsideIndexes()}>
-                      {(index) => {
-                        const node = visibleRows()[index];
-                        return node ? (
-                          <PersistedVirtualItem index={index}>
-                            {renderTreeRow(node, index)}
-                          </PersistedVirtualItem>
-                        ) : null;
-                      }}
+                    <For each={persistedOutsideRows()} keyed={(row) => row.node.key}>
+                      {(row) => (
+                        <PersistedVirtualItem index={row().globalIndex}>
+                          <RenderTreeRow node={row().node} itemIndex={row().globalIndex} />
+                        </PersistedVirtualItem>
+                      )}
                     </For>
                   </CollectionRoot>
                 ) : (
@@ -1778,28 +1804,40 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
                     <Show
                       when={hasSections()}
                       fallback={
-                        <For each={renderableRows()}>
-                          {(row) => renderTreeRow(row.node, row.globalIndex)}
+                        <For each={renderableRows()} keyed={(row) => row.node.key}>
+                          {(row) => (
+                            <RenderTreeRow node={row().node} itemIndex={row().globalIndex} />
+                          )}
                         </For>
                       }
                     >
-                      <For each={sectionedRenderableRows() ?? []}>
+                      <For each={sectionedRenderableRows() ?? []} keyed={(entry) => entry.key}>
                         {(entry) => (
-                          <Show when={entry.rows.length > 0}>
+                          <Show when={entry().rows.length > 0}>
                             <Show
-                              when={entry.type === "section"}
+                              when={entry().type === "section"}
                               fallback={
-                                <For each={entry.rows}>
-                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                <For each={entry().rows} keyed={(row) => row.node.key}>
+                                  {(row) => (
+                                    <RenderTreeRow
+                                      node={row().node}
+                                      itemIndex={row().globalIndex}
+                                    />
+                                  )}
                                 </For>
                               }
                             >
                               <TreeSection>
-                                {entry.type === "section" && entry.section.title ? (
-                                  <TreeHeader>{entry.section.title}</TreeHeader>
+                                {entry().type === "section" && entry().title ? (
+                                  <TreeHeader>{entry().title}</TreeHeader>
                                 ) : null}
-                                <For each={entry.rows}>
-                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                <For each={entry().rows} keyed={(row) => row.node.key}>
+                                  {(row) => (
+                                    <RenderTreeRow
+                                      node={row().node}
+                                      itemIndex={row().globalIndex}
+                                    />
+                                  )}
                                 </For>
                               </TreeSection>
                             </Show>
@@ -2259,6 +2297,9 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
       return treeItemAria.isDisabled;
     },
     ...cleanExpandProps(),
+    get "aria-label"() {
+      return treeItemAria.expandButtonProps["aria-label"];
+    },
   });
 
   const dataProps = () => {

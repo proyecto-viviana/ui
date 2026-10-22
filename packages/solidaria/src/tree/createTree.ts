@@ -375,6 +375,13 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       return;
     }
 
+    // Pointer focus on a row is owned by that row's focus handler. Controlled
+    // props may still contain the previous key until the owner's update flushes;
+    // seeding entry focus here would overwrite the row's pending focus change.
+    if (getInteractionModality() === "pointer" && e.target !== currentTarget) {
+      return;
+    }
+
     let key = s.focusedKey;
     if (key == null) {
       // Shift+Tab backward into the tree (focus arrived from a FOLLOWING element)
