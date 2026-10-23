@@ -863,13 +863,14 @@ it("stage A collections TreeView expands and reconciles removed focus to a survi
   expect(tree).not.toBeNull();
   expect(documents?.getAttribute("aria-expanded")).toBe("true");
 
+  // Expansion updates the retained keyed row; only removed keys lose their DOM nodes.
   documents?.focus();
   await user.keyboard("{ArrowLeft}");
   await settle();
   await nextAnimationFrame();
   const collapsedDocuments = tree?.querySelector<HTMLElement>('[role="row"][data-key="documents"]');
-  expect(documents?.isConnected).toBe(false);
-  expect(collapsedDocuments).not.toBe(documents);
+  expect(documents?.isConnected).toBe(true);
+  expect(collapsedDocuments).toBe(documents);
   expect(collapsedDocuments?.getAttribute("data-key")).toBe("documents");
   expect(collapsedDocuments?.getAttribute("aria-expanded")).toBe("false");
   expect(document.activeElement).toBe(collapsedDocuments);
@@ -878,16 +879,20 @@ it("stage A collections TreeView expands and reconciles removed focus to a survi
   await settle();
   await nextAnimationFrame();
   const expandedDocuments = tree?.querySelector<HTMLElement>('[role="row"][data-key="documents"]');
-  expect(collapsedDocuments?.isConnected).toBe(false);
-  expect(expandedDocuments).not.toBe(collapsedDocuments);
+  expect(collapsedDocuments?.isConnected).toBe(true);
+  expect(expandedDocuments).toBe(collapsedDocuments);
   expect(expandedDocuments?.getAttribute("data-key")).toBe("documents");
   expect(expandedDocuments?.getAttribute("aria-expanded")).toBe("true");
   expect(document.activeElement).toBe(expandedDocuments);
 
   const archive = tree?.querySelector<HTMLElement>('[role="row"][data-key="archive"]');
-  expect(tree?.querySelector<HTMLElement>('[role="row"][data-key="weekly-report"]')).not.toBeNull();
+  const weekly = tree?.querySelector<HTMLElement>('[role="row"][data-key="weekly-report"]');
+  const photos = tree?.querySelector<HTMLElement>('[role="row"][data-key="photos"]');
+  expect(weekly).not.toBeNull();
+  expect(photos).not.toBeNull();
   expect(archive).not.toBeNull();
   archive?.focus();
+  expect(document.activeElement).toBe(archive);
   controls("treeview", {
     ...treeViewDemoDefaults,
     selectionSource: "selectedKeys",
@@ -902,12 +907,12 @@ it("stage A collections TreeView expands and reconciles removed focus to a survi
   const survivingWeekly = tree?.querySelector<HTMLElement>(
     '[role="row"][data-key="weekly-report"]',
   );
-  expect(survivingWeekly).not.toBeNull();
+  expect(survivingWeekly).toBe(weekly);
   expect(survivingWeekly?.getAttribute("aria-selected")).toBe("true");
   expect(survivingWeekly?.getAttribute("role")).toBe("row");
   expect(survivingWeekly?.textContent).toContain("Weekly Report");
   const survivingPhotos = tree?.querySelector<HTMLElement>('[role="row"][data-key="photos"]');
-  expect(survivingPhotos).not.toBeNull();
+  expect(survivingPhotos).toBe(photos);
   expect(survivingPhotos?.getAttribute("role")).toBe("row");
   expect(survivingPhotos?.getAttribute("data-key")).toBe("photos");
   expect(survivingPhotos?.getAttribute("aria-selected")).toBe("false");
