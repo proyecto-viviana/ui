@@ -167,26 +167,25 @@ The early `--version-stage` drift preflight does not replace the decisive plain
 publish-drift guard inside `changeset:publish`.
 
 After a publish, the same job pushes the package tags and creates the GitHub
-releases (#659). `changeset publish` tags each package it uploaded, on the
-runner only; the publish step keeps its output, and
+releases (#659, repaired by #660). The publish step keeps its output, and
 `scripts/publish-github-releases.mjs` reads the packages listed under
 `Successfully published:` from it. For each it requires that the manifest holds
-that version, that the tag exists and points at the released commit, and that
+that version, that any existing tag points at the released commit, and that
 the package's `CHANGELOG.md` has a section for the version; one failed check
-pushes nothing. It then pushes all the tags in one push and creates one release
-per package: named like its tag (`@proyecto-viviana/ui@0.8.0-rc.2`), with that
+pushes nothing. It creates missing lightweight tags explicitly at `RELEASE_SHA`
+(defaulting to HEAD), matching the manual rc.4 recovery, then pushes all the
+tags in one push and creates one release per package: named like its tag (`@proyecto-viviana/ui@0.8.0-rc.2`), with that
 CHANGELOG section as its notes, and a pre-release when the version has a
 prerelease suffix. A release that already exists is left as it is. The job's
 `contents: write` permission is what allows both.
 
 The packages are on npm before this step runs, and a re-run of `Release`
 uploads nothing, so it lists nothing to release. If the step fails, finish it
-by hand from a checkout of the released commit, with the tags recreated there
-first:
+by hand from a checkout of the released commit, using the original publish log
+or explicit package versions:
 
 ```bash
-git tag "@proyecto-viviana/ui@0.8.0-rc.3" <released-sha>   # one per package
-node scripts/publish-github-releases.mjs "@proyecto-viviana/ui@0.8.0-rc.3" --apply
+RELEASE_SHA=<released-sha> node scripts/publish-github-releases.mjs "@proyecto-viviana/ui@0.8.0-rc.3" --apply
 ```
 
 Without `--apply` the script prints the releases it would create. `0.x.0-rc.0`

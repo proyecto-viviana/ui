@@ -108,15 +108,12 @@ jobs:
           set -o pipefail
           pnpm run changeset:publish 2>&1 | tee "$RUNNER_TEMP/changeset-publish.log"
 
-      # `changeset publish` tags each package it uploaded, on this runner only.
-      # The Changesets action used to push those tags and create the GitHub
-      # releases; since it was dropped nothing did, so rc.0 and rc.1 have
-      # neither (#659). This step pushes the tags of the packages the log above
-      # names and creates one release per package: named like its tag, with
-      # that version's CHANGELOG section as notes, a pre-release when the
-      # version is one. It checks every tag against the tree first and pushes
-      # nothing if one check fails. Packages are already on npm when it runs:
-      # if it fails, re-run it by hand as the policy says, not the publish.
+      # Validate the packages named by the publish log, create any missing
+      # lightweight tags at RELEASE_SHA, then push and create GitHub releases.
+      # Changesets can report tag success even when its annotated tag command
+      # failed (#660). Existing tags must point at RELEASE_SHA; existing releases
+      # are left alone. Packages are already on npm if this step fails: recover
+      # with this script and the original log, not another npm publish.
       - name: Push package tags and create GitHub releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

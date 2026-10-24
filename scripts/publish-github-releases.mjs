@@ -1,19 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Pushes the tags `changeset publish` made and creates their GitHub releases.
+ * Creates missing package tags, pushes them and creates GitHub releases.
  *
- * `changeset publish` uploads to npm and tags each published package on the
- * runner. Nothing pushed those tags or made a release: the Changesets action
- * that used to was dropped when it broke under pre mode, so `0.x.0-rc.0` and
- * `rc.1` have neither, and rc.2's were made by hand (#659).
- *
- * The packages are the ones the publish output names under `Successfully
- * published:`. That is the set this run uploaded: a package npm already had
- * is not listed, so a re-run does not release it twice. Each is checked
- * against the tree before anything is pushed: its manifest holds that
- * version, its tag exists and points at the released commit, and its
- * CHANGELOG has a section for the version. One failed check pushes nothing.
+ * The publish log's `Successfully published:` list is the set uploaded by this
+ * run. Validate every manifest, existing tag target and CHANGELOG before any
+ * mutation. Missing tags are lightweight, matching the manual rc.4 recovery;
+ * create them explicitly at RELEASE_SHA rather than assuming Changesets did.
  *
  *   node scripts/publish-github-releases.mjs --publish-log <file>           # print the plan
  *   node scripts/publish-github-releases.mjs --publish-log <file> --apply   # push and release
@@ -108,11 +101,7 @@ export function planReleases({ published, packages, tagCommit, releaseSha }) {
       continue;
     }
     const commit = tagCommit(tag);
-    if (commit === null) {
-      problems.push(`${tag}: the tag does not exist in this checkout`);
-      continue;
-    }
-    if (commit !== releaseSha) {
+    if (commit !== null && commit !== releaseSha) {
       problems.push(
         `${tag}: the tag points at ${commit}, not at the released commit ${releaseSha}`,
       );
@@ -123,7 +112,14 @@ export function planReleases({ published, packages, tagCommit, releaseSha }) {
       problems.push(`${tag}: ${pkg.dir}/CHANGELOG.md has no section for ${version}`);
       continue;
     }
-    releases.push({ tag, name: tag, prerelease: isPrerelease(version), notes });
+    releases.push({
+      tag,
+      name: tag,
+      prerelease: isPrerelease(version),
+      notes,
+      releaseSha,
+      createTag: commit === null,
+    });
   }
   return { releases, problems };
 }
@@ -135,6 +131,14 @@ export function planReleases({ published, packages, tagCommit, releaseSha }) {
  */
 export function applyReleases(releases, { run, notesDir, log = console.log }) {
   if (releases.length === 0) return;
+  for (const { tag, releaseSha, createTag } of releases) {
+    if (!createTag) continue;
+    const created = run("git", ["-c", "tag.gpgSign=false", "tag", tag, releaseSha]);
+    if (created.status !== 0) {
+      throw new Error(`git tag ${tag} at ${releaseSha} failed:\n${created.stderr}`);
+    }
+    log(`created tag ${tag} at ${releaseSha}`);
+  }
   const push = run("git", [
     "push",
     "origin",
