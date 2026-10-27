@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
-import { flush } from "solid-js";
+import { createSignal, flush, For } from "solid-js";
 import {
   Collection,
   CollectionBuilder,
@@ -249,5 +249,41 @@ describe("Collection primitives", () => {
 
     expect(screen.getByTestId("item-1")).toHaveTextContent("One");
     expect(screen.getByTestId("item-2")).toHaveTextContent("Two");
+  });
+
+  it("publishes item removal during keyed parent disposal without an owned write", () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { items, context } = createStaticCollectionState();
+      const first = { id: "a", textValue: "First" };
+      const second = { id: "b", textValue: "Second" };
+      const [children, setChildren] = createSignal([first, second]);
+      const { unmount } = render(() => (
+        <StaticCollectionContext value={context}>
+          <For each={children()}>{(item) => <StaticCollectionProbeItem {...item} />}</For>
+        </StaticCollectionContext>
+      ));
+
+      flush();
+      expect(items().map((item) => item.id)).toEqual(["a", "b"]);
+
+      // For disposes the removed item's registration while its computation reruns.
+      setChildren([second]);
+      flush();
+      expect(errors).not.toHaveBeenCalled();
+      expect(items()).toEqual([{ ...second, isDisabled: false }]);
+
+      setChildren([second, first]);
+      flush();
+      expect(items().map((item) => item.id)).toEqual(["b", "a"]);
+
+      setChildren([]);
+      flush();
+      expect(items()).toEqual([]);
+      expect(errors).not.toHaveBeenCalled();
+      unmount();
+    } finally {
+      errors.mockRestore();
+    }
   });
 });

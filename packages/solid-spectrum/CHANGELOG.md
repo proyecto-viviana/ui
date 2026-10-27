@@ -1,5 +1,12 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.8.0-rc.5
+
+### Patch Changes
+
+- Updated dependencies:
+  - @proyecto-viviana/solidaria-components@0.7.0-rc.5
+
 ## 0.8.0-rc.4
 
 ### Patch Changes

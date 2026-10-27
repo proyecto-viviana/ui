@@ -30,6 +30,7 @@ import {
   createMemo,
   createSignal,
   onCleanup,
+  runWithOwner,
   useContext,
   For,
   type Accessor,
@@ -414,7 +415,8 @@ export function createStaticCollectionState(): {
   const itemMap = new Map<Key, StaticCollectionItem>();
 
   const syncItems = () => {
-    setItems(Array.from(itemMap.values()));
+    // Item cleanup may run inside a keyed collection computation.
+    runWithOwner(null, () => setItems(Array.from(itemMap.values())));
   };
 
   const context: StaticCollectionContextValue = {

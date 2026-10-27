@@ -1,5 +1,12 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.7.0-rc.5
+
+### Patch Changes
+
+- Publish static collection items outside the reactive owner so keyed item disposal
+  does not throw REACTIVE_WRITE_IN_OWNED_SCOPE when a menu closes.
+
 ## 0.7.0-rc.4
 
 ### Patch Changes
