@@ -44,7 +44,35 @@ const dialogTitle = "Review Changes";
 
 const namedDialog: TargetResolver = (ctx) => panelDialog(ctx, { name: dialogTitle });
 
+type FocusHandoffRecorder = {
+  log: { type: string; target: EventTarget | null }[];
+  onEvent: (() => void) | null;
+  stop: () => void;
+};
+
+const focusHandoffKey = "__comparisonDialogFocusHandoff";
+
 const openDialogWithPointer = async (ctx: PanelContext) => {
+  // The recorder is on the document before the click: under full-suite load
+  // the 500ms hand-off below can finish before the dialog is visible to
+  // Playwright, and a listener attached after that never sees it (#662).
+  await ctx.page.evaluate((key) => {
+    const recorder: FocusHandoffRecorder = {
+      log: [],
+      onEvent: null,
+      stop: () => {
+        document.removeEventListener("focusout", record, true);
+        document.removeEventListener("focusin", record, true);
+      },
+    };
+    function record(event: Event) {
+      recorder.log.push({ type: event.type, target: event.target });
+      recorder.onEvent?.();
+    }
+    document.addEventListener("focusout", record, true);
+    document.addEventListener("focusin", record, true);
+    (window as unknown as Record<string, FocusHandoffRecorder>)[key] = recorder;
+  }, focusHandoffKey);
   await clickLocator(ctx.canvas.getByRole("button", { name: "Open Dialog" }).first());
   const dialog = namedDialog(ctx);
   await expect(dialog).toBeVisible();
@@ -55,34 +83,38 @@ const openDialogWithPointer = async (ctx: PanelContext) => {
   // ring color) for the instant focus sits on body. D1's 400ms settle reads
   // inside React's blur and before Solid's, which starts later from
   // runAfterPaint. The keyboard opener drains the same timer with a fixed
-  // 600ms. Wait until this dialog has blurred and taken focus back.
-  await dialog.evaluate((element) => {
+  // 600ms. Wait until this dialog has blurred and taken focus back, counting
+  // a hand-off the recorder saw before this wait began.
+  await dialog.evaluate((element, key) => {
+    const recorder = (window as unknown as Record<string, FocusHandoffRecorder>)[key];
     return new Promise<void>((resolve, reject) => {
-      let sawBlur = false;
       const timer = window.setTimeout(() => {
         cleanup();
         reject(new Error("dialog VoiceOver refocus did not complete"));
       }, 2000);
       const cleanup = () => {
         window.clearTimeout(timer);
-        element.removeEventListener("focusout", onOut, true);
-        element.removeEventListener("focusin", onIn, true);
+        recorder.onEvent = null;
+        recorder.stop();
       };
-      const onOut = (event: Event) => {
-        if (event.target === element) {
-          sawBlur = true;
-        }
-      };
-      const onIn = (event: Event) => {
-        if (sawBlur && event.target === element && document.activeElement === element) {
+      const check = () => {
+        const blurAt = recorder.log.findIndex(
+          (entry) => entry.type === "focusout" && entry.target === element,
+        );
+        const refocused =
+          blurAt >= 0 &&
+          recorder.log
+            .slice(blurAt + 1)
+            .some((entry) => entry.type === "focusin" && entry.target === element);
+        if (refocused && document.activeElement === element) {
           cleanup();
           resolve();
         }
       };
-      element.addEventListener("focusout", onOut, true);
-      element.addEventListener("focusin", onIn, true);
+      recorder.onEvent = check;
+      check();
     });
-  });
+  }, focusHandoffKey);
   await expect(dialog).toBeFocused();
 };
 
