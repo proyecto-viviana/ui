@@ -29,6 +29,8 @@ overrides:
   smol-toml: "1.9.0"
   # GHSA-mrhx-c7xc-m3w5: the comparison and docs apps reach zod through Astro, Kumo and TanStack Start.
   zod: "^4.6.6"
+  # GHSA-97r2-qh9m-474h, GHSA-wp97-x4hv-qvhp, GHSA-7rv5-mrxv-xcr9, GHSA-9wx9-5pv9-3349, GHSA-f86p-h4j2-7qgj: solid-js, @solidjs/web and the TanStack router reach seroval.
+  seroval: "~1.6.11"
   # GHSA-587h-7wmj-h5pm: also covers the Changesets dependency path.
   launch-editor: "2.14.2"
 

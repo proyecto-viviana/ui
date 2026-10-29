@@ -33,6 +33,7 @@ overrides:
   source-map-js: 1.2.2
   smol-toml: 1.9.0
   zod: ^4.6.6
+  seroval: ~1.6.11
   launch-editor: 2.14.2
 
 patchedDependencies:
@@ -4211,10 +4212,10 @@ packages:
     resolution: {integrity: sha512-4Nk35ttD3DTDJW4hgw5StsVAPeU6qnDFnULAouw6tQ7oLTV/ICXrWpsXo2EE52eSP2joUMazbVf52mFEcADqRw==}
     engines: {node: '>=10'}
     peerDependencies:
-      seroval: ^1.0
+      seroval: ~1.6.11
 
-  seroval@1.6.7:
-    resolution: {integrity: sha512-AeDcLh0yO2SFm9W71essgnSzLV9DI8ZH0x0knXn2DMnUZj728mpLbxjlbB6IqKCmqh8JA3cEqRyGoNkt584JcQ==}
+  seroval@1.6.12:
+    resolution: {integrity: sha512-CqbIVfk/7GL3ITwZI55lcPbpQbjHZ2DD5cUj4iH7E9YsCfHNJV1mx7yNp86Z84w5IpmkZZS/2s5vPOWmVWSdQg==}
     engines: {node: '>=10'}
 
   sharp@0.35.5:
@@ -6541,8 +6542,8 @@ snapshots:
 
   '@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9)':
     dependencies:
-      seroval: 1.6.7
-      seroval-plugins: 1.6.7(seroval@1.6.7)
+      seroval: 1.6.12
+      seroval-plugins: 1.6.7(seroval@1.6.12)
       solid-js: 2.0.0-rc.9
 
   '@speed-highlight/core@1.2.15': {}
@@ -6620,8 +6621,8 @@ snapshots:
     dependencies:
       '@tanstack/history': 1.162.1
       cookie-es: 3.1.1
-      seroval: 1.6.7
-      seroval-plugins: 1.6.7(seroval@1.6.7)
+      seroval: 1.6.12
+      seroval-plugins: 1.6.7(seroval@1.6.12)
 
   '@tanstack/router-generator@1.167.28(supports-color@10.2.2)':
     dependencies:
@@ -6735,7 +6736,7 @@ snapshots:
       '@tanstack/router-core': 1.171.22
       '@tanstack/start-fn-stubs': 1.162.0
       '@tanstack/start-storage-context': 1.167.24
-      seroval: 1.6.7
+      seroval: 1.6.12
 
   '@tanstack/start-fn-stubs@1.162.0': {}
 
@@ -6753,7 +6754,7 @@ snapshots:
       lightningcss: 1.33.0
       pathe: 2.0.3
       picomatch: 4.0.7
-      seroval: 1.6.7
+      seroval: 1.6.12
       source-map: 0.7.6
       srvx: 0.11.22
       tinyglobby: 0.2.17
@@ -6785,7 +6786,7 @@ snapshots:
       '@tanstack/start-storage-context': 1.167.24
       fetchdts: 0.1.7
       h3-v2: h3@2.0.1-rc.20
-      seroval: 1.6.7
+      seroval: 1.6.12
     transitivePeerDependencies:
       - crossws
 
@@ -8413,11 +8414,11 @@ snapshots:
 
   semver@7.8.5: {}
 
-  seroval-plugins@1.6.7(seroval@1.6.7):
+  seroval-plugins@1.6.7(seroval@1.6.12):
     dependencies:
-      seroval: 1.6.7
+      seroval: 1.6.12
 
-  seroval@1.6.7: {}
+  seroval@1.6.12: {}
 
   sharp@0.35.5(@types/node@26.2.0):
     dependencies:
@@ -8483,8 +8484,8 @@ snapshots:
     dependencies:
       '@solidjs/signals': 2.0.0-rc.9
       csstype: 3.2.3
-      seroval: 1.6.7
-      seroval-plugins: 1.6.7(seroval@1.6.7)
+      seroval: 1.6.12
+      seroval-plugins: 1.6.7(seroval@1.6.12)
 
   solid-refresh@0.6.3(solid-js@2.0.0-rc.9)(supports-color@10.2.2):
     dependencies:
